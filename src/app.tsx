@@ -1,6 +1,7 @@
 /* eslint-disable react-compiler/react-compiler */
 import React, { useEffect, useState } from 'react';
 
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { Live2D, Live2DEvent } from '@/components/ui/live2d';
@@ -66,6 +67,7 @@ export const App: React.FC = () => {
         </div>
       </main>
       <Footer />
+      <SpeedInsights />
     </ScrollArea>
   );
 };
