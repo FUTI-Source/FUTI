@@ -18,12 +18,6 @@ export default defineConfig({
     meta: {
       description: "futiowlf's personal website, A NodeJS Fullstack Developer. | 一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
     },
-  },
-});
-
-export default defineConfig({
-  plugins: [pluginReact()],
-  html: {
     tags: [
       {
         tag: 'script',
