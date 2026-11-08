@@ -20,3 +20,19 @@ export default defineConfig({
     },
   },
 });
+
+export default defineConfig({
+  plugins: [pluginReact()],
+  html: {
+    tags: [
+      {
+        tag: 'script',
+        attrs: {
+          defer: true,
+          src: 'https://umami.zhang-wentao.cn/script.js',
+          'data-website-id': 'a5e4fd0e-7052-473c-b7eb-8b6f42b968eb',
+        },
+      },
+    ],
+  },
+});
