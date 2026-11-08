@@ -18,7 +18,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.a
-            href="https://www.futiwolf.com"
+            href="/"
             className={cn('futi-center font-russoOne text-opacity-15 relative cursor-pointer text-xs text-[#737373] select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
@@ -41,7 +41,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             Copyright &copy; 2017 - {new Date().getFullYear()}
             <Tooltip>
               <TooltipTrigger asChild>
-                <a className="mx-1" href="https://www.lf112.net">
+                <a className="mx-1" href="/">
                   LF112
                 </a>
               </TooltipTrigger>
@@ -52,7 +52,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
           <p className="max-sm:hidden">/</p>
           <Tooltip>
             <TooltipTrigger asChild>
-              <a href="https://github.com/LF112/FUTI" target="_blank" rel="noreferrer">
+              <a href="/" target="_blank" rel="noreferrer">
                 Github Open Source
               </a>
             </TooltipTrigger>
