@@ -12,7 +12,7 @@ export default defineConfig({
           new GenerateSW({
             clientsClaim: true,
             skipWaiting: true,
-            cleanupOutdatedCaches: true, // 自动清理旧版本缓存，防止电脑端渲染异常
+            cleanupOutdatedCaches: true,
             swDest: 'sw.js',
           }),
         ]);
@@ -42,6 +42,7 @@ export default defineConfig({
           href: '/manifest.webmanifest',
         },
       },
+      // 1. Android Chrome / Edge / iOS 15+ Safari 浏览器顶部地址栏与状态栏颜色
       {
         tag: 'meta',
         attrs: {
@@ -49,6 +50,7 @@ export default defineConfig({
           content: '#22252b',
         },
       },
+      // 2. Android / 现代浏览器标准 PWA 声明
       {
         tag: 'meta',
         attrs: {
@@ -56,6 +58,15 @@ export default defineConfig({
           content: 'yes',
         },
       },
+      // 3. iOS Safari 专属全屏 PWA 声明（缺少这行，下面的 status-bar-style 完全无效）
+      {
+        tag: 'meta',
+        attrs: {
+          name: 'apple-mobile-web-app-capable',
+          content: 'yes',
+        },
+      },
+      // 4. iOS 状态栏设为 black-translucent（透明沉浸）或 black（纯黑底白字）
       {
         tag: 'meta',
         attrs: {
