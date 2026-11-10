@@ -2,9 +2,11 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
+import { pluginPWA } from 'rsbuild-plugin-pwa';
 
 export default defineConfig({
   plugins: [
+    pluginPWA(),
     pluginReact(),
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
