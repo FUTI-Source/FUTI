@@ -6,8 +6,8 @@ import { GenerateSW } from 'workbox-rspack-plugin'; // 💡 引入新插件
 
 export default defineConfig({
   tools: {
-    rspack: (config, { appendPlugins }) => {
-      if (process.env.NODE_ENV === 'production') {
+    rspack: (config, { appendPlugins, isProd }) => {
+      if (isProd) {
         appendPlugins([
           // 💡 自动生成全套 Service Worker 缓存逻辑，无需本地编写任何 sw 文件
           new GenerateSW({
@@ -34,6 +34,13 @@ export default defineConfig({
       description: "一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
     },
     tags: [
+      {
+        tag: 'link',
+        attrs: {
+          rel: 'manifest',
+          href: '/manifest.webmanifest',
+        },
+      },
       {
         tag: 'script',
         attrs: {
