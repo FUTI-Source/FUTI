@@ -19,6 +19,19 @@ import { ProfileWrapper } from '@/components/page/profile/wrapper.tsx';
 import profileImage from '@/assets/webp/futiwolf.webp';
 import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
+
+
+if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // 💡 确保这里是 '/sw.js'，而不是 'sw.js' 或 './sw.js'
+    navigator.serviceWorker
+      .register('/sw.js') 
+      .then((reg) => console.log('PWA 注册成功:', reg))
+      .catch((err) => console.error('PWA 注册失败:', err));
+  });
+}
+
+
 export const App: React.FC = () => {
   const [live2dVisible, setLive2dVisible] = useState(false);
   const [profileImageVisible, setProfileImageVisible] = useState(true);
