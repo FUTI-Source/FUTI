@@ -18,17 +18,4 @@
       "purpose": "any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "./public/favicon.ico/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "./public/favicon.ico/screenshot-mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png"
-    }
-  ]
 }
