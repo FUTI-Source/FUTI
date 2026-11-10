@@ -2,8 +2,24 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
+import { InjectManifest } from '@serwist/webpack-plugin';
 
 export default defineConfig({
+  tools: {
+    rspack: (
+      config, { 
+        appendPlugins
+      }) => {
+      if (process.env.NODE_ENV === 'production') {
+        appendPlugins([
+          newInjectManifest({
+            swSrc: './src/sw.ts', // 你的 service worker 源码路径
+            swDest: 'sw.js',      // 打包后输出的文件名
+          }),
+        ]);
+      }
+    },
+  },
   plugins: [
     pluginReact(),
     pluginBabel({
