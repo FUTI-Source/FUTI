@@ -31,7 +31,8 @@ export default defineConfig({
   html: {
     title: 'FUTI「@futi」- A Fullstack Developer',
     meta: {
-      description: "一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
+      description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
+      viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
     },
     tags: [
       {
@@ -39,6 +40,36 @@ export default defineConfig({
         attrs: {
           rel: 'manifest',
           href: '/manifest.webmanifest',
+        },
+      },
+      {
+        tag: 'meta',
+        attrs: {
+          name: 'theme-color',
+          media: '(prefers-color-scheme: light)',
+          content: '#ffffff',
+        },
+      },
+      {
+        tag: 'meta',
+        attrs: {
+          name: 'theme-color',
+          media: '(prefers-color-scheme: dark)',
+          content: '#09090b',
+        },
+      },
+      {
+        tag: 'meta',
+        attrs: {
+          name: 'apple-mobile-web-app-capable',
+          content: 'yes',
+        },
+      },
+      {
+        tag: 'meta',
+        attrs: {
+          name: 'apple-mobile-web-app-status-bar-style',
+          content: 'black-translucent',
         },
       },
     ],
