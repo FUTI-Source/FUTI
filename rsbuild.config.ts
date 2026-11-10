@@ -42,14 +42,6 @@ export default defineConfig({
           href: '/manifest.webmanifest',
         },
       },
-      // 1. Android Chrome / Edge / iOS 15+ Safari 浏览器顶部地址栏与状态栏颜色
-      {
-        tag: 'meta',
-        attrs: {
-          name: 'theme-color',
-          content: '#22252b',
-        },
-      },
       // 2. Android / 现代浏览器标准 PWA 声明
       {
         tag: 'meta',
@@ -64,14 +56,6 @@ export default defineConfig({
         attrs: {
           name: 'apple-mobile-web-app-capable',
           content: 'yes',
-        },
-      },
-      // 4. iOS 状态栏设为 black-translucent（透明沉浸）或 black（纯黑底白字）
-      {
-        tag: 'meta',
-        attrs: {
-          name: 'apple-mobile-web-app-status-bar-style',
-          content: 'black-translucent',
         },
       },
     ],

@@ -3,8 +3,6 @@
   "short_name": "FUTI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#15161a",
-  "theme_color": "#22252b",
   "icons": [
     {
       "src": "/favicon.ico",
