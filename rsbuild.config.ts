@@ -48,7 +48,8 @@ export default defineConfig({
         tag: 'link',
         attrs: {
           rel: 'apple-touch-icon',
-          href: './icon-512.png',
+          sizes: '512x512',
+          href: '/icon-512.png',
         },
       },
       {
