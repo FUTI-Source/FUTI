@@ -56,7 +56,7 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <ScrollArea className="futi-ui relative h-dvh w-dvw min-w-max overflow-hidden [&>[data-radix-scroll-area-viewport]>div]:!flex [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:flex-col">
+      <ScrollArea className="futi-ui relative h-full w-dvw min-w-max overflow-hidden [&>[data-radix-scroll-area-viewport]>div]:!flex [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:flex-col">
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />
