@@ -41,7 +41,7 @@ export default defineConfig({
         tag: 'link',
         attrs: {
           rel: 'manifest',
-          href: './public/manifest.webmanifest',
+          href: './manifest.webmanifest',
         },
       },
       // 2. 直接用标签指定 iOS 桌面图标（不触发 Rsbuild 自动生成残缺 manifest）
