@@ -14,7 +14,7 @@ export default defineConfig({
         appendPlugins([
           // 💡 修正点：在这里的 new 后加了空格
           new InjectManifest({
-            swSrc: './src/sw.ts', // 你的 service worker 源码路径
+            swSrc: './src/sw.js', // 你的 service worker 源码路径
             swDest: 'sw.js',      // 打包后输出的文件名
           }),
         ]);
