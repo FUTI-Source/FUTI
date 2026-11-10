@@ -5,8 +5,16 @@ import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginPWA } from 'rsbuild-plugin-pwa';
 
 export default defineConfig({
+  server: {
+    base: "/app",
+  },
   plugins: [
-    pluginPWA(),
+    pluginPWA(
+      { 
+        registerSw: { 
+          type: "virtual-module" 
+        } 
+      },
     pluginReact(),
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
