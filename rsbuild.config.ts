@@ -2,18 +2,9 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
-import { pluginPWA } from 'rsbuild-plugin-pwa';
 
 export default defineConfig({
-  server: {
-    base: "/app",
-  },
   plugins: [
-    pluginPWA({ 
-      registerSw: { 
-        type: "virtual-module" 
-      } 
-    }), // <-- 这里原本漏掉了闭合的右括号 )
     pluginReact(),
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
