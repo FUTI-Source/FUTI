@@ -1,17 +1,33 @@
 {
   "name": "FUTI「@futi」- A Fullstack Developer",
   "short_name": "FUTI",
+  "description": "一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
   "start_url": "/",
   "display": "standalone",
   "icons": [
     {
-      "src": "/favicon_192x192.ico",
+      "src": "./public/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/favicon_512x512.ico",
+      "src": "./public/icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./public/favicon.ico/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "./public/favicon.ico/screenshot-mobile.png",
+      "sizes": "750x1334",
       "type": "image/png"
     }
   ]

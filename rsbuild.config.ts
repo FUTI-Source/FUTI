@@ -30,7 +30,7 @@ export default defineConfig({
   ],
   html: {
     title: 'FUTI「@futi」- A Fullstack Developer',
-    favicon: './public/favicon.ico',
+    favicon: './public/icon-512.png',
     meta: {
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
@@ -41,7 +41,7 @@ export default defineConfig({
         tag: 'link',
         attrs: {
           rel: 'manifest',
-          href: '/manifest.webmanifest',
+          href: './public/manifest.webmanifest',
         },
       },
       // 2. 直接用标签指定 iOS 桌面图标（不触发 Rsbuild 自动生成残缺 manifest）
@@ -49,7 +49,7 @@ export default defineConfig({
         tag: 'link',
         attrs: {
           rel: 'apple-touch-icon',
-          href: './public/favicon.ico',
+          href: './public/icon-512.png',
         },
       },
       {
