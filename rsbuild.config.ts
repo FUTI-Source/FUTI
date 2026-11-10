@@ -30,7 +30,15 @@ export default defineConfig({
   ],
   html: {
     title: 'FUTI「@futi」- A Fullstack Developer',
-    favicon: './public/favicon.ico', // 💡 自动注入网站 Favicon（支持 .ico / .png / .svg）
+    favicon: './public/favicon.ico',
+    // 💡 新增：自动为 iOS 生成 apple-touch-icon 标签
+    appIcon: {
+      name: 'FUTI',
+      icons: [
+        { src: './public/favicon_192x192.ico', size: 192 },
+        { src: './public/favicon_512x512.ico', size: 512 },
+      ],
+    },
     meta: {
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
@@ -43,7 +51,6 @@ export default defineConfig({
           href: '/manifest.webmanifest',
         },
       },
-      // 2. Android / 现代浏览器标准 PWA 声明
       {
         tag: 'meta',
         attrs: {
@@ -51,7 +58,6 @@ export default defineConfig({
           content: 'yes',
         },
       },
-      // 3. iOS Safari 专属全屏 PWA 声明（缺少这行，下面的 status-bar-style 完全无效）
       {
         tag: 'meta',
         attrs: {
