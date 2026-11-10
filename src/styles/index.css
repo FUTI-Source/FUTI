@@ -17,18 +17,16 @@
 
   html {
     background-color: #15161a;
-    min-height: 100dvh;
   }
 
   body {
-    min-height: 100dvh;
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    background-color: #15161a;
-    background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, 0.2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
-    background-blend-mode: overlay, normal;
+    background-color: transparent !important;
+    background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, 0.2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem) !important;
+    background-blend-mode: overlay, normal !important;
     @apply font-sans text-foreground;
   }
 }
