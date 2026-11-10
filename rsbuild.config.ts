@@ -9,12 +9,11 @@ export default defineConfig({
     base: "/app",
   },
   plugins: [
-    pluginPWA(
-      { 
-        registerSw: { 
-          type: "virtual-module" 
-        } 
-      },
+    pluginPWA({ 
+      registerSw: { 
+        type: "virtual-module" 
+      } 
+    }), // <-- 这里原本漏掉了闭合的右括号 )
     pluginReact(),
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
