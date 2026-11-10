@@ -41,14 +41,6 @@ export default defineConfig({
           href: '/manifest.webmanifest',
         },
       },
-      {
-        tag: 'script',
-        attrs: {
-          defer: true,
-          src: 'https://zhang-wentao.tech',
-          'data-website-id': 'a5e4fd0e-7052-473c-b7eb-8b6f42b968eb',
-        },
-      },
     ],
   },
 });
