@@ -33,7 +33,6 @@ export default defineConfig({
     favicon: './public/icon-512.png',
     meta: {
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
-      viewport: 'width=device-width, initial-scale=1.0',
     },
     tags: [
       // 1. 引入你自己写的完整 public/manifest.webmanifest
