@@ -30,7 +30,7 @@ export default defineConfig({
   ],
   html: {
     title: 'FUTI「@futi」- A Fullstack Developer',
-    favicon: './public/icon-512.png',
+    favicon: './icon-512.png',
     meta: {
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
     },
@@ -48,7 +48,7 @@ export default defineConfig({
         tag: 'link',
         attrs: {
           rel: 'apple-touch-icon',
-          href: './public/icon-512.png',
+          href: './icon-512.png',
         },
       },
       {
