@@ -29,7 +29,7 @@ export default defineConfig({
     }),
   ],
   html: {
-    title: 'FUTI',
+    title: 'FUTI - Personal Homepage',
     meta: {
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
     },
