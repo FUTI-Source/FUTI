@@ -19,6 +19,7 @@ import { ProfileWrapper } from '@/components/page/profile/wrapper.tsx';
 import profileImage from '@/assets/webp/futiwolf.webp';
 import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
+import { initCustomCursor } from './utils/customCursor';
 import { initContentProtection } from './utils/disableContextMenu';
 import { initFullscreenShortcut } from './utils/fullscreen';
 import { disableBrowserTranslate } from './utils/noTranslate';
@@ -28,6 +29,7 @@ import { initWebVitals } from './utils/webVitals';
 disableBrowserTranslate();
 initContentProtection();
 initFullscreenShortcut();
+initCustomCursor();
 
 initUmami({
   url: 'https://zhang-wentao.tech',
