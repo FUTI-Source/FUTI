@@ -16,24 +16,21 @@ export function initForceLightTheme() {
     meta.setAttribute('content', content);
   };
 
-  // iOS Safari 15+ 与现代手机浏览器识别此标签后，不会对网页做强制夜间反色
   setOrUpdateMeta('color-scheme', 'light only');
   setOrUpdateMeta('supported-color-schemes', 'light');
 
-  // 2. 锁定 iOS Safari 顶部状态栏与底部刘海安全区背景为白色（防止 iOS 深色模式下上下边栏变黑）
+  // 2. 锁定 iOS Safari 顶部状态栏与底部刘海安全区背景为白色
   setOrUpdateMeta('theme-color', '#ffffff');
   setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
 
-  // 3. 注入全局 CSS 兜底（防止部分手机浏览器无视 JS 属性强行反色）
+  // 3. 注入全局 CSS 兜底（去掉 background-color 强制覆盖，避免遮挡底层 DetroitBackground）
   if (!document.getElementById('force-light-style')) {
     const styleEl = document.createElement('style');
     styleEl.id = 'force-light-style';
     styleEl.textContent = `
       :root, html, body {
         color-scheme: light only !important;
-        background-color: #ffffff !important;
       }
-      /* 防止微信/夸克等内核在夜间模式下对图片、Canvas(Live2D) 强行压暗或反色 */
       img, video, canvas, svg {
         filter: none !important;
         -webkit-filter: none !important;
