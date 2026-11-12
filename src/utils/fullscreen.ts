@@ -1,27 +1,35 @@
-interface FullscreenShortcutOptions {
-  /** 触发按键（默认 'Enter'，配合 Alt 键即 Alt + Enter） */
-  key?: string;
-  /** 是否需要按住 Alt 键（默认 true） */
-  altKey?: boolean;
-  /** 是否需要按住 Ctrl/Cmd 键（默认 false） */
-  ctrlOrMetaKey?: boolean;
-  /** 输入框中是否忽略快捷键（默认 true） */
-  ignoreInputs?: boolean;
-}
+export async function toggleFullscreen() {
+  const doc = document as any;
+  const root = document.documentElement as any;
 
-export async function toggleFullscreen(target: HTMLElement = document.documentElement) {
+  // 判断当前是否已处于全屏状态
+  const isFullscreen = Boolean(
+    doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+  );
+
   try {
-    if (!document.fullscreenElement) {
-      if (target.requestFullscreen) {
-        await target.requestFullscreen();
-      } else if ((target as any).webkitRequestFullscreen) {
-        await (target as any).webkitRequestFullscreen();
+    if (!isFullscreen) {
+      if (root.requestFullscreen) {
+        await root.requestFullscreen();
+      } else if (root.webkitRequestFullscreen) {
+        await root.webkitRequestFullscreen();
+      } else if (root.mozRequestFullScreen) {
+        await root.mozRequestFullScreen();
+      } else if (root.msRequestFullscreen) {
+        await root.msRequestFullscreen();
       }
     } else {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      } else if ((document as any).webkitExitFullscreen) {
-        await (document as any).webkitExitFullscreen();
+      if (doc.exitFullscreen) {
+        await doc.exitFullscreen();
+      } else if (doc.webkitExitFullscreen) {
+        await doc.webkitExitFullscreen();
+      } else if (doc.mozCancelFullScreen) {
+        await doc.mozCancelFullScreen();
+      } else if (doc.msExitFullscreen) {
+        await doc.msExitFullscreen();
       }
     }
   } catch (err) {
@@ -29,42 +37,42 @@ export async function toggleFullscreen(target: HTMLElement = document.documentEl
   }
 }
 
-export function initFullscreenShortcut(options: FullscreenShortcutOptions = {}) {
-  const {
-    key = 'Enter',
-    altKey = true,
-    ctrlOrMetaKey = false,
-    ignoreInputs = true,
-  } = options;
-
+export function initFullscreenShortcut() {
   if (typeof window === 'undefined') return;
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (ignoreInputs && e.target instanceof HTMLElement) {
-      const tagName = e.target.tagName.toLowerCase();
-      if (
-        tagName === 'input' ||
-        tagName === 'textarea' ||
-        e.target.isContentEditable
-      ) {
+    // 1. 如果焦点在输入框中，不触发全屏
+    const target = e.target as HTMLElement | null;
+    if (target) {
+      const tag = target.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || target.isContentEditable) {
         return;
       }
     }
 
-    const matchKey = e.key.toLowerCase() === key.toLowerCase();
-    const matchAlt = altKey ? e.altKey : !e.altKey;
-    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-    const matchCtrl = ctrlOrMetaKey ? isCtrlOrCmd : !isCtrlOrCmd;
+    // 2. 防止长按按键连续反复触发
+    if (e.repeat) return;
 
-    if (matchKey && matchAlt && matchCtrl && !e.shiftKey) {
+    const key = e.key.toLowerCase();
+    const hasModifier = e.ctrlKey || e.metaKey || e.altKey || e.shiftKey;
+
+    // 方式 A：单独按 F 键（排除 Ctrl+F / Cmd+F 等组合键）
+    const isSingleF = key === 'f' && !hasModifier;
+
+    // 方式 B：按 Alt + Enter（排除 Ctrl/Cmd/Shift）
+    const isAltEnter =
+      key === 'enter' && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey;
+
+    if (isSingleF || isAltEnter) {
       e.preventDefault();
+      e.stopPropagation();
       toggleFullscreen();
     }
   };
 
-  document.addEventListener('keydown', handleKeyDown, true);
+  window.addEventListener('keydown', handleKeyDown, true);
 
   return () => {
-    document.removeEventListener('keydown', handleKeyDown, true);
+    window.removeEventListener('keydown', handleKeyDown, true);
   };
 }
