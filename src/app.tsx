@@ -20,28 +20,19 @@ import profileImage from '@/assets/webp/futiwolf.webp';
 import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
 import { initContentProtection } from './utils/disableContextMenu';
-import { initFullscreenShortcut } from './utils/fullscreen';
 import { disableBrowserTranslate } from './utils/noTranslate';
 import { initUmami } from './utils/umami';
 import { initWebVitals } from './utils/webVitals';
 
-// 1. 禁止浏览器自动翻译
 disableBrowserTranslate();
-
-// 2. 全站防右键、防复制与快捷键保护（仅生产环境生效）
 initContentProtection();
 
-// 3. 全屏快捷键（Alt + Enter 切换全屏）
-initFullscreenShortcut();
-
-// 4. 初始化自建 Umami 统计与页面 lang
 initUmami({
   url: 'https://zhang-wentao.tech',
   websiteId: 'c53b1321-886d-4d04-b4a1-4c2010db6735',
   lang: 'en',
 });
 
-// 5. 初始化 Web Vitals 性能上报
 initWebVitals();
 
 if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
@@ -90,26 +81,14 @@ export const App: React.FC = () => {
             >
               <AnimatePresence>
                 {profileImageVisible && (
-                  <motion.div
-                    key="futi-profile-image"
-                    className="absolute top-0 left-0"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                     <img src={profileImage} alt="futiwolf,LF112" className="size-64" />
                   </motion.div>
                 )}
               </AnimatePresence>
               {live2dVisible && <Live2D event$={live2dEvent$} />}
             </ProfileWrapper>
-            <Name
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
-              transition={{ duration: 0.2 }}
-              onAnimationComplete={() => setNameVisible(true)}
-            />
+            <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} onAnimationComplete={() => setNameVisible(true)} />
             <div className="h-7">{nameVisible && <Description />}</div>
             <Links />
           </div>
