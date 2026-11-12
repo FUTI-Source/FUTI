@@ -3,7 +3,7 @@ export function initForceLightTheme() {
 
   const html = document.documentElement;
 
-  // 1. 声明 CSS 与 Meta 仅支持浅色（告知 iOS Safari / Chrome 禁止自动反色）
+  // 1. 声明 CSS 与 Meta 仅支持浅色
   html.style.colorScheme = 'light only';
 
   const setOrUpdateMeta = (name: string, content: string) => {
@@ -21,7 +21,7 @@ export function initForceLightTheme() {
   setOrUpdateMeta('theme-color', '#ffffff');
   setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
 
-  // 2. 注入全局 CSS 兜底：彻底禁止 SVG 图标被浏览器反色、压暗或继承深色变量
+  // 2. 注入全局 CSS：彻底解决 iOS 端 SVG 变黑问题
   if (!document.getElementById('force-light-style')) {
     const styleEl = document.createElement('style');
     styleEl.id = 'force-light-style';
@@ -30,12 +30,29 @@ export function initForceLightTheme() {
         color-scheme: light only !important;
       }
 
-      /* 禁止 iOS / 微信 / 夸克等浏览器在夜间模式下对 SVG 及图标库强行加反色滤镜 */
-      svg, svg *, img[src$=".svg"] {
+      /* 针对内联 <svg> 图标：防止继承浏览器重置后的默认黑色文字，强制使用亮白色填充 */
+      svg {
         color-scheme: light only !important;
-        filter: none !important;
-        -webkit-filter: none !important;
-        mix-blend-mode: normal !important;
+        color: #f8fafc !important;
+      }
+
+      /* 覆盖 SVG 内部可能写死的黑色 fill 或 stroke 属性 */
+      svg path[fill="#000"],
+      svg path[fill="#000000"],
+      svg path[fill="black"],
+      svg path:not([fill]),
+      svg circle[fill="#000"],
+      svg circle[fill="#000000"],
+      svg rect[fill="#000"],
+      svg rect[fill="#000000"] {
+        fill: #f8fafc !important;
+      }
+
+      /* 针对通过 <img src="xxx.svg"> 引入的纯黑外部 SVG 图标，在 iOS 上反转为纯白色 */
+      img[src$=".svg"],
+      img[src*=".svg?"] {
+        filter: brightness(0) invert(1) !important;
+        -webkit-filter: brightness(0) invert(1) !important;
       }
     `;
     document.head.appendChild(styleEl);
