@@ -18,12 +18,10 @@ export function initForceLightTheme() {
 
   setOrUpdateMeta('color-scheme', 'light only');
   setOrUpdateMeta('supported-color-schemes', 'light');
-
-  // 2. 锁定 iOS Safari 顶部状态栏与底部刘海安全区背景为白色
   setOrUpdateMeta('theme-color', '#ffffff');
   setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
 
-  // 3. 注入全局 CSS 兜底（去掉 background-color 强制覆盖，避免遮挡底层 DetroitBackground）
+  // 2. 注入全局 CSS 兜底：彻底禁止 SVG 图标被浏览器反色、压暗或继承深色变量
   if (!document.getElementById('force-light-style')) {
     const styleEl = document.createElement('style');
     styleEl.id = 'force-light-style';
@@ -31,15 +29,19 @@ export function initForceLightTheme() {
       :root, html, body {
         color-scheme: light only !important;
       }
-      img, video, canvas, svg {
+
+      /* 禁止 iOS / 微信 / 夸克等浏览器在夜间模式下对 SVG 及图标库强行加反色滤镜 */
+      svg, svg *, img[src$=".svg"] {
+        color-scheme: light only !important;
         filter: none !important;
         -webkit-filter: none !important;
+        mix-blend-mode: normal !important;
       }
     `;
     document.head.appendChild(styleEl);
   }
 
-  // 4. 清理本地存储中的深色主题缓存
+  // 3. 清理本地存储中的深色主题缓存
   try {
     if (localStorage.getItem('theme') === 'dark') {
       localStorage.setItem('theme', 'light');
@@ -48,7 +50,7 @@ export function initForceLightTheme() {
     // 忽略无痕模式报错
   }
 
-  // 5. 持续拦截 DOM 上的 dark 类名或属性切换
+  // 4. 持续拦截 DOM 上的 dark 类名或属性切换
   const enforceLight = () => {
     if (html.classList.contains('dark')) {
       html.classList.remove('dark');
