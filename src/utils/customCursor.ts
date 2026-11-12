@@ -8,62 +8,48 @@ export function initCustomCursor() {
 
   if (document.getElementById('custom-cursor-dot')) return;
 
-  const getThemeColor = () => {
-    const isDark =
-      document.documentElement.classList.contains('dark') ||
-      window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return isDark ? '#fff' : '#000';
-  };
-
   const styleEl = document.createElement('style');
   styleEl.id = 'custom-cursor-style';
+  styleEl.textContent = `
+    #custom-cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 36px;
+      height: 36px;
+      background: #ffffff;
+      border-radius: 50%;
+      opacity: 0.35;
+      /* 柔和的多层白色发光阴影 */
+      box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.45), 0 0 24px 6px rgba(255, 255, 255, 0.2);
+      z-index: 10086;
+      pointer-events: none;
+      transition: 0.2s ease-in-out;
+      transition-property: opacity, transform, box-shadow;
+    }
 
-  const updateStyle = () => {
-    const color = getThemeColor();
-    styleEl.textContent = `
-      #custom-cursor-dot {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 36px;
-        height: 36px;
-        background: ${color};
-        border-radius: 50%;
-        opacity: 0.35;
-        z-index: 10086;
-        pointer-events: none;
-        transition: 0.2s ease-in-out;
-        transition-property: background, opacity, transform;
-      }
+    #custom-cursor-dot.hidden {
+      opacity: 0;
+    }
 
-      #custom-cursor-dot.hidden {
-        opacity: 0;
-      }
+    #custom-cursor-dot.hover {
+      opacity: 0.2;
+      transform: scale(2.2);
+      box-shadow: 0 0 18px 4px rgba(255, 255, 255, 0.5), 0 0 36px 10px rgba(255, 255, 255, 0.25);
+    }
 
-      #custom-cursor-dot.hover {
-        opacity: 0.18;
-        transform: scale(2.2);
-      }
+    #custom-cursor-dot.active {
+      opacity: 0.65;
+      transform: scale(0.6);
+      box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
+    }
 
-      #custom-cursor-dot.active {
-        opacity: 0.6;
-        transform: scale(0.6);
-      }
-
-      /* 核心：彻底隐藏所有元素的原生鼠标指针 */
-      *, *::before, *::after {
-        cursor: none !important;
-      }
-    `;
-  };
-
-  updateStyle();
+    /* 彻底隐藏所有元素的原生鼠标指针 */
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  `;
   document.head.appendChild(styleEl);
-
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  mediaQuery.addEventListener('change', updateStyle);
-  const observer = new MutationObserver(updateStyle);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
   const cursor = document.createElement('div');
   cursor.id = 'custom-cursor-dot';
@@ -143,8 +129,6 @@ export function initCustomCursor() {
 
   return () => {
     cancelAnimationFrame(rafId);
-    mediaQuery.removeEventListener('change', updateStyle);
-    observer.disconnect();
     document.removeEventListener('mouseover', handleMouseOver, true);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseenter', handleMouseEnter);
