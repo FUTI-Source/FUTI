@@ -1,6 +1,6 @@
 {
-  "name": "FUTI - Personal Homepage",
-  "short_name": "FUTI",
+  "name": "FUTI",
+  "short_name": "FUTI - Personal Homepage",
   "description": "一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
   "start_url": "/",
   "display": "standalone",
