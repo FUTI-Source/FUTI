@@ -3,8 +3,8 @@ export function initForceLightTheme() {
 
   const html = document.documentElement;
 
-  // 1. 声明 CSS 与 Meta 仅支持浅色
-  html.style.colorScheme = 'light only';
+  // 1. 强制声明根元素仅允许浅色渲染（阻止 iOS Safari 15+ 的系统级智能反色）
+  html.style.setProperty('color-scheme', 'light only', 'important');
 
   const setOrUpdateMeta = (name: string, content: string) => {
     let meta = document.querySelector(`meta[name="${name}"]`);
@@ -16,27 +16,38 @@ export function initForceLightTheme() {
     meta.setAttribute('content', content);
   };
 
+  // 标准与苹果历史版本防深色声明
   setOrUpdateMeta('color-scheme', 'light only');
   setOrUpdateMeta('supported-color-schemes', 'light');
+
+  // 锁定 iOS Safari 顶部刘海/灵动岛状态栏与底部安全区为浅色（防止系统深色时上下边栏变黑）
   setOrUpdateMeta('theme-color', '#ffffff');
+  setOrUpdateMeta('apple-mobile-web-app-capable', 'yes');
   setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
 
-  // 2. 注入全局 CSS：彻底解决 iOS 端 SVG 变黑问题
+  // 2. 注入全局防深色兜底 CSS
   if (!document.getElementById('force-light-style')) {
     const styleEl = document.createElement('style');
     styleEl.id = 'force-light-style';
     styleEl.textContent = `
       :root, html, body {
         color-scheme: light only !important;
+        -webkit-color-scheme: light only !important;
       }
 
-      /* 针对内联 <svg> 图标：防止继承浏览器重置后的默认黑色文字，强制使用亮白色填充 */
+      /* 防止 iOS Safari 夜间模式下自动压暗图片、视频、Canvas（Live2D） */
+      img, video, canvas {
+        color-scheme: light only !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+      }
+
+      /* 保持内联 SVG 为亮色，防止继承浅色重置后的黑色文字 */
       svg {
         color-scheme: light only !important;
         color: #f8fafc !important;
       }
 
-      /* 覆盖 SVG 内部可能写死的黑色 fill 或 stroke 属性 */
       svg path[fill="#000"],
       svg path[fill="#000000"],
       svg path[fill="black"],
@@ -48,7 +59,6 @@ export function initForceLightTheme() {
         fill: #f8fafc !important;
       }
 
-      /* 针对通过 <img src="xxx.svg"> 引入的纯黑外部 SVG 图标，在 iOS 上反转为纯白色 */
       img[src$=".svg"],
       img[src*=".svg?"] {
         filter: brightness(0) invert(1) !important;
@@ -58,16 +68,16 @@ export function initForceLightTheme() {
     document.head.appendChild(styleEl);
   }
 
-  // 3. 清理本地存储中的深色主题缓存
+  // 3. 清理本地存储中的深色缓存
   try {
     if (localStorage.getItem('theme') === 'dark') {
       localStorage.setItem('theme', 'light');
     }
   } catch {
-    // 忽略无痕模式报错
+    // 忽略无痕模式限制
   }
 
-  // 4. 持续拦截 DOM 上的 dark 类名或属性切换
+  // 4. 实时拦截 DOM 上的 dark 类名切换
   const enforceLight = () => {
     if (html.classList.contains('dark')) {
       html.classList.remove('dark');
