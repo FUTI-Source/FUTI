@@ -47,6 +47,11 @@ export default defineConfig({
   html: {
     title: 'FUTI - Personal Homepage',
     meta: {
+       google: 'notranslate',
+      'http-equiv': {
+      'http-equiv': 'Content-Language',
+      content: 'en',
+       },
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       'apple-mobile-web-app-title': 'FUTI',
       'apple-mobile-web-app-capable': 'yes',
