@@ -19,11 +19,15 @@ interface UmamiOptions {
 export function initUmami(options: UmamiOptions) {
   const { url, websiteId, lang, scriptName = 'script.js' } = options;
 
-  if (typeof window === 'undefined' || !url || !websiteId) return;
+  if (typeof window === 'undefined') return;
 
+  // 页面 lang 在所有环境均设置，便于本地调试
   if (lang) {
     document.documentElement.lang = lang;
   }
+
+  // 仅在生产环境加载 Umami 统计脚本
+  if (!import.meta.env.PROD || !url || !websiteId) return;
 
   if (document.querySelector('script[data-website-id]')) return;
 
@@ -39,7 +43,9 @@ export function getCurrentLang(): string {
 }
 
 export function trackEvent(eventName: string, data?: Record<string, any>) {
-  if (typeof window === 'undefined' || !window.umami) return;
+  if (!import.meta.env.PROD || typeof window === 'undefined' || !window.umami) {
+    return;
+  }
 
   window.umami.track(eventName, {
     lang: getCurrentLang(),
