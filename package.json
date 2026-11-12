@@ -1,7 +1,7 @@
 {
   "name": "futi",
   "private": true,
-  "version": "1.2.5",
+  "version": "1.2.6",
   "author": "futi",
   "license": "AGPL-3.0-or-later",
   "type": "module",
