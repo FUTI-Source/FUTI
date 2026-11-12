@@ -1,62 +1,69 @@
-interface CustomCursorOptions {
-  /** 光斑与小圆点颜色（默认 '#000'，若网页背景偏暗可改为 '#fff'） */
-  color?: string;
-}
-
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
-export function initCustomCursor(options: CustomCursorOptions = {}) {
-  const { color = '#000' } = options;
-
-  // 服务端渲染或移动端触摸屏设备跳过，避免手机点击残留下小圆点
+export function initCustomCursor() {
   if (typeof window === 'undefined' || window.matchMedia('(pointer: coarse)').matches) {
     return;
   }
 
-  // 避免重复初始化
   if (document.getElementById('custom-cursor-dot')) return;
 
-  // 1. 注入与原版完全一致的样式与全局 SVG 小圆点指针
+  const getThemeColor = () => {
+    const isDark =
+      document.documentElement.classList.contains('dark') ||
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return isDark ? '#fff' : '#000';
+  };
+
   const styleEl = document.createElement('style');
   styleEl.id = 'custom-cursor-style';
-  const encodedColor = encodeURIComponent(color);
-  styleEl.textContent = `
-    #custom-cursor-dot {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 16px;
-      height: 16px;
-      background: ${color};
-      border-radius: 8px;
-      opacity: 0.25;
-      z-index: 10086;
-      pointer-events: none;
-      transition: 0.2s ease-in-out;
-      transition-property: background, opacity, transform;
-    }
 
-    #custom-cursor-dot.hidden {
-      opacity: 0;
-    }
+  const updateStyle = () => {
+    const color = getThemeColor();
+    const encodedColor = encodeURIComponent(color);
+    styleEl.textContent = `
+      #custom-cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 36px;
+        height: 36px;
+        background: ${color};
+        border-radius: 50%;
+        opacity: 0.25;
+        z-index: 10086;
+        pointer-events: none;
+        transition: 0.2s ease-in-out;
+        transition-property: background, opacity, transform;
+      }
 
-    #custom-cursor-dot.hover {
-      opacity: 0.1;
-      transform: scale(2.5);
-    }
+      #custom-cursor-dot.hidden {
+        opacity: 0;
+      }
 
-    #custom-cursor-dot.active {
-      opacity: 0.5;
-      transform: scale(0.5);
-    }
+      #custom-cursor-dot.hover {
+        opacity: 0.14;
+        transform: scale(2.2);
+      }
 
-    * {
-      cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='8px' height='8px'><circle cx='4' cy='4' r='4' fill='${encodedColor}' opacity='.5'/></svg>") 4 4, auto !important;
-    }
-  `;
+      #custom-cursor-dot.active {
+        opacity: 0.55;
+        transform: scale(0.6);
+      }
+
+      * {
+        cursor: url("data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 14 14' width='14px' height='14px'><circle cx='7' cy='7' r='6' fill='${encodedColor}' opacity='.85'/></svg>") 7 7, auto !important;
+      }
+    `;
+  };
+
+  updateStyle();
   document.head.appendChild(styleEl);
 
-  // 2. 创建平滑跟随的大圆点元素
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', updateStyle);
+  const observer = new MutationObserver(updateStyle);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
   const cursor = document.createElement('div');
   cursor.id = 'custom-cursor-dot';
   cursor.classList.add('hidden');
@@ -74,7 +81,6 @@ export function initCustomCursor(options: CustomCursorOptions = {}) {
     cursor.style.top = `${top}px`;
   };
 
-  // 实时判断鼠标悬停的元素是否为可点击元素（兼容 React 动态渲染与子元素冒泡）
   const isPointerElement = (target: EventTarget | null): boolean => {
     let el = target as HTMLElement | null;
     while (el && el !== document.body) {
@@ -102,10 +108,11 @@ export function initCustomCursor(options: CustomCursorOptions = {}) {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
+    // 跟随圆点宽高为 36px，减去半径 18px 使其精确居中对齐指针中心
     if (pos.curr === null) {
-      move(e.clientX - 8, e.clientY - 8);
+      move(e.clientX - 18, e.clientY - 18);
     }
-    pos.curr = { x: e.clientX - 8, y: e.clientY - 8 };
+    pos.curr = { x: e.clientX - 18, y: e.clientY - 18 };
     cursor.classList.remove('hidden');
   };
 
@@ -121,7 +128,6 @@ export function initCustomCursor(options: CustomCursorOptions = {}) {
   document.addEventListener('mousedown', handleMouseDown);
   document.addEventListener('mouseup', handleMouseUp);
 
-  // 3. 阻尼插值渲染循环（保持原版 0.15 的跟手丝滑度）
   const render = () => {
     if (pos.prev && pos.curr) {
       pos.prev.x = lerp(pos.prev.x, pos.curr.x, 0.15);
@@ -135,9 +141,10 @@ export function initCustomCursor(options: CustomCursorOptions = {}) {
 
   render();
 
-  // 返回清理函数
   return () => {
     cancelAnimationFrame(rafId);
+    mediaQuery.removeEventListener('change', updateStyle);
+    observer.disconnect();
     document.removeEventListener('mouseover', handleMouseOver, true);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseenter', handleMouseEnter);
