@@ -25,10 +25,10 @@ export function initCustomCursor() {
         position: fixed;
         top: 0;
         left: 0;
-        width: 36px;
-        height: 36px;
+        width: 16px;
+        height: 16px;
         background: ${color};
-        border-radius: 50%;
+        border-radius: 8px;
         opacity: 0.25;
         z-index: 10086;
         pointer-events: none;
@@ -41,17 +41,17 @@ export function initCustomCursor() {
       }
 
       #custom-cursor-dot.hover {
-        opacity: 0.14;
-        transform: scale(2.2);
+        opacity: 0.1;
+        transform: scale(2.5);
       }
 
       #custom-cursor-dot.active {
-        opacity: 0.55;
-        transform: scale(0.6);
+        opacity: 0.5;
+        transform: scale(0.5);
       }
 
       * {
-        cursor: url("data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 14 14' width='14px' height='14px'><circle cx='7' cy='7' r='6' fill='${encodedColor}' opacity='.85'/></svg>") 7 7, auto !important;
+        cursor: url("data:image/svg+xml,<svg xmlns='http://w3.org' viewBox='0 0 8 8' width='8px' height='8px'><circle cx='4' cy='4' r='4' fill='${encodedColor}' opacity='.5'/></svg>") 4 4, auto !important;
       }
     `;
   };
@@ -59,6 +59,7 @@ export function initCustomCursor() {
   updateStyle();
   document.head.appendChild(styleEl);
 
+  // 监听系统深浅色切换与 html class 变化（如切换主题按钮）
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   mediaQuery.addEventListener('change', updateStyle);
   const observer = new MutationObserver(updateStyle);
@@ -108,11 +109,10 @@ export function initCustomCursor() {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    // 跟随圆点宽高为 36px，减去半径 18px 使其精确居中对齐指针中心
     if (pos.curr === null) {
-      move(e.clientX - 18, e.clientY - 18);
+      move(e.clientX - 8, e.clientY - 8);
     }
-    pos.curr = { x: e.clientX - 18, y: e.clientY - 18 };
+    pos.curr = { x: e.clientX - 8, y: e.clientY - 8 };
     cursor.classList.remove('hidden');
   };
 
