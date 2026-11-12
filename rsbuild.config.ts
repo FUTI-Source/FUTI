@@ -7,8 +7,7 @@ import { GenerateSW } from 'workbox-rspack-plugin';
 export default defineConfig({
   output: {
     // 方式一：简写，开发模式使用 cheap-module-source-map，生产模式生成完整的 source-map
-    sourceMap: true,
-
+    sourceMap: process.env.NODE_ENV === 'development',
     // 方式二：精细控制，仅在生产环境生成 JS 的 source map
     // sourceMap: {
     //   js: process.env.NODE_ENV === 'production' ? 'source-map' : 'cheap-module-source-map',
