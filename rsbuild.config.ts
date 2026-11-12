@@ -62,6 +62,7 @@ export default defineConfig({
       'og:description': { property: 'og:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
       'og:url': { property: 'og:url', content: 'https://www.zhang-wentao.tech' },
       'og:image': { property: 'og:image', content: 'https://www.zhang-wentao.tech/og-image.png' },
+      'og:image:alt': { property: 'og:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
       // X (Twitter) 卡片
       'twitter:card': { name: 'twitter:card', content: 'summary_large_image' },
       'twitter:title': { name: 'twitter:title', content: 'FUTI - Personal Homepage' },
