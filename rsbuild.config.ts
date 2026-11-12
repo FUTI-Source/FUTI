@@ -64,6 +64,10 @@ export default defineConfig({
     },
     tags: [
       // 1. 引入你自己写的完整 public/manifest.webmanifest
+      // QQ 手机端分享专属标签
+      { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
+      { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
+      { tag: 'meta', attrs: { itemprop: 'image', content: 'https://www.zhang-wentao.tech/icon-192.png' } },
       {
         tag: 'link',
         attrs: {
