@@ -6,14 +6,12 @@
 
 # FUTI - Personal Homepage
 
-**_<a href="https://zhang-wentao.tech">www.zhang-wentao.tech</a>_** / ⚡️ Based on Detroit sci-fi style personal homepage.
+**_<a href="https://zhang-wentao.tech">WWW.ZHANG-WENTAO.TECH</a>_** / ⚡️ 一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。.
 
 </div>
 
 > ```bash
-> $ bun install
-> $ bun run dev
->
+> $ rsbuild build
 > ______________  ________________
 > ___  ____/_  / / /__  __/___  _/
 > __  /_   _  / / /__  /   __  /
