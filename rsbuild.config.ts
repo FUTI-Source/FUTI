@@ -68,6 +68,7 @@ export default defineConfig({
       'twitter:title': { name: 'twitter:title', content: 'FUTI - Personal Homepage' },
       'twitter:description': { name: 'twitter:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
       'twitter:image': { name: 'twitter:image', content: 'https://www.zhang-wentao.tech/og-image.png' },
+      'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
       // 1. 引入你自己写的完整 public/manifest.webmanifest
