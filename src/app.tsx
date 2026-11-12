@@ -23,8 +23,8 @@ import { initUmami } from './utils/umami';
 import { initWebVitals } from './utils/webVitals';
 
 initUmami({
-  url: 'https://xn--6qqv7i2xdt95b.com',
-  websiteId: '你的Website-ID',
+  url: 'https://umami.zhang-wentao.tech',
+  websiteId: 'c53b1321-886d-4d04-b4a1-4c2010db6735',
   lang: 'en',
   // scriptName: 'script.js', // 如果自建时改过脚本名可在此修改，默认是 script.js
 });
