@@ -19,6 +19,17 @@ import { ProfileWrapper } from '@/components/page/profile/wrapper.tsx';
 import profileImage from '@/assets/webp/futiwolf.webp';
 import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
+import { initUmami } from './utils/umami';
+import { initWebVitals } from './utils/webVitals';
+
+initUmami({
+  url: 'https://xn--6qqv7i2xdt95b.com',
+  websiteId: '你的Website-ID',
+  lang: 'en',
+  // scriptName: 'script.js', // 如果自建时改过脚本名可在此修改，默认是 script.js
+});
+
+initWebVitals();
 
 
 if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {

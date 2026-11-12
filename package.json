@@ -32,7 +32,8 @@
     "shiki": "latest",
     "swr": "latest",
     "tailwind-merge": "latest",
-    "underscore": "latest"
+    "underscore": "latest",
+    "web-vitals": "^6.2.3"
   },
   "devDependencies": {
     "@eslint/js": "latest",
