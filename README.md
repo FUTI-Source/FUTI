@@ -1,5 +1,5 @@
 <a href="https://zhang-wentao.tech">
-    <img alt="futiwolf" src="./favicon.ico" style="width: 100px; height: 100px;" align="left">
+    <img alt="futiwolf" src="./favicon.png" style="width: 100px; height: 100px;" align="left">
 </a>
 
 <div>
