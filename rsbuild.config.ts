@@ -51,6 +51,16 @@ export default defineConfig({
       'apple-mobile-web-app-title': 'FUTI',
       'apple-mobile-web-app-capable': 'yes',
       'apple-mobile-web-app-status-bar-style': 'default',
+      'og:type': { property: 'og:type', content: 'website' },
+      'og:title': { property: 'og:title', content: 'FUTI - Personal Homepage' },
+      'og:description': { property: 'og:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
+      'og:url': { property: 'og:url', content: 'https://www.zhang-wentao.tech' },
+      'og:image': { property: 'og:image', content: 'https://www.zhang-wentao.tech/icon-192.png' },
+      // X (Twitter) 卡片
+      'twitter:card': { name: 'twitter:card', content: 'summary_large_image' },
+      'twitter:title': { name: 'twitter:title', content: 'FUTI - Personal Homepage' },
+      'twitter:description': { name: 'twitter:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
+      'twitter:image': { name: 'twitter:image', content: 'https://www.zhang-wentao.tech/icon-192.png' },
     },
     tags: [
       // 1. 引入你自己写的完整 public/manifest.webmanifest
