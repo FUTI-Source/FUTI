@@ -34,7 +34,7 @@ initFullscreenShortcut();
 initCustomCursor();
 
 initUmami({
-  url: 'https://zhang-wentao.tech',
+  url: 'https://umaumi.zhang-wentao.tech',
   websiteId: 'c53b1321-886d-4d04-b4a1-4c2010db6735',
   lang: 'en',
 });
