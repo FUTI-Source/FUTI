@@ -42,7 +42,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <a className="mx-1" href="/">
-                  LF112
+                  FUTI
                 </a>
               </TooltipTrigger>
               <TooltipContent sideOffset={16}>🙃 Independent Websites Developer</TooltipContent>
