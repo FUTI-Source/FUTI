@@ -21,6 +21,13 @@ import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
 import { initUmami } from './utils/umami';
 import { initWebVitals } from './utils/webVitals';
+import { initDisableContextMenu } from './utils/disableContextMenu';
+
+// 默认配置：仅在线上生产环境禁止全站右键，本地开发依然可用右键调试，且保留输入框右键菜单
+initDisableContextMenu();
+
+// 如果你希望在本地开发测试时也立即禁止右键，可以传入 prodOnly: false：
+// initDisableContextMenu({ prodOnly: false });
 
 initUmami({
   url: 'https://umami.zhang-wentao.tech',
