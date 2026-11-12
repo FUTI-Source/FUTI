@@ -20,6 +20,14 @@ export default defineConfig({
     },
   },
   plugins: [
+    {
+      name: 'plugin-html-lang',
+      setup(api) {
+        api.modifyHTML((html) => {
+          return html.replace('<html>', '<html lang="en">');
+        });
+      },
+    },
     pluginReact(),
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
