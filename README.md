@@ -1,12 +1,12 @@
-<a href="https://www.futiwolf.com">
+<a href="https://zhang-wentao.tech">
     <img alt="futiwolf" src="./futi.svg" style="width: 100px; height: 100px;" align="left">
 </a>
 
 <div>
 
-# LF112「@futiwolf」- Personal Homepage
+# FUTI - Personal Homepage
 
-**_<a href="https://www.lf112.net">WWW.LF112.NET</a>_** / ⚡️ Based on Detroit sci-fi style personal homepage.
+**_<a href="https://zhang-wentao.tech">www.zhang-wentao.tech</a>_** / ⚡️ Based on Detroit sci-fi style personal homepage.
 
 </div>
 
