@@ -21,11 +21,13 @@ import useEventEmitter from '@/hooks/use-event-emitter.ts';
 
 import { initCustomCursor } from './utils/customCursor';
 import { initContentProtection } from './utils/disableContextMenu';
+import { initForceLightTheme } from './utils/forceLight';
 import { initFullscreenShortcut } from './utils/fullscreen';
 import { disableBrowserTranslate } from './utils/noTranslate';
 import { initUmami } from './utils/umami';
 import { initWebVitals } from './utils/webVitals';
 
+initForceLightTheme();
 disableBrowserTranslate();
 initContentProtection();
 initFullscreenShortcut();
