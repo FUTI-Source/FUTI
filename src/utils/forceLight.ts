@@ -3,27 +3,55 @@ export function initForceLightTheme() {
 
   const html = document.documentElement;
 
-  // 1. 声明页面仅支持浅色模式，禁止浏览器自动变暗（如部分手机浏览器的强制夜间模式）
-  html.style.colorScheme = 'light';
-  
-  let meta = document.querySelector('meta[name="color-scheme"]');
-  if (!meta) {
-    meta = document.createElement('meta');
-    meta.setAttribute('name', 'color-scheme');
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute('content', 'light only');
+  // 1. 声明 CSS 与 Meta 仅支持浅色（告知 iOS Safari / Chrome 禁止自动反色）
+  html.style.colorScheme = 'light only';
 
-  // 2. 清理主流主题库（如 next-themes 或自定义存储）的缓存记录
+  const setOrUpdateMeta = (name: string, content: string) => {
+    let meta = document.querySelector(`meta[name="${name}"]`);
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', name);
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', content);
+  };
+
+  // iOS Safari 15+ 与现代手机浏览器识别此标签后，不会对网页做强制夜间反色
+  setOrUpdateMeta('color-scheme', 'light only');
+  setOrUpdateMeta('supported-color-schemes', 'light');
+
+  // 2. 锁定 iOS Safari 顶部状态栏与底部刘海安全区背景为白色（防止 iOS 深色模式下上下边栏变黑）
+  setOrUpdateMeta('theme-color', '#ffffff');
+  setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
+
+  // 3. 注入全局 CSS 兜底（防止部分手机浏览器无视 JS 属性强行反色）
+  if (!document.getElementById('force-light-style')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'force-light-style';
+    styleEl.textContent = `
+      :root, html, body {
+        color-scheme: light only !important;
+        background-color: #ffffff !important;
+      }
+      /* 防止微信/夸克等内核在夜间模式下对图片、Canvas(Live2D) 强行压暗或反色 */
+      img, video, canvas, svg {
+        filter: none !important;
+        -webkit-filter: none !important;
+      }
+    `;
+    document.head.appendChild(styleEl);
+  }
+
+  // 4. 清理本地存储中的深色主题缓存
   try {
     if (localStorage.getItem('theme') === 'dark') {
       localStorage.setItem('theme', 'light');
     }
   } catch {
-    // 忽略无痕模式下的存储限制
+    // 忽略无痕模式报错
   }
 
-  // 3. 立即移除现有的深色类名和属性，并持续拦截后续的深色切换
+  // 5. 持续拦截 DOM 上的 dark 类名或属性切换
   const enforceLight = () => {
     if (html.classList.contains('dark')) {
       html.classList.remove('dark');
@@ -38,11 +66,10 @@ export function initForceLightTheme() {
 
   enforceLight();
 
-  // 监听 DOM 属性变化，防止其他组件或按钮再次切回深色
   const observer = new MutationObserver(enforceLight);
   observer.observe(html, {
     attributes: true,
-    attributeFilter: ['class', 'data-theme'],
+    attributeFilter: ['class', 'data-theme', 'style'],
   });
 
   return () => observer.disconnect();
