@@ -58,6 +58,7 @@ export default defineConfig({
       'apple-mobile-web-app-status-bar-style': 'default',
       'og:type': { property: 'og:type', content: 'website' },
       'og:title': { property: 'og:title', content: 'FUTI - Personal Homepage' },
+      'og:site_name': { property: 'og:site_name', content: 'FUTI - Personal Homepage' },
       'og:description': { property: 'og:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
       'og:url': { property: 'og:url', content: 'https://www.zhang-wentao.tech' },
       'og:image': { property: 'og:image', content: 'https://www.zhang-wentao.tech/icon-192.png' },
