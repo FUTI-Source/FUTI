@@ -2,9 +2,11 @@
   "name": "FUTI",
   "short_name": "FUTI",
   "description": "一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。",
-  "display": "fullscreen",
+  "display": "standalone",
   "scope": "/",
   "start_url": "/",
+  "theme_color": "#15161a",
+  "background_color": "#15161a",
   "icons": [
     {
       "src": "./icon-192.png",
