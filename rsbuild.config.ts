@@ -6,12 +6,7 @@ import { GenerateSW } from 'workbox-rspack-plugin';
 
 export default defineConfig({
   output: {
-    // 方式一：简写，开发模式使用 cheap-module-source-map，生产模式生成完整的 source-map
     sourceMap: process.env.NODE_ENV === 'development',
-    // 方式二：精细控制，仅在生产环境生成 JS 的 source map
-    // sourceMap: {
-    //   js: process.env.NODE_ENV === 'production' ? 'source-map' : 'cheap-module-source-map',
-    // },
   },
   tools: {
     rspack: (config, { appendPlugins, isProd }) => {
@@ -47,15 +42,20 @@ export default defineConfig({
   html: {
     title: 'FUTI - Personal Homepage',
     meta: {
-       google: 'notranslate',
+      // ========== 新增 viewport 沉浸式配置 ==========
+      viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
+      // 安卓主题色，想要透明效果就删掉这一行
+      'theme-color': '#000000',
+      google: 'notranslate',
       'http-equiv': {
-      'http-equiv': 'Content-Language',
-      content: 'en',
-       },
+        'http-equiv': 'Content-Language',
+        content: 'en',
+      },
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       'apple-mobile-web-app-title': 'FUTI',
       'apple-mobile-web-app-capable': 'yes',
-      'apple-mobile-web-app-status-bar-style': 'default',
+      // ========== 修改这里：black-translucent 透明状态栏 ==========
+      'apple-mobile-web-app-status-bar-style': 'black-translucent',
       'og:type': { property: 'og:type', content: 'website' },
       'og:title': { property: 'og:title', content: 'FUTI - Personal Homepage' },
       'og:site_name': { property: 'og:site_name', content: 'FUTI - Personal Homepage' },
@@ -71,7 +71,6 @@ export default defineConfig({
       'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
-      // 1. 引入你自己写的完整 public/manifest.webmanifest
       // QQ 手机端分享专属标签
       { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
       { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
@@ -83,7 +82,6 @@ export default defineConfig({
           href: './manifest.webmanifest',
         },
       },
-      // 2. 直接用标签指定 iOS 桌面图标（不触发 Rsbuild 自动生成残缺 manifest）
       {
         tag: 'link',
         attrs: {
