@@ -24,8 +24,9 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
   useAsyncEffect(async () => {
     if (canvasRef.current) {
-      const pixiApp = new Application({
-        view: canvasRef.current,
+      const pixiApp = new Application();
+      await pixiApp.init({
+        canvas: canvasRef.current,
         resizeTo: canvasRef.current,
         backgroundAlpha: 0,
         resolution: 2,
