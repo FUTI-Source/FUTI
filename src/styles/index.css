@@ -10,10 +10,27 @@
   --font-ubuntu: 'Ubuntu', sans-serif;
 }
 
-/* 安全区变量，给沉浸式用 */
+/* 安全区变量，给沉浸式 + WCO 共用 */
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --safe-top: env(titlebar-area-height, 0px);
+  }
+  /* Header 拖拽区域 */
+  .header-drag {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+  /* Header 里面按钮/可交互元素禁止拖拽 */
+  .header-no-drag {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
 }
 
 @layer base {

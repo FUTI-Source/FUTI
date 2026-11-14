@@ -35,7 +35,13 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
   const time = `${date} ${clock}`;
 
   return (
-    <header className={cn('relative flex h-20 items-center pt-1 max-sm:justify-center', className)} style={style}>
+    <header 
+      className={cn(
+        'header-drag relative flex h-20 items-center pt-1 max-sm:justify-center', 
+        className
+      )} 
+      style={style}
+    >
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4] shadow-sm" />
 
       <FUTIDynamicText
@@ -44,7 +50,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
         onAnimationComplete={() => setReady(true)}
         className={cn(
           // 基础排版
-          'futi-text-lyrics font-geometos my-0 select-none text-white/55',
+          'header-no-drag futi-text-lyrics font-geometos my-0 select-none text-white/55',
           'tabular-nums inline-block whitespace-nowrap',
           // 桌面：16px、左内边距、最小宽度、左对齐
           '!text-base pl-10 min-w-[19ch] text-left',
