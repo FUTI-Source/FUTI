@@ -10,6 +10,10 @@ import { BasicsProps } from '@/components/type.ts';
 import useAsyncEffect from '@/hooks/use-async-effect.ts';
 import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 
+// 如果你想关掉所有Pixi废弃警告，取消下面注释
+// import { settings } from 'pixi.js';
+// settings.DEPRECATION = false;
+
 type ILive2DCoreProps = BasicsProps<'canvas'> &
   MotionProps & {
     event$?: EventEmitter<Live2DEvent>;
@@ -36,7 +40,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     model = await Live2DModel.from('/live2d/futiwolf/futi.model3.json', {
       autoHitTest: false,
       autoFocus: false,
-      ticker: pixiApp.ticker, // 绑定当前app的ticker，推荐
+      ticker: pixiApp.ticker,
     });
 
     model.scale.set(0.125);
@@ -47,7 +51,6 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     pixiApp.stage.addChild(model);
     event$?.emit(Live2DEvent.INIT);
 
-    // 卸载销毁
     return () => {
       model?.destroy();
       pixiApp?.destroy(true);
