@@ -20,6 +20,7 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
   return (
     <div
       className={cn(
+        // w-fit 收缩到内容宽度 + mx-auto 居中；min-w 锁定最终宽度，避免逐字变宽时整行持续左移
         'mx-auto flex h-7 w-fit min-w-[245.47px] items-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
         inAnimation && 'futi-cursor',
         className,
