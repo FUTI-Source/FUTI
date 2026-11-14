@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "latest",
-    "@jannchie/pixi-live2d-display": "latest",
     "@radix-ui/react-scroll-area": "latest",
     "@radix-ui/react-separator": "latest",
     "@radix-ui/react-slot": "latest",
@@ -26,14 +25,15 @@
     "motion": "latest",
     "normalize.css": "latest",
     "parallax-js": "latest",
-    "pixi.js": "latest",
+    "pixi-live2d-display": "^0.4.0",
+    "pixi.js": "6.5.10",
     "react": "latest",
     "react-dom": "latest",
     "shiki": "latest",
     "swr": "latest",
     "tailwind-merge": "latest",
     "underscore": "latest",
-    "web-vitals": "latest"
+    "web-vitals": "^6.2.3"
   },
   "devDependencies": {
     "@eslint/js": "latest",

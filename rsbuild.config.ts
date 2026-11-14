@@ -6,7 +6,12 @@ import { GenerateSW } from 'workbox-rspack-plugin';
 
 export default defineConfig({
   output: {
+    // 方式一：简写，开发模式使用 cheap-module-source-map，生产模式生成完整的 source-map
     sourceMap: process.env.NODE_ENV === 'development',
+    // 方式二：精细控制，仅在生产环境生成 JS 的 source map
+    // sourceMap: {
+    //   js: process.env.NODE_ENV === 'production' ? 'source-map' : 'cheap-module-source-map',
+    // },
   },
   tools: {
     rspack: (config, { appendPlugins, isProd }) => {
@@ -42,15 +47,15 @@ export default defineConfig({
   html: {
     title: 'FUTI - Personal Homepage',
     meta: {
-      google: 'notranslate',
+       google: 'notranslate',
       'http-equiv': {
-        'http-equiv': 'Content-Language',
-        content: 'en',
-      },
+      'http-equiv': 'Content-Language',
+      content: 'en',
+       },
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       'apple-mobile-web-app-title': 'FUTI',
-      // iOS 沉浸式透明状态栏
-      'apple-mobile-web-app-status-bar-style': 'black-translucent',
+      'apple-mobile-web-app-capable': 'yes',
+      'apple-mobile-web-app-status-bar-style': 'default',
       'og:type': { property: 'og:type', content: 'website' },
       'og:title': { property: 'og:title', content: 'FUTI - Personal Homepage' },
       'og:site_name': { property: 'og:site_name', content: 'FUTI - Personal Homepage' },
@@ -58,6 +63,7 @@ export default defineConfig({
       'og:url': { property: 'og:url', content: 'https://www.zhang-wentao.tech' },
       'og:image': { property: 'og:image', content: 'https://www.zhang-wentao.tech/og-image.png' },
       'og:image:alt': { property: 'og:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
+      // X (Twitter) 卡片
       'twitter:card': { name: 'twitter:card', content: 'summary_large_image' },
       'twitter:title': { name: 'twitter:title', content: 'FUTI - Personal Homepage' },
       'twitter:description': { name: 'twitter:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
@@ -65,22 +71,7 @@ export default defineConfig({
       'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
-      // viewport 关键：viewport-fit=cover 开启全屏延伸（沉浸式必须）
-      {
-        tag: 'meta',
-        attrs: {
-          name: 'viewport',
-          content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover',
-        },
-      },
-      // 安卓状态栏主题色
-      {
-        tag: 'meta',
-        attrs: {
-          name: 'theme-color',
-          content: '#000000',
-        },
-      },
+      // 1. 引入你自己写的完整 public/manifest.webmanifest
       // QQ 手机端分享专属标签
       { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
       { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
@@ -92,6 +83,7 @@ export default defineConfig({
           href: './manifest.webmanifest',
         },
       },
+      // 2. 直接用标签指定 iOS 桌面图标（不触发 Rsbuild 自动生成残缺 manifest）
       {
         tag: 'link',
         attrs: {
