@@ -42,10 +42,9 @@ export default defineConfig({
   html: {
     title: 'FUTI - Personal Homepage',
     meta: {
-      // ========== 新增 viewport 沉浸式配置 ==========
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
-      // 安卓主题色，想要透明效果就删掉这一行
-      'theme-color': '#000000',
+      // 和 manifest、页面底色统一 #15161a
+      'theme-color': '#15161a',
       google: 'notranslate',
       'http-equiv': {
         'http-equiv': 'Content-Language',
@@ -54,7 +53,6 @@ export default defineConfig({
       description: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。',
       'apple-mobile-web-app-title': 'FUTI',
       'apple-mobile-web-app-capable': 'yes',
-      // ========== 修改这里：black-translucent 透明状态栏 ==========
       'apple-mobile-web-app-status-bar-style': 'black-translucent',
       'og:type': { property: 'og:type', content: 'website' },
       'og:title': { property: 'og:title', content: 'FUTI - Personal Homepage' },
@@ -63,7 +61,6 @@ export default defineConfig({
       'og:url': { property: 'og:url', content: 'https://www.zhang-wentao.tech' },
       'og:image': { property: 'og:image', content: 'https://www.zhang-wentao.tech/og-image.png' },
       'og:image:alt': { property: 'og:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
-      // X (Twitter) 卡片
       'twitter:card': { name: 'twitter:card', content: 'summary_large_image' },
       'twitter:title': { name: 'twitter:title', content: 'FUTI - Personal Homepage' },
       'twitter:description': { name: 'twitter:description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
@@ -71,7 +68,6 @@ export default defineConfig({
       'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
-      // QQ 手机端分享专属标签
       { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
       { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
       { tag: 'meta', attrs: { itemprop: 'image', content: 'https://www.zhang-wentao.tech/icon-192.png' } },
@@ -87,20 +83,13 @@ export default defineConfig({
         attrs: {
           rel: 'apple-touch-icon',
           sizes: '512x512',
-          href: '/icon-192.png',
+          href: '/icon-512.png',
         },
       },
       {
         tag: 'meta',
         attrs: {
           name: 'mobile-web-app-capable',
-          content: 'yes',
-        },
-      },
-      {
-        tag: 'meta',
-        attrs: {
-          name: 'apple-mobile-web-app-capable',
           content: 'yes',
         },
       },
