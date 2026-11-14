@@ -20,8 +20,10 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
   return (
     <div
       className={cn(
-        // w-fit 收缩到内容宽度 + mx-auto 居中；min-w 锁定最终宽度，避免逐字变宽时整行持续左移
-        'mx-auto flex h-7 w-fit min-w-[245.47px] items-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
+        // 父级（App 里的 flex-col items-center）已负责水平居中，这里不再写 mx-auto：
+        // wrapper 是收缩宽度，mx-auto 拿不到剩余空间，属于空转。
+        // min-w 必须等于"打字完成后"的真实内容宽度，否则文字贴左、视觉偏左。
+        'flex h-7 w-fit min-w-[245.47px] items-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
         inAnimation && 'futi-cursor',
         className,
       )}
