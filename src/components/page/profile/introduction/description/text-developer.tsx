@@ -1,39 +1,78 @@
-import React, { useState } from 'react';
+/* eslint-disable react-refresh/only-export-components,react-compiler/react-compiler */
+import React, { useEffect, useRef, useState } from 'react';
 
-import { motion } from 'framer-motion';
+import { Highlighter } from '@/components/ui/highlighter';
 
-import { FUTIDynamicText } from '@/components/ui/dynamic-text';
-
-import { TextDeveloper, TextDeveloperEvent } from '@/components/page/profile/introduction/description/text-developer.tsx';
 import { BasicsProps } from '@/components/type.ts';
 
-import useEventEmitter from '@/hooks/use-event-emitter.ts';
+import { EventEmitter } from '@/hooks/use-event-emitter.ts';
+import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
 
-type IDescriptionProps = BasicsProps;
+export enum TextDeveloperEvent {
+  START = 'start',
+}
+type ITextDeveloperProps = BasicsProps<'h2'> & {
+  event$?: EventEmitter<TextDeveloperEvent>;
+  onAnimationComplete?: () => void;
+};
 
-export const Description: React.FC<IDescriptionProps> = ({ className, style }) => {
-  const [inAnimation, setInAnimation] = useState<boolean>(true);
+const WORD = String.raw`<Developer />`;
+const TYPING_SPEED = 15;
 
-  const typingEvent$ = useEventEmitter<TextDeveloperEvent>();
+export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimationComplete, className, style }) => {
+  const typingTimeout = useRef<number | null>(null);
+
+  const [inAnimation, setInAnimation] = useState<boolean>(false);
+  const [displayedText, setDisplayedText] = useState<string>('');
+
+  const letterIndex = useRef<number>(0);
+  const prevText = useRef<string>('');
+
+  const typeNextLetter = useMemoizedFn(async () => {
+    setInAnimation(true);
+    if (letterIndex.current < WORD.length) {
+      prevText.current += WORD.charAt(letterIndex.current);
+      setDisplayedText(prevText.current);
+      letterIndex.current++;
+      typingTimeout.current = setTimeout(typeNextLetter, TYPING_SPEED);
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      onAnimationComplete?.();
+
+      setInAnimation(false);
+    }
+  });
+
+  useEffect(() => {
+    if (!event$) {
+      void typeNextLetter();
+    }
+
+    return () => {
+      clearTimeout(typingTimeout.current!);
+    };
+  }, []);
+
+  event$?.useSubscription((trigger) => {
+    switch (trigger) {
+      case TextDeveloperEvent.START: {
+        void typeNextLetter();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  });
 
   return (
-    <div
-      className={cn(
-        'mx-auto flex h-7 w-fit items-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
-        inAnimation && 'futi-cursor',
-        className,
-      )}
+    <Highlighter
+      className={cn('font-monospaceNeon [&>pre]:rounded [&>pre]:!bg-transparent [&>pre]:px-1.5 [&>pre]:transition-colors hover:[&>pre]:!bg-black/20', inAnimation && '[&>pre]:!bg-black/20', className)}
       style={style}
-    >
-      <FUTIDynamicText
-        className="font-ubuntu !leading-none"
-        as={motion.h2}
-        onAnimationComplete={() => typingEvent$.emit(TextDeveloperEvent.START)}
-      >
-        A Full Stack
-      </FUTIDynamicText>
-      <TextDeveloper event$={typingEvent$} onAnimationComplete={() => setInAnimation(false)} />
-    </div>
+      content={displayedText}
+      language="html"
+      as="h2"
+    />
   );
 };
