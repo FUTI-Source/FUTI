@@ -8,6 +8,12 @@
   --font-monaspace-neon: 'MonaspaceNeon', monospace;
   --font-kanit: 'Kanit', sans-serif;
   --font-ubuntu: 'Ubuntu', sans-serif;
+
+  /* ✅ 新增安全区变量，tailwind 主题内注册，方便任意地方使用 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 @layer base {
@@ -31,6 +37,33 @@
     background-blend-mode: overlay, normal;
     background-attachment: fixed;
     @apply font-sans text-foreground flex flex-col;
+  }
+}
+
+@layer utilities {
+  /* ✅ 安全区工具类，直接在 tsx className 使用 */
+  .safe-top {
+    padding-top: var(--safe-top);
+  }
+  .safe-bottom {
+    padding-bottom: var(--safe-bottom);
+  }
+  .safe-inset-y {
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+  }
+  .safe-left {
+    padding-left: var(--safe-left);
+  }
+  .safe-right {
+    padding-right: var(--safe-right);
+  }
+  .safe-inset-x {
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+  .safe-inset {
+    padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   }
 }
 
