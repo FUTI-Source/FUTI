@@ -65,10 +65,10 @@ export const App: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!live2dVisible) {
-      setTimeout(() => setLive2dVisible(true), 1500);
-    }
-  }, []);
+    if (live2dVisible) return;
+    const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [live2dVisible]);
 
   const [nameVisible, setNameVisible] = useState(false);
 
