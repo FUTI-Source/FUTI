@@ -3,7 +3,7 @@ import React from 'react';
 
 import { motion, MotionProps } from 'motion/react';
 import { Application, Ticker } from 'pixi.js';
-import { Live2DModel } from 'pixi-live2d-display/cubism4';
+import { Live2DModel } from '@jannchie/pixi-live2d-display/cubism4';
 
 import { Live2DEvent } from '@/components/ui/live2d/index.tsx';
 

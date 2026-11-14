@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "latest",
+    "@jannchie/pixi-live2d-display": "latest",
     "@radix-ui/react-scroll-area": "latest",
     "@radix-ui/react-separator": "latest",
     "@radix-ui/react-slot": "latest",
@@ -25,7 +26,6 @@
     "motion": "latest",
     "normalize.css": "latest",
     "parallax-js": "latest",
-    "pixi-live2d-display": "latest",
     "pixi.js": "latest",
     "react": "latest",
     "react-dom": "latest",
