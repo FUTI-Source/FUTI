@@ -25,15 +25,15 @@
     "motion": "latest",
     "normalize.css": "latest",
     "parallax-js": "latest",
-    "pixi-live2d-display": "^0.4.0",
-    "pixi.js": "6.5.10",
+    "pixi-live2d-display": "latest",
+    "pixi.js": "latest",
     "react": "latest",
     "react-dom": "latest",
     "shiki": "latest",
     "swr": "latest",
     "tailwind-merge": "latest",
     "underscore": "latest",
-    "web-vitals": "^6.2.3"
+    "web-vitals": "latest"
   },
   "devDependencies": {
     "@eslint/js": "latest",
