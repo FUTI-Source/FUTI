@@ -7,12 +7,11 @@ type IHeaderProps = BasicsProps<'header'>;
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-// 首次入场打字用的占位文字，必须是【常量】，不能是时间
+// 首次入场打字用的占位文字
 const PLACEHOLDER = 'LOCAL TIME';
 
 export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
   const [now, setNow] = useState(() => new Date());
-  // 首次打字动画是否播完，播完前用动画模式，播完后切 instant 模式
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -25,7 +24,17 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
     };
   }, []);
 
-  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  // 兜底：万一首次动画没触发
+  useEffect(() => {
+    const fallback = setTimeout(() => setReady(true), 3000);
+    return () => clearTimeout(fallback);
+  }, []);
+
+  const year = now.getFullYear();
+  const date = `${year}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const clock = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  const time = `${date} ${clock}`; // 2025-01-01 14:08:36
 
   return (
     <header className={cn('relative flex h-20 items-center pt-1 max-sm:justify-center', className)} style={style}>
