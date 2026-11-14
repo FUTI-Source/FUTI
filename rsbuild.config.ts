@@ -43,8 +43,6 @@ export default defineConfig({
     title: 'FUTI - Personal Homepage',
     meta: {
       viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
-      // 和 manifest、页面底色统一 #15161a
-      'theme-color': '#15161a',
       google: 'notranslate',
       'http-equiv': {
         'http-equiv': 'Content-Language',
@@ -68,6 +66,10 @@ export default defineConfig({
       'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
+      // 重点：双theme-color，深色优先
+      { tag: 'meta', attrs: { name: 'theme-color', content: '#15161a', media: '(prefers-color-scheme: dark)' } },
+      { tag: 'meta', attrs: { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' } },
+
       { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
       { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
       { tag: 'meta', attrs: { itemprop: 'image', content: 'https://www.zhang-wentao.tech/icon-192.png' } },
