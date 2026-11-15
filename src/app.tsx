@@ -13,7 +13,7 @@ import { Footer } from '@/components/page/footer.tsx';
 import { Header } from '@/components/page/header.tsx';
 import { Description } from '@/components/page/profile/introduction/description';
 import { Links } from '@/components/page/profile/introduction/links';
-import { Name } from '@/components/page/profile/introduction/name.tsx';
+import { Name } from '@/components/page/profile/introduction/name';
 import { ProfileWrapper } from '@/components/page/profile/wrapper.tsx';
 
 import profileImage from '@/assets/webp/futiwolf.webp';
@@ -45,13 +45,16 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
-      .then((reg) => console.log('PWA 注册成功:', reg))
+      .then((reg) => {
+        console.log('PWA 注册成功:', reg);
+      })
       .catch((err) => console.error('PWA 注册失败:', err));
   });
 }
 
 export const App: React.FC = () => {
   const [live2dVisible, setLive2dVisible] = useState(false);
+  const [live2dKey, setLive2dKey] = useState(0);
   const [profileImageVisible, setProfileImageVisible] = useState(true);
 
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
@@ -66,16 +69,26 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     if (live2dVisible) return;
-    const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
-    return () => window.clearTimeout(timer);
+    const timer = setTimeout(() => setLive2dVisible(true), 1500);
+    return () => clearTimeout(timer);
   }, [live2dVisible]);
+
+  // 修复标签切回 Live2D 空白问题
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setLive2dKey((prev) => prev + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
 
   const [nameVisible, setNameVisible] = useState(false);
 
   return (
     <>
-      {/* 重点改动：增加 pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border */}
-      <ScrollArea className="futi-ui relative h-full w-dvw min-w-max overflow-hidden pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border [&>[data-radix-scroll-area-viewport]>div]:!flex [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:flex-col">
+      <ScrollArea className="futi-ui relative h-full w-dvw min-w-max overflow-hidden pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border [&>[data-radix-scroll-area-viewport]]:!flex [&>[data-radix-scroll-area-viewport]]:h-full flex-col">
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />
@@ -93,7 +106,7 @@ export const App: React.FC = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-              {live2dVisible && <Live2D event$={live2dEvent$} />}
+              {live2dVisible && <Live2D key={live2dKey} event$={live2dEvent$} />}
             </ProfileWrapper>
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} onAnimationComplete={() => setNameVisible(true)} />
             <div className="h-7">{nameVisible && <Description />}</div>
