@@ -44,7 +44,7 @@
     "web-vitals": "^6.2.3"
   },
   "devDependencies": {
-    "@eslint/js": "^10.14.0",
+    "@eslint/js": "^10.0.1",
     "@rsbuild/core": "latest",
     "@rsbuild/plugin-babel": "latest",
     "@rsbuild/plugin-react": "latest",
