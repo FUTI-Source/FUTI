@@ -39,7 +39,7 @@
     "web-vitals": "^6.2.3"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
+    "@eslint/js": "^9.23.0",
     "@rsbuild/core": "latest",
     "@rsbuild/plugin-babel": "latest",
     "@rsbuild/plugin-react": "latest",
@@ -48,7 +48,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "babel-plugin-react-compiler": "latest",
-    "eslint": "^8.57.1",
+    "eslint": "^9.23.0",
     "eslint-config-prettier": "latest",
     "eslint-plugin-prefer-arrow": "latest",
     "eslint-plugin-prettier": "latest",
