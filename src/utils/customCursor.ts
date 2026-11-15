@@ -3,10 +3,10 @@ const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 export function initCustomCursor() {
   // 触摸屏设备跳过
   if (typeof window === 'undefined' || window.matchMedia('(pointer: coarse)').matches) {
-    return;
+    return () => {};
   }
 
-  if (document.getElementById('custom-cursor-dot')) return;
+  if (document.getElementById('custom-cursor-dot')) return () => {};
 
   const styleEl = document.createElement('style');
   styleEl.id = 'custom-cursor-style';
@@ -20,7 +20,6 @@ export function initCustomCursor() {
       background: #ffffff;
       border-radius: 50%;
       opacity: 0.35;
-      /* 柔和的多层白色发光阴影 */
       box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.45), 0 0 24px 6px rgba(255, 255, 255, 0.2);
       z-index: 10086;
       pointer-events: none;
@@ -44,7 +43,6 @@ export function initCustomCursor() {
       box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
     }
 
-    /* 彻底隐藏所有元素的原生鼠标指针 */
     *, *::before, *::after {
       cursor: none !important;
     }
@@ -62,6 +60,7 @@ export function initCustomCursor() {
   } = { curr: null, prev: null };
 
   let rafId: number;
+  let paused = false;
 
   const move = (left: number, top: number) => {
     cursor.style.left = `${left}px`;
@@ -107,19 +106,28 @@ export function initCustomCursor() {
   const handleMouseDown = () => cursor.classList.add('active');
   const handleMouseUp = () => cursor.classList.remove('active');
 
+  const handleVisibility = () => {
+    if (document.visibilityState === 'hidden') {
+      paused = true;
+    } else {
+      paused = false;
+    }
+  };
+
   document.addEventListener('mouseover', handleMouseOver, true);
   document.addEventListener('mousemove', handleMouseMove, { passive: true });
   document.addEventListener('mouseenter', handleMouseEnter);
   document.addEventListener('mouseleave', handleMouseLeave);
   document.addEventListener('mousedown', handleMouseDown);
   document.addEventListener('mouseup', handleMouseUp);
+  document.addEventListener('visibilitychange', handleVisibility);
 
   const render = () => {
-    if (pos.prev && pos.curr) {
+    if (!paused && pos.prev && pos.curr) {
       pos.prev.x = lerp(pos.prev.x, pos.curr.x, 0.15);
       pos.prev.y = lerp(pos.prev.y, pos.curr.y, 0.15);
       move(pos.prev.x, pos.prev.y);
-    } else if (pos.curr) {
+    } else if (pos.curr && !pos.prev) {
       pos.prev = { ...pos.curr };
     }
     rafId = requestAnimationFrame(render);
@@ -127,14 +135,16 @@ export function initCustomCursor() {
 
   render();
 
+  // 清理函数
   return () => {
     cancelAnimationFrame(rafId);
     document.removeEventListener('mouseover', handleMouseOver, true);
-    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mousemove', handleMouseMove, { passive: true });
     document.removeEventListener('mouseenter', handleMouseEnter);
     document.removeEventListener('mouseleave', handleMouseLeave);
     document.removeEventListener('mousedown', handleMouseDown);
     document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('visibilitychange', handleVisibility);
     cursor.remove();
     styleEl.remove();
   };
