@@ -4,6 +4,12 @@ import { pluginReact } from '@rsbuild/plugin-react';
 import { GenerateSW } from 'workbox-rspack-plugin';
 
 export default defineConfig({
+  // ========== 新增：分包优化 ==========
+  performance: {
+    chunkSplit: {
+      strategy: 'split-by-experience'
+    }
+  },
   output: {
     sourceMap: process.env.NODE_ENV === 'development',
   },
@@ -16,6 +22,11 @@ export default defineConfig({
             skipWaiting: true,
             cleanupOutdatedCaches: true,
             swDest: 'sw.js',
+            // ========== 新增：Workbox 排除大资源，不预缓存 ==========
+            exclude: [
+              /\.(woff2?|woff|ttf|otf)$/, // 字体
+              /\.(webp|png|jpg|jpeg)$/,  // 图片
+            ]
           }),
         ]);
       }
