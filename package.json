@@ -44,7 +44,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@rsbuild/core": "latest",
-    "@rsbuild/plugin-bundle-analyzer": "latest",
     "@rsbuild/plugin-react": "latest",
     "@tailwindcss/postcss": "latest",
     "@types/parallax-js": "latest",
