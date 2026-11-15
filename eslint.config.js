@@ -6,7 +6,6 @@ import tseslint from 'typescript-eslint';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import unusedImports from 'eslint-plugin-unused-imports';
-import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import eslintPluginPreferArrow from 'eslint-plugin-prefer-arrow';
 import reactCompiler from 'eslint-plugin-react-compiler';
 
@@ -27,7 +26,6 @@ export default tseslint.config(
       'simple-import-sort': simpleImportSort,
       'unused-imports': unusedImports,
       'prefer-arrow': eslintPluginPreferArrow,
-      unicorn: eslintPluginUnicorn,
       'react-compiler': reactCompiler,
     },
     rules: {
@@ -80,28 +78,9 @@ export default tseslint.config(
       ],
       // endregion
 
-      // region unicorn
-      'unicorn/catch-error-name': 'off',
-      'unicorn/filename-case': 'off',
-      'unicorn/import-style': 'off',
-      'unicorn/no-array-for-each': 'off',
-      'unicorn/no-array-reduce': 'off',
-      'unicorn/no-await-expression-member': 'off',
-      'unicorn/no-negated-condition': 'off',
-      'unicorn/no-nested-ternary': 'off',
-      'unicorn/no-null': 'off',
-      'unicorn/no-unreadable-array-destructuring': 'off',
-      'unicorn/prefer-spread': 'off',
-      'unicorn/prefer-top-level-await': 'off',
-      'unicorn/prevent-abbreviations': 'off',
-      'unicorn/prefer-event-target': 'off',
-      'unicorn/prefer-global-this': 'off',
-      'unicorn/consistent-function-scoping': 'off',
-      // endregion
-
       // region typescript-eslint
       '@typescript-eslint/no-shadow': 0,
-      '@typescript-eslint/no-unused-vars': 'off', // 交给 unused-imports 处理，避免冲突
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-use-before-define': 0,
       '@typescript-eslint/ban-ts-ignore': 0,
       '@typescript-eslint/no-empty-function': 0,
@@ -121,6 +100,5 @@ export default tseslint.config(
       // endregion
     },
   },
-  // prettier 推荐配置放最后，用来覆盖格式化相关规则
   eslintPluginPrettierRecommended,
 );
