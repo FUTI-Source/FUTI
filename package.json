@@ -47,7 +47,6 @@
     "@types/parallax-js": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@babel/plugin-transform-private-methods": "latest",
     "babel-plugin-react-compiler": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
