@@ -7,13 +7,11 @@
   "type": "module",
   "scripts": {
     "build": "NODE_OPTIONS=--no-deprecation rsbuild build",
-    "dev": "rsbuild dev --open",
+    "dev": "rsbuild dev",
     "preview": "rsbuild preview"
   },
   "overrides": {
-    "inflight": "npm:lru-cache@^10",
-    "@typescript-eslint/eslint-plugin": "$typescript-eslint",
-    "@typescript-eslint/parser": "$typescript-eslint"
+    "inflight": "npm:lru-cache@^10"
   },
   "allowScripts": {
     "core-js-pure": true
@@ -46,7 +44,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@rsbuild/core": "latest",
-    "@rsbuild/plugin-babel": "latest",
+    "@rsbuild/plugin-bundle-analyzer": "latest",
     "@rsbuild/plugin-react": "latest",
     "@tailwindcss/postcss": "latest",
     "@types/parallax-js": "latest",
