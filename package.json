@@ -10,6 +10,9 @@
     "dev": "rsbuild dev --open",
     "preview": "rsbuild preview"
   },
+  "overrides": {
+    "inflight": "npm:lru-cache@^10"
+  },
   "dependencies": {
     "@icons-pack/react-simple-icons": "latest",
     "@radix-ui/react-scroll-area": "latest",
@@ -44,6 +47,7 @@
     "@types/parallax-js": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@babel/plugin-transform-private-methods": "latest",
     "babel-plugin-react-compiler": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
