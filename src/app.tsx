@@ -45,6 +45,7 @@ export const App: React.FC = () => {
   const [live2dVisible, setLive2dVisible] = useState(false);
   const [profileImageVisible, setProfileImageVisible] = useState(true);
   const [showUpdate, setShowUpdate] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   let newReg: ServiceWorkerRegistration | null = null;
 
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
@@ -86,7 +87,10 @@ export const App: React.FC = () => {
     newReg.waiting.postMessage({ type: 'SKIP_WAITING' });
     newReg.waiting.addEventListener('statechange', () => {
       if (newReg.waiting?.state === 'activated') {
-        window.location.reload();
+        setShowToast(true);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
       }
     });
   };
@@ -126,7 +130,7 @@ export const App: React.FC = () => {
         <Footer />
       </ScrollArea>
 
-      {/* 版本更新弹窗，framer-motion 动画 */}
+      {/* 更新弹窗 */}
       <AnimatePresence>
         {showUpdate && (
           <motion.div
@@ -160,6 +164,21 @@ export const App: React.FC = () => {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast 成功提示 */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-8 left-1/2 z-[9999] -translate-x-1/2 rounded-xl bg-[#272930] px-5 py-3 text-sm text-gray-100 shadow-lg"
+          >
+            ✅ 新版本已就绪，正在刷新…
           </motion.div>
         )}
       </AnimatePresence>
