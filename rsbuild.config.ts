@@ -1,6 +1,5 @@
 /* eslint-disable prefer-arrow/prefer-arrow-functions */
 import { defineConfig } from '@rsbuild/core';
-import { pluginBabel } from '@rsbuild/plugin-babel';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { GenerateSW } from 'workbox-rspack-plugin';
 
@@ -31,14 +30,8 @@ export default defineConfig({
         });
       },
     },
-    pluginReact(),
-    pluginBabel({
-      include: /\.(?:jsx|tsx)$/,
-      babelLoaderOptions(opts) {
-        opts.plugins = opts.plugins ?? [];
-        // 先放 react-compiler，再放新的 private-methods 插件
-        opts.plugins.unshift('babel-plugin-react-compiler');
-      },
+    pluginReact({
+      reactCompiler: true,
     }),
   ],
   html: {
@@ -68,10 +61,8 @@ export default defineConfig({
       'twitter:image:alt': { name: 'twitter:image:alt', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' },
     },
     tags: [
-      // 重点：双theme-color，深色优先
       { tag: 'meta', attrs: { name: 'theme-color', content: '#15161a', media: '(prefers-color-scheme: dark)' } },
       { tag: 'meta', attrs: { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' } },
-
       { tag: 'meta', attrs: { itemprop: 'name', content: 'FUTI - Personal Homepage' } },
       { tag: 'meta', attrs: { itemprop: 'description', content: '一位正在努力钻研前端开发的开发者，趁年轻，做爱做的事。' } },
       { tag: 'meta', attrs: { itemprop: 'image', content: 'https://www.zhang-wentao.tech/icon-192.png' } },
