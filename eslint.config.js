@@ -8,6 +8,7 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import unusedImports from 'eslint-plugin-unused-imports';
 import eslintPluginPreferArrow from 'eslint-plugin-prefer-arrow';
 import reactCompiler from 'eslint-plugin-react-compiler';
+import unicorn from 'eslint-plugin-unicorn';
 
 export default tseslint.config(
   {
@@ -27,6 +28,7 @@ export default tseslint.config(
       'unused-imports': unusedImports,
       'prefer-arrow': eslintPluginPreferArrow,
       'react-compiler': reactCompiler,
+      unicorn,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -98,6 +100,13 @@ export default tseslint.config(
       'arrow-body-style': ['error', 'as-needed'],
       'prefer-arrow-callback': 'error',
       // endregion
+
+      // unicorn：全部关闭，需要时再单独开启
+      'unicorn/no-null': 'off',
+      'unicorn/prefer-ternary': 'off',
+      'unicorn/prefer-top-level-await': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/no-useless-undefined': 'off',
     },
   },
   eslintPluginPrettierRecommended,
