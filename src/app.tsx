@@ -148,7 +148,7 @@ export const App: React.FC = () => {
               className="w-full max-w-[360px] rounded-2xl bg-[#15161a] p-6 shadow-lg"
             >
               <h3 className="text-lg font-semibold text-gray-100">发现新版本</h3>
-              <p className="mt-2 text-sm text-gray-400">刷新后可以体验最新内容</p>
+              <p className="mt-2 text-sm text-gray-400">刷新后体验最新内容</p>
               <div className="mt-5 flex justify-end gap-2.5">
                 <button
                   onClick={handleDismissUpdate}
