@@ -41,18 +41,11 @@ initUmami({
 
 initWebVitals();
 
-if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((reg) => console.log('PWA 注册成功:', reg))
-      .catch((err) => console.error('PWA 注册失败:', err));
-  });
-}
-
 export const App: React.FC = () => {
   const [live2dVisible, setLive2dVisible] = useState(false);
   const [profileImageVisible, setProfileImageVisible] = useState(true);
+  const [showUpdate, setShowUpdate] = useState(false);
+  let newReg: ServiceWorkerRegistration | null = null;
 
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
   live2dEvent$.useSubscription((target) => {
@@ -71,6 +64,36 @@ export const App: React.FC = () => {
   }, [live2dVisible]);
 
   const [nameVisible, setNameVisible] = useState(false);
+
+  // SW 版本检测逻辑
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          console.log('PWA 注册成功:', reg);
+          newReg = reg;
+          reg.addEventListener('waiting', () => {
+            setShowUpdate(true);
+          });
+        })
+        .catch((err) => console.error('PWA 注册失败:', err));
+    }
+  }, []);
+
+  const handleConfirmUpdate = () => {
+    if (!newReg?.waiting) return;
+    newReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    newReg.waiting.addEventListener('statechange', () => {
+      if (newReg.waiting?.state === 'activated') {
+        window.location.reload();
+      }
+    });
+  };
+
+  const handleDismissUpdate = () => {
+    setShowUpdate(false);
+  };
 
   return (
     <>
@@ -102,6 +125,45 @@ export const App: React.FC = () => {
         </main>
         <Footer />
       </ScrollArea>
+
+      {/* 版本更新弹窗，framer-motion 动画 */}
+      <AnimatePresence>
+        {showUpdate && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[9999] grid place-items-center bg-black/65 px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-[360px] rounded-2xl bg-[#15161a] p-6 shadow-lg"
+            >
+              <h3 className="text-lg font-semibold text-gray-100">发现新版本</h3>
+              <p className="mt-2 text-sm text-gray-400">网站已更新，刷新后可以体验最新内容。</p>
+              <div className="mt-5 flex justify-end gap-2.5">
+                <button
+                  onClick={handleDismissUpdate}
+                  className="rounded-lg bg-[#272930] px-4 py-2 text-sm text-gray-200 transition-colors hover:bg-[#33353f]"
+                >
+                  稍后
+                </button>
+                <button
+                  onClick={handleConfirmUpdate}
+                  className="rounded-lg bg-[#5b6cf0] px-4 py-2 text-sm text-white transition-colors hover:bg-[#4858d8]"
+                >
+                  立即刷新
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Analytics />
       <SpeedInsights />
     </>

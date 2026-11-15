@@ -18,7 +18,7 @@ export default defineConfig({
         appendPlugins([
           new GenerateSW({
             clientsClaim: true,
-            skipWaiting: true,
+            skipWaiting: false,
             cleanupOutdatedCaches: true,
             swDest: 'sw.js',
             exclude: [
@@ -62,7 +62,6 @@ export default defineConfig({
                   },
                 },
               },
-              // Vercel Analytics / Speed Insights 外部脚本
               {
                 urlPattern: /^https:\/\/vitals\.vercel-analytics\.com\//,
                 handler: 'NetworkFirst',
