@@ -11,7 +11,12 @@
     "preview": "rsbuild preview"
   },
   "overrides": {
-    "inflight": "npm:lru-cache@^10"
+    "inflight": "npm:lru-cache@^10",
+    "@typescript-eslint/eslint-plugin": "$typescript-eslint",
+    "@typescript-eslint/parser": "$typescript-eslint"
+  },
+  "allowScripts": {
+    "core-js-pure": true
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "latest",
@@ -56,7 +61,7 @@
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
     "eslint-plugin-simple-import-sort": "latest",
-    "eslint-plugin-unicorn": "latest",
+    "eslint-plugin-unicorn": "^78.0.0",
     "eslint-plugin-unused-imports": "latest",
     "globals": "latest",
     "prettier": "latest",
