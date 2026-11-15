@@ -64,7 +64,7 @@
     "tailwindcss": "latest",
     "tw-animate-css": "latest",
     "typescript": "latest",
-    "typescript-eslint": "latest",
+    "typescript-eslint": "^8.72.2",
     "workbox-rspack-plugin": "latest"
   }
 }
