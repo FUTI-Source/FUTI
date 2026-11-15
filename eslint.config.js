@@ -5,7 +5,6 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import unusedImports from 'eslint-plugin-unused-imports';
 import eslintPluginPreferArrow from 'eslint-plugin-prefer-arrow';
 import reactCompiler from 'eslint-plugin-react-compiler';
 import unicorn from 'eslint-plugin-unicorn';
@@ -25,7 +24,6 @@ export default tseslint.config(
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'simple-import-sort': simpleImportSort,
-      'unused-imports': unusedImports,
       'prefer-arrow': eslintPluginPreferArrow,
       'react-compiler': reactCompiler,
       unicorn,
@@ -43,7 +41,6 @@ export default tseslint.config(
         {
           groups: [
             ['^react$', 'react-dom'],
-            // !!! normalize.css 必须放在最前面 !!!
             ['normalize.css', '(.*).css'],
             [String.raw`^@?\w`],
             ['@/components/pages/(.*)'],
@@ -67,9 +64,8 @@ export default tseslint.config(
       ],
       // endregion
 
-      // region unused-imports
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
+      // region 原生替代 unused-imports
+      '@typescript-eslint/no-unused-vars': [
         'warn',
         {
           vars: 'all',
@@ -78,11 +74,12 @@ export default tseslint.config(
           argsIgnorePattern: '^_',
         },
       ],
+      // 自动修复未使用 import（和原来 unused-imports 效果一致）
+      'no-unused-imports': 'off',
       // endregion
 
       // region typescript-eslint
       '@typescript-eslint/no-shadow': 0,
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-use-before-define': 0,
       '@typescript-eslint/ban-ts-ignore': 0,
       '@typescript-eslint/no-empty-function': 0,
@@ -101,7 +98,7 @@ export default tseslint.config(
       'prefer-arrow-callback': 'error',
       // endregion
 
-      // unicorn 全部关闭，避免一堆报错
+      // unicorn
       'unicorn/no-null': 'off',
       'unicorn/prefer-ternary': 'off',
       'unicorn/prefer-top-level-await': 'off',
