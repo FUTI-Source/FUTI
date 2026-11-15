@@ -101,7 +101,7 @@ export default tseslint.config(
       'prefer-arrow-callback': 'error',
       // endregion
 
-      // unicorn：全部关闭，需要时再单独开启
+      // unicorn 全部关闭，避免一堆报错
       'unicorn/no-null': 'off',
       'unicorn/prefer-ternary': 'off',
       'unicorn/prefer-top-level-await': 'off',
