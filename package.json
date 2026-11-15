@@ -61,7 +61,7 @@
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
     "eslint-plugin-simple-import-sort": "latest",
-    "eslint-plugin-unicorn": "^78.0.0",
+    "eslint-plugin-unicorn": "^77.0.0",
     "eslint-plugin-unused-imports": "latest",
     "globals": "latest",
     "prettier": "latest",
