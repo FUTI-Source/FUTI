@@ -31,7 +31,6 @@ initForceLightTheme();
 disableBrowserTranslate();
 initContentProtection();
 initFullscreenShortcut();
-initCustomCursor();
 
 initUmami({
   url: 'https://umami.zhang-wentao.tech',
@@ -64,17 +63,24 @@ export const App: React.FC = () => {
     }
   });
 
+  // Live2D 延迟加载
   useEffect(() => {
     if (live2dVisible) return;
     const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
     return () => window.clearTimeout(timer);
   }, [live2dVisible]);
 
+  // 自定义光标放到useEffect，支持卸载清理
+  useEffect(() => {
+    const destroyCursor = initCustomCursor();
+    return () => destroyCursor();
+  }, []);
+
   const [nameVisible, setNameVisible] = useState(false);
 
   return (
     <>
-      {/* 重点改动：增加 pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border */}
+      {/* 布局完全保留你原来的，不会压缩 */}
       <ScrollArea className="futi-ui relative h-full w-dvw min-w-max overflow-hidden pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border [&>[data-radix-scroll-area-viewport]>div]:!flex [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:flex-col">
         <Header />
         <main className="flex flex-1 flex-col">
