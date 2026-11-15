@@ -76,6 +76,39 @@ export const App: React.FC = () => {
     return () => destroyCursor();
   }, []);
 
+  // ========== 【新增：加强版 禁止所有链接新开标签】 ==========
+  useEffect(() => {
+    const clickHandler = (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a');
+      if (!link) return;
+
+      // Ctrl / Cmd / Shift / 鼠标中键 全部拦截
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) {
+        e.preventDefault();
+      }
+      // 移除 target="_blank"
+      if (link.target === '_blank') {
+        link.removeAttribute('target');
+      }
+    };
+
+    const originalOpen = window.open;
+    window.open = function (url) {
+      if (url) {
+        window.location.href = url.toString();
+        return null;
+      }
+      return originalOpen(url);
+    };
+
+    document.addEventListener('click', clickHandler);
+    return () => {
+      document.removeEventListener('click', clickHandler);
+      window.open = originalOpen;
+    };
+  }, []);
+  // ==========================================================
+
   const [nameVisible, setNameVisible] = useState(false);
 
   return (
