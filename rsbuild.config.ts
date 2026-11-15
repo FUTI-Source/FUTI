@@ -35,7 +35,10 @@ export default defineConfig({
     pluginBabel({
       include: /\.(?:jsx|tsx)$/,
       babelLoaderOptions(opts) {
-        opts.plugins?.unshift('babel-plugin-react-compiler');
+        opts.plugins = opts.plugins ?? [];
+        // 先放 react-compiler，再放新的 private-methods 插件
+        opts.plugins.unshift('babel-plugin-react-compiler');
+        opts.plugins.push('@babel/plugin-transform-private-methods');
       },
     }),
   ],
