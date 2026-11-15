@@ -1,27 +1,30 @@
-// consts.tsx
-import GithubIcon from '@/icons/github';
-import EmailIcon from '@/icons/email';
-import ContactDialog from '@/components/ContactDialog';
+import { IconType, SiBilibili, SiGithub, SiGmail, SiSteamdeck } from '@icons-pack/react-simple-icons';
 
-import type { ReactNode } from 'react';
-
-type LinkItem = {
+interface ILink {
+  Icon: IconType;
+  href: string;
   label: string;
-  Icon: React.FC<{ className?: string }>;
-  // 二选一
-  href?: string;
-  component?: ReactNode;
-};
+}
 
-export const LINKS: LinkItem[] = [
+export const LINKS: ILink[] = [
   {
-    label: 'GitHub',
-    href: 'https://github.com/xxxx',
-    Icon: GithubIcon,
+    Icon: SiGithub,
+    href: '',
+    label: 'Github',
   },
   {
+    Icon: SiBilibili,
+    href: '',
+    label: 'BiliBili',
+  },
+  {
+    Icon: SiSteamdeck,
+    href: '',
+    label: 'Steam',
+  },
+  {
+    Icon: SiGmail,
+    href: 'mailto:mine@139.com',
     label: 'Email',
-    Icon: EmailIcon,
-    component: <ContactDialog />,
   },
 ];

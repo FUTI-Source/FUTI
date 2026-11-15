@@ -23,34 +23,19 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
       initial="hidden"
       animate="visible"
     >
-      {LINKS.map((item, i) => {
-        const { Icon, href, label, component } = item;
-        // 弹窗组件分支（Email留言）
-        if (component) {
-          return (
-            <motion.div
-              key={i}
-              className={cn(buttonVariants({ variant: 'ghost' }), 'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2')}
-              variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
-            >
-              {component}
-            </motion.div>
-          );
-        }
-        // 普通链接分支：移除 target="_blank"，只保留 rel="noreferrer"
-        return (
-          <motion.a
-            key={i}
-            href={href}
-            rel="noreferrer"
-            className={cn(buttonVariants({ variant: 'ghost' }), 'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2')}
-            variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
-            {label}
-          </motion.a>
-        );
-      })}
+      {LINKS.map(({ Icon, href, label }, i) => (
+        <motion.a
+          key={i}
+          href={href}
+          target="_blank"
+          className={cn(buttonVariants({ variant: 'ghost' }), 'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2')}
+          rel="noreferrer"
+          variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
+        >
+          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
+          {label}
+        </motion.a>
+      ))}
     </motion.div>
   </AnimatePresence>
 );
