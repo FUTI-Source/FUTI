@@ -4,7 +4,6 @@ import { pluginReact } from '@rsbuild/plugin-react';
 import { GenerateSW } from 'workbox-rspack-plugin';
 
 export default defineConfig({
-  // ========== 新增：分包优化 ==========
   performance: {
     chunkSplit: {
       strategy: 'split-by-experience'
@@ -22,11 +21,56 @@ export default defineConfig({
             skipWaiting: true,
             cleanupOutdatedCaches: true,
             swDest: 'sw.js',
-            // ========== 新增：Workbox 排除大资源，不预缓存 ==========
             exclude: [
-              /\.(woff2?|woff|ttf|otf)$/, // 字体
-              /\.(webp|png|jpg|jpeg)$/,  // 图片
-            ]
+              /\.(woff2?|woff|ttf|otf)$/,
+              /\.(webp|png|jpg|jpeg|gif|svg)$/,
+            ],
+            runtimeCaching: [
+              {
+                urlPattern: /^https:\/\/www\.zhang-wentao\.tech\/.*\.html$/,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'html-cache',
+                },
+              },
+              {
+                urlPattern: /^https:\/\/www\.zhang-wentao\.tech\/.*\.(js|css)$/,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'static-asset-cache',
+                },
+              },
+              {
+                urlPattern: /^https:\/\/www\.zhang-wentao\.tech\/.*\.(webp|png|jpg|jpeg|woff2?)$/,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'media-cache',
+                  expiration: {
+                    maxAgeSeconds: 30 * 24 * 60 * 60,
+                    maxEntries: 100,
+                  },
+                },
+              },
+              {
+                urlPattern: /^https:\/\/www\.zhang-wentao\.tech\/.*\.(moc3|model\.json)$/,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'live2d-cache',
+                  expiration: {
+                    maxAgeSeconds: 60 * 24 * 60 * 60,
+                    maxEntries: 20,
+                  },
+                },
+              },
+              // Vercel Analytics / Speed Insights 外部脚本
+              {
+                urlPattern: /^https:\/\/vitals\.vercel-analytics\.com\//,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'vercel-analytics-cache',
+                },
+              },
+            ],
           }),
         ]);
       }
