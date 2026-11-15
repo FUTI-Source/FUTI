@@ -18,7 +18,7 @@ export default defineConfig({
         appendPlugins([
           new GenerateSW({
             clientsClaim: true,
-            skipWaiting: true,
+            skipWaiting: false,
             cleanupOutdatedCaches: true,
             swDest: 'sw.js',
             exclude: [
