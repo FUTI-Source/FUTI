@@ -32,7 +32,11 @@ const ScrollBar = ({ className, orientation = 'vertical', ...props }: React.Comp
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.ScrollAreaThumb data-slot="scroll-area-thumb" className="bg-border relative flex-1 rounded-full" />
+      {/* 这里改：把 bg-border 换成半透，hover加深 */}
+      <ScrollAreaPrimitive.ScrollAreaThumb 
+        data-slot="scroll-area-thumb" 
+        className="bg-foreground/20 hover:bg-foreground/40 relative flex-1 rounded-full transition-colors" 
+      />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   );
 };
