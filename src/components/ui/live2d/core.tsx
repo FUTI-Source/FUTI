@@ -3,14 +3,16 @@ import React, { useEffect } from 'react';
 
 import { logger } from '@/lib/logger';
 import { motion, MotionProps } from 'motion/react';
-import { Application } from 'pixi.js';
-import { Live2DModel } from '@jannchie/pixi-live2d-display/cubism4';
+import { Application, Ticker } from 'pixi.js';
+import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
 import { Live2DEvent } from '@/components/ui/live2d/index.tsx';
 
 import { BasicsProps } from '@/components/type.ts';
 
 import { EventEmitter } from '@/hooks/use-event-emitter.ts';
+
+Live2DModel.registerTicker(Ticker);
 
 type ILive2DCoreProps = BasicsProps<'canvas'> &
   MotionProps & {
@@ -44,12 +46,12 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     const destroy = () => {
       if (model) {
         model.parent?.removeChild(model);
-        model.destroy({ children: true, texture: false, textureSource: false });
+        model.destroy({ children: true, texture: false, baseTexture: false });
         model = null;
       }
 
       if (pixiApp && initialized) {
-        pixiApp.destroy({ removeView: false }, { children: true });
+        pixiApp.destroy(false, { children: true });
         pixiApp = null;
         initialized = false;
       }
@@ -57,10 +59,10 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
     const initialize = async () => {
       try {
-        pixiApp = new Application();
-        await pixiApp.init({
-          canvas,
+        pixiApp = new Application({
+          view: canvas,
           resizeTo: canvas,
+          backgroundColor: 0x000000,
           backgroundAlpha: 0,
           resolution: 1,
           antialias: true,
@@ -74,11 +76,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
         model = await Live2DModel.from(
           '/live2d/futiwolf/futi.model3.json',
-          {
-            autoHitTest: false,
-            autoFocus: false,
-            ticker: pixiApp.ticker,
-          },
+          { autoInteract: false },
         );
 
         if (disposed) {
