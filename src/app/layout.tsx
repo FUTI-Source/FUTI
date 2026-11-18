@@ -5,7 +5,6 @@ import { ServiceWorkerRegistration } from '@/components/pwa/service-worker-regis
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SITE_URL } from '@/lib/site';
 
-// @ts-ignore: Global stylesheet declarations are provided by Next.js.
 import './globals.css';
 
 const geometos = localFont({
@@ -15,6 +14,9 @@ const geometos = localFont({
   preload: true,
 });
 
+const SITE_NAME = 'FUTI · 个人主页';
+const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -22,7 +24,7 @@ const structuredData = {
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: 'FUTI · 个人主页',
+      name: SITE_NAME,
       inLanguage: 'zh-CN',
       about: { '@id': `${SITE_URL}/#person` },
       publisher: { '@id': `${SITE_URL}/#person` },
@@ -34,7 +36,7 @@ const structuredData = {
       alternateName: 'FUTI',
       url: SITE_URL,
       image: `${SITE_URL}/og-image.png`,
-      description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
+      description: SITE_DESCRIPTION,
       jobTitle: '全栈开发者',
       knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
     },
@@ -45,10 +47,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: 'FUTI',
   title: {
-    default: 'FUTI · 个人主页',
+    default: SITE_NAME,
     template: '%s | FUTI',
   },
-  description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
+  description: SITE_DESCRIPTION,
   authors: [{ name: 'FUTI', url: SITE_URL }],
   creator: 'FUTI',
   publisher: 'FUTI',
@@ -78,9 +80,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     url: SITE_URL,
-    siteName: 'FUTI · 个人主页',
-    title: 'FUTI · 个人主页',
-    description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     images: [
       {
         url: '/icon-512.png',
@@ -92,8 +94,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FUTI · 个人主页',
-    description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     images: ['/og-image.png'],
   },
   appleWebApp: {
@@ -101,14 +103,12 @@ export const metadata: Metadata = {
     title: 'FUTI',
     statusBarStyle: 'black',
   },
-  other: {
-    'apple-mobile-web-app-capable': 'yes',
-  },
+  // 提示：Next.js metadata 已内置 appleWebApp 属性，可移除冗余的 other 标签
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
-  initialScale: 1,
+  initialScale: '1' as unknown as number, // 保持类型兼容的同时规范写法
   viewportFit: 'cover',
   colorScheme: 'dark',
   themeColor: '#15161a',
@@ -123,6 +123,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={geometos.variable}>
         <script
+          id="structured-data"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
