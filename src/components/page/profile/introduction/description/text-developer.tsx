@@ -77,7 +77,7 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
   return (
     <Highlighter
       className={cn(
-        '[&>pre]:font-monaspace-neon [&>pre]:rounded [&>pre]:!bg-transparent [&>pre]:px-1.5 [&>pre]:transition-colors hover:[&>pre]:!bg-black/20',
+        '[&>pre]:!font-monaspace-neon [&>pre]:rounded [&>pre]:!bg-transparent [&>pre]:px-1.5 [&>pre]:transition-colors hover:[&>pre]:!bg-black/20',
         inAnimation && '[&>pre]:!bg-black/20',
         className,
       )}
