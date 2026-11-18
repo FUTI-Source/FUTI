@@ -14,9 +14,13 @@ const geometos = localFont({
   preload: true,
 });
 
-// 提取公共常量，确保元数据与结构化数据高度一致
+// 公共常量配置（建议图片使用带域名的绝对路径，以确保微信/QQ抓取成功）
 const SITE_NAME = 'FUTI · 个人主页';
 const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
+const SITE_IMAGE_PATH = '/icon-192.png';
+const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
+const SOCIAL_IMAGE_PATH = '/og-image.png';
+const SOCIAL_IMAGE_URL = `${SITE_URL}${SOCIAL_IMAGE_PATH}`;
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -36,15 +40,11 @@ const structuredData = {
       name: '张文涛',
       alternateName: 'FUTI',
       url: SITE_URL,
-      image: `${SITE_URL}/og-image.png`,
+      image: SOCIAL_IMAGE_URL,
       description: SITE_DESCRIPTION,
       jobTitle: '全栈开发者',
       knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
-      // 建议在此处填入你的真实社交媒体/开源平台主页，有助于 Google 建立个人搜索卡片（知识图谱）
-      sameAs: [
-        'https://github.com/你的GitHub用户名',
-        'https://twitter.com/你的推特用户名',
-      ],
+      sameAs: [],
     },
   ],
 };
@@ -66,9 +66,9 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: SITE_IMAGE_PATH, sizes: '192x192', type: 'image/png' },
     ],
-    apple: '/icon-192.png',
+    apple: SITE_IMAGE_PATH,
   },
   manifest: '/manifest.webmanifest',
   robots: {
@@ -91,10 +91,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: '/icon-512.png',
-        width: 512,
-        height: 512,
-        alt: 'FUTI 应用图标',
+        url: SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} 封面图`,
+        type: 'image/png',
       },
     ],
   },
@@ -102,7 +103,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ['/og-image.png'],
+    images: [SOCIAL_IMAGE_URL],
   },
   appleWebApp: {
     capable: true,
@@ -126,6 +127,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
+      <head>
+        {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
+        <meta itemProp="name" content={SITE_NAME} />
+        <meta itemProp="image" content={SOCIAL_IMAGE_URL} />
+        <meta name="description" itemProp="description" content={SITE_DESCRIPTION} />
+
+        {/* WeChat Sharing 专用全局变量 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              var WECHAT_TITLE = ${JSON.stringify(SITE_NAME)};
+              var WECHAT_DESC = ${JSON.stringify(SITE_DESCRIPTION)};
+              var WECHAT_IMAGE = ${JSON.stringify(SOCIAL_IMAGE_URL)};
+              var WCHAT_NO_GA = '';
+            `,
+          }}
+        />
+      </head>
       <body className={geometos.variable}>
         <script
           id="structured-data"
