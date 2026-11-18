@@ -90,6 +90,58 @@
   background-image: linear-gradient(to right, rgb(55, 239, 249), rgb(0, 145, 228), rgb(100, 198, 244), rgb(100, 192, 236));
 }
 
+.profile-title {
+  font-size: 1.875rem !important;
+  padding-inline: clamp(0.25rem, 4vw, 1rem);
+  white-space: nowrap;
+}
+
+.profile-description {
+  max-width: calc(100vw - 1rem);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.email-dialog-content {
+  width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
+  max-width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
+  max-height: calc(100dvh - clamp(1rem, 6vh, 2rem));
+}
+
+.email-dialog-content [data-slot='dialog-close'] {
+  top: clamp(0.5rem, 3vw, 1rem);
+  right: clamp(0.5rem, 3vw, 1rem);
+}
+
+.email-dialog-body {
+  padding: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.email-dialog-form {
+  margin-top: clamp(0.75rem, 3vh, 1.25rem);
+}
+
+.email-dialog-form > * + * {
+  margin-top: clamp(0.75rem, 2.5vh, 1rem);
+}
+
+@media (max-width: 640px) {
+  .header-no-drag {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: clamp(0.25rem, 2vw, 0.5rem);
+    font-size: clamp(0.625rem, 5vw, 1.25rem) !important;
+    text-align: center;
+  }
+
+  .profile-description > h2 {
+    flex-shrink: 0;
+    font-size: 1.125rem !important;
+    white-space: nowrap;
+  }
+}
+
 .futi-center {
   @apply flex items-center justify-center;
 }

@@ -15,7 +15,7 @@ type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
   return (
-    <div className={cn('flex h-16 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:flex-col max-sm:gap-1 max-sm:py-5 max-sm:pl-0', className)} style={style}>
+    <div className={cn('flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:py-6 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.a
@@ -35,10 +35,10 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       <motion.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
         <Separator orientation="vertical" className="!h-8 bg-white/20" />
       </motion.div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
+      <motion.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
-        <div className="flex gap-1 space-x-1 text-xs select-none max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-6 [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-white/30 [&_p]:text-white/20">
-          <p>
+        <div className="flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-6 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-white/30 [&_p]:text-white/20">
+          <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; 2017 - {new Date().getFullYear()}
             <Tooltip>
               <TooltipTrigger asChild>

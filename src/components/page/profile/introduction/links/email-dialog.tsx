@@ -116,9 +116,9 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
           {label}
         </motion.button>
       </DialogTrigger>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
-        <div className="h-1 w-full bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />
-        <div className="px-6 pt-5 pb-6">
+      <DialogContent className="email-dialog-content overflow-y-auto rounded-2xl border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
+        <div className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />
+        <div className="email-dialog-body">
           <DialogHeader>
             <DialogTitle className="font-geometos text-xl tracking-wide text-white/90">
               发送邮件
@@ -129,7 +129,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="email-dialog-form">
               <input
                 {...form.register('website')}
                 type="text"

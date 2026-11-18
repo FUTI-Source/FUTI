@@ -24,7 +24,7 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
         // wrapper 是收缩宽度，mx-auto 拿不到剩余空间，属于空转。
         // min-w 固定成"打字完成后"的真实内容宽度，配合 justify-center，
         // 让内容在盒子内部也居中，避免打字过程中文字贴左、视觉偏左。
-        'flex h-7 w-fit min-w-[245.47px] items-center justify-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
+        'profile-description flex h-7 w-fit min-w-[245.47px] items-center justify-center gap-1 after:-ml-2 [&>h2]:text-lg [&>h2]:text-white/80',
         inAnimation && 'futi-cursor',
         className,
       )}
