@@ -45,7 +45,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   return (
     <motion.div
       ref={node}
-      className="absolute top-0 left-0 z-[-1] size-full after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
+      className="absolute top-0 left-0 z-[-1] size-full overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
       initial={{ opacity: 0 }}
       animate={{ opacity: isLeftLoaded && isRightLoaded ? 1 : 0, transition: { delay: 0.2 } }}
       transition={{ duration: 0.2 }}
@@ -54,7 +54,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         ref={leftImage}
         src={backgroundLeftImage}
         alt="ga_background_left"
-        className="absolute !-top-8 !-left-20 h-[calc(100vh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
+        className="absolute !-top-8 !-left-20 h-[calc(100dvh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
         loading="eager"
         onLoad={() => setIsLeftLoaded(true)}
@@ -63,7 +63,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         ref={rightImage}
         src={backgroundRightImage}
         alt="ga_background_left"
-        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100vh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
+        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100dvh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
         loading="eager"
         onLoad={() => setIsRightLoaded(true)}

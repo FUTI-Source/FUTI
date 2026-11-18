@@ -1,10 +1,17 @@
 const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
 export function initCustomCursor() {
-  // 触摸屏设备跳过
-  if (typeof window === 'undefined' || window.matchMedia('(pointer: coarse)').matches) {
+  if (typeof window === 'undefined') {
     return () => {};
   }
+
+  const supportsCustomPointer = window.matchMedia(
+    '(hover: hover) and (pointer: fine)',
+  ).matches;
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)',
+  ).matches;
+  if (!supportsCustomPointer || prefersReducedMotion) return () => {};
 
   if (document.getElementById('custom-cursor-dot')) return () => {};
 

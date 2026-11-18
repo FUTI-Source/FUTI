@@ -15,7 +15,7 @@ type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
   return (
-    <div className={cn('flex h-16 items-center gap-4 pl-6 max-sm:flex-col max-sm:pt-20 max-sm:pl-0', className)} style={style}>
+    <div className={cn('flex h-16 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:flex-col max-sm:gap-1 max-sm:py-5 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.a

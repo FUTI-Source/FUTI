@@ -116,7 +116,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
           {label}
         </motion.button>
       </DialogTrigger>
-      <DialogContent className="overflow-hidden border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
         <div className="h-1 w-full bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />
         <div className="px-6 pt-5 pb-6">
           <DialogHeader>
