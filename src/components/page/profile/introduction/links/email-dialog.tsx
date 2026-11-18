@@ -40,6 +40,22 @@ const emailSchema = z.object({
 
 type EmailFormData = z.infer<typeof emailSchema>;
 
+const mailToastOptions = {
+  className: 'font-sans',
+  descriptionClassName: '!text-[#ecf6ff]/60',
+  duration: 5000,
+  style: {
+    background: 'rgba(27, 30, 36, 0.96)',
+    border: '1px solid rgba(2, 149, 229, 0.4)',
+    borderTop: '2px solid #0295e5',
+    borderRadius: '12px',
+    boxShadow: '0 0 36px rgba(2, 149, 229, 0.28)',
+    color: '#ecf6ff',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+  },
+};
+
 const itemVariants = {
   hidden: { opacity: 0, y: -10 },
   visible: { opacity: 1, y: 0 },
@@ -66,10 +82,12 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
       if (result.confirmationSent) {
         toast.success('留言已发送，确认邮件已送达你的邮箱', {
           description: `内容已发送至 ${recipient}，并已向 ${data.email} 发出确认邮件`,
+          ...mailToastOptions,
         });
       } else {
         toast.success('留言已发送', {
           description: `内容已发送至 ${recipient}，但确认邮件未能送达 ${data.email}`,
+          ...mailToastOptions,
         });
       }
       setOpen(false);
@@ -80,6 +98,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
       ).response?.data?.error?.message;
       toast.error('发送失败', {
         description: message ?? '请稍后重试',
+        ...mailToastOptions,
       });
     }
   };
