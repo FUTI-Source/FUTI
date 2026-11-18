@@ -16,7 +16,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
   <AnimatePresence>
     <motion.div
       className={cn(
-        'flex flex-wrap justify-center gap-x-4 gap-y-1 max-sm:w-full max-sm:max-w-[20rem] max-sm:px-2 max-sm:gap-x-1',
+        'flex flex-wrap justify-center gap-x-4 gap-y-1 max-sm:w-full max-sm:max-w-[22rem] max-sm:px-2 max-sm:gap-x-1',
         className,
       )}
       style={style}
