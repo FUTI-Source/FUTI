@@ -7,7 +7,8 @@ const cubism4Files = [
   'node_modules/@jannchie/pixi-live2d-display/dist/cubism4.js',
 ];
 
-const deprecatedOption = /\bloadParser\s*:\s*["']loadTextures["']/g;
+const deprecatedOption =
+  /(?:\bloadParser\b|["']loadParser["'])\s*:\s*["']loadTextures["']/g;
 const supportedOption = 'parser: "loadTextures"';
 const maskClear =
   /^([ \t]*)this\.gl\.clearColor\(1, 1, 1, 0\);\n\1this\.gl\.clear\(this\.gl\.COLOR_BUFFER_BIT\);(?:\n\1this\.gl\.clearColor\(0, 0, 0, 0\);)*/gm;
@@ -27,7 +28,7 @@ for (const filePath of distributionFiles) {
   const patchedSource = source.replace(deprecatedOption, supportedOption);
 
   if (patchedSource.includes('loadParser')) {
-    throw new Error(`Unpatched deprecated parser option in ${filePath}`);
+    throw new Error(`Unpatched deprecated parser reference in ${filePath}`);
   }
 
   if (patchedSource !== source) {
