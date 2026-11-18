@@ -1,12 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-import { Highlighter } from '@/components/ui/highlighter';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 import { BasicsProps } from '@/components/type.ts';
 
 import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
+
+const Highlighter = lazy(() =>
+  import('@/components/ui/highlighter').then(({ Highlighter: Component }) => ({
+    default: Component,
+  })),
+);
 
 export enum TextDeveloperEvent {
   START = 'start',
@@ -74,17 +78,29 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
   // 重复触发只会命中 started 直接返回，不会再叠加一条打字链。
   event$?.useSubscription(handleEvent);
 
+  const highlighterClassName = cn(
+    '[&>pre]:!font-mono [&>pre]:rounded [&>pre]:!bg-transparent [&>pre]:px-1.5 [&>pre]:transition-colors hover:[&>pre]:!bg-black/20',
+    inAnimation && '[&>pre]:!bg-black/20',
+    className,
+  );
+
   return (
-    <Highlighter
-      className={cn(
-        '[&>pre]:!font-mono [&>pre]:rounded [&>pre]:!bg-transparent [&>pre]:px-1.5 [&>pre]:transition-colors hover:[&>pre]:!bg-black/20',
-        inAnimation && '[&>pre]:!bg-black/20',
-        className,
-      )}
-      style={style}
-      content={displayedText}
-      language="html"
-      as="h2"
-    />
+    <Suspense
+      fallback={
+        <h2 className={highlighterClassName} style={style}>
+          <pre>
+            <code>{displayedText.trim()}</code>
+          </pre>
+        </h2>
+      }
+    >
+      <Highlighter
+        className={highlighterClassName}
+        style={style}
+        content={displayedText}
+        language="html"
+        as="h2"
+      />
+    </Suspense>
   );
 };

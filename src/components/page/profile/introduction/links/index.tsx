@@ -1,16 +1,66 @@
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 
+import type { IconType } from '@icons-pack/react-simple-icons';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { buttonVariants } from '@/components/ui/button.tsx';
 
 import { LINKS } from '@/components/page/profile/introduction/links/consts.tsx';
-import { EmailLink } from '@/components/page/profile/introduction/links/email-dialog.tsx';
 import { BasicsProps } from '@/components/type';
 
 import { cn } from '@/lib/utils';
 
+const EmailLink = lazy(() =>
+  import('@/components/page/profile/introduction/links/email-dialog.tsx').then(
+    ({ EmailLink: Component }) => ({ default: Component }),
+  ),
+);
+
 type ILinksProps = BasicsProps;
+
+type IEmailLinkProps = {
+  Icon: IconType;
+  href: string;
+  label: string;
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const EmailTrigger: React.FC<
+  IEmailLinkProps & { onClick?: React.MouseEventHandler<HTMLButtonElement> }
+> = ({ Icon, label, onClick }) => (
+  <motion.button
+    type="button"
+    variants={itemVariants}
+    aria-label={label}
+    aria-haspopup="dialog"
+    className={cn(
+      buttonVariants({ variant: 'ghost' }),
+      'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2',
+    )}
+    onClick={onClick}
+  >
+    <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
+    {label}
+  </motion.button>
+);
+
+const DeferredEmailLink: React.FC<IEmailLinkProps> = (props) => {
+  const [activated, setActivated] = useState(false);
+
+  if (!activated) {
+    return <EmailTrigger {...props} onClick={() => setActivated(true)} />;
+  }
+
+  return (
+    <Suspense fallback={<EmailTrigger {...props} />}>
+      <EmailLink {...props} initialOpen />
+    </Suspense>
+  );
+};
 
 export const Links: React.FC<ILinksProps> = ({ className, style }) => (
   <AnimatePresence>
@@ -29,7 +79,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
     >
       {LINKS.map(({ Icon, href, label }, i) => {
         if (label === 'Email') {
-          return <EmailLink key={i} Icon={Icon} href={href} label={label} />;
+          return <DeferredEmailLink key={i} Icon={Icon} href={href} label={label} />;
         }
 
         const className = cn(
