@@ -55,7 +55,6 @@ export const ServiceWorkerRegistration = () => {
         if (disposed) return;
 
         registration = serviceWorkerRegistration;
-        checkForUpdates();
         updateCheckInterval = window.setInterval(
           checkForUpdates,
           UPDATE_CHECK_INTERVAL,
