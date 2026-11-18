@@ -130,7 +130,7 @@ export default function RootLayout({
       <head>
         {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
         <meta itemProp="name" content={SITE_NAME} />
-        <meta itemProp="image" content={SOCIAL_IMAGE_URL} />
+        <meta itemProp="image" content={SITE_IMAGE_URL} />
         <meta name="description" itemProp="description" content={SITE_DESCRIPTION} />
 
         {/* WeChat Sharing 专用全局变量 */}
@@ -139,7 +139,7 @@ export default function RootLayout({
             __html: `
               var WECHAT_TITLE = ${JSON.stringify(SITE_NAME)};
               var WECHAT_DESC = ${JSON.stringify(SITE_DESCRIPTION)};
-              var WECHAT_IMAGE = ${JSON.stringify(SOCIAL_IMAGE_URL)};
+              var WECHAT_IMAGE = ${JSON.stringify(SITE_IMAGE_URL)};
               var WCHAT_NO_GA = '';
             `,
           }}
