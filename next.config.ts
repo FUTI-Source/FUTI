@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   },
   webpack(config, { isServer }) {
     if (!isServer) {
+      // These shims target legacy browsers excluded by the configured Browserslist.
       config.resolve.alias = {
         ...config.resolve.alias,
         '../build/polyfills/polyfill-module$': false,
