@@ -14,6 +14,7 @@ const geometos = localFont({
   preload: true,
 });
 
+// 提取公共常量，确保元数据与结构化数据高度一致
 const SITE_NAME = 'FUTI · 个人主页';
 const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
 
@@ -39,6 +40,11 @@ const structuredData = {
       description: SITE_DESCRIPTION,
       jobTitle: '全栈开发者',
       knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
+      // 建议在此处填入你的真实社交媒体/开源平台主页，有助于 Google 建立个人搜索卡片（知识图谱）
+      sameAs: [
+        'https://github.com/你的GitHub用户名',
+        'https://twitter.com/你的推特用户名',
+      ],
     },
   ],
 };
@@ -103,12 +109,11 @@ export const metadata: Metadata = {
     title: 'FUTI',
     statusBarStyle: 'black',
   },
-  // 提示：Next.js metadata 已内置 appleWebApp 属性，可移除冗余的 other 标签
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
-  initialScale: '1' as unknown as number, // 保持类型兼容的同时规范写法
+  initialScale: 1,
   viewportFit: 'cover',
   colorScheme: 'dark',
   themeColor: '#15161a',
