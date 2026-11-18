@@ -146,6 +146,13 @@ export default function RootLayout({
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          href="/fonts/Ubuntu.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
         <meta itemProp="name" content={SITE_NAME} />
         <meta itemProp="image" content={SITE_IMAGE_URL} />
