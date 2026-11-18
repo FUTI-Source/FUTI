@@ -1,4 +1,5 @@
-import { IconType, SiBilibili, SiGithub, SiGmail, SiSteamdeck } from '@icons-pack/react-simple-icons';
+import { HandHeart } from 'lucide-react';
+import { IconType, SiGithub, SiGmail, SiSteamdeck } from '@icons-pack/react-simple-icons';
 
 interface ILink {
   Icon: IconType;
@@ -13,9 +14,9 @@ export const LINKS: ILink[] = [
     label: 'Github',
   },
   {
-    Icon: SiBilibili,
+    Icon: HandHeart,
     href: '',
-    label: 'BiliBili',
+    label: 'Donate',
   },
   {
     Icon: SiSteamdeck,

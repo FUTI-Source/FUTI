@@ -37,7 +37,13 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
           'group cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:!bg-accent/20 hover:text-white max-sm:px-2',
         );
         const icon = (
-          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
+          <Icon
+            className={
+              label === 'Donate'
+                ? 'size-4 text-[#ecf6ff]/85'
+                : 'size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85'
+            }
+          />
         );
 
         if (!href) {
