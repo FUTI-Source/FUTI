@@ -7,6 +7,8 @@
 - Next.js 15（App Router）+ React 19 + TypeScript
 - Tailwind CSS v4（沿用原设计 Token，无 UI 重写）
 - shadcn/ui（Radix）+ Motion + zod + react-hook-form
+- Next.js Metadata API、robots.txt 与 sitemap.xml（SEO）
+- 可安装 PWA，支持离线页面与静态资源缓存
 - pixi.js + pixi-live2d-display（Live2D 形象）
 - nodemailer + 139 邮箱 SMTP（Node Runtime Route Handler）
 

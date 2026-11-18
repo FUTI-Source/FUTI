@@ -53,7 +53,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
       <Image
         ref={leftImage}
         src={backgroundLeftImage}
-        alt="ga_background_left"
+        alt=""
         className="absolute !-top-8 !-left-20 h-[calc(100dvh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
         loading="eager"
@@ -62,7 +62,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
       <Image
         ref={rightImage}
         src={backgroundRightImage}
-        alt="ga_background_left"
+        alt=""
         className="absolute !-top-[2rem] !left-[26vw] h-[calc(100dvh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
         loading="eager"

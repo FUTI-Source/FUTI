@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+
 import { FUTIDynamicText } from '@/components/ui/dynamic-text';
 import type { BasicsProps } from '@/components/type';
 import { cn } from '@/lib/utils.ts';
@@ -45,6 +47,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
       <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4] shadow-sm" />
 
       <FUTIDynamicText
+        as={motion.p}
         instant={ready}
         text={ready ? time : PLACEHOLDER}
         onAnimationComplete={() => setReady(true)}
