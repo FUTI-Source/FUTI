@@ -6,10 +6,7 @@
     "node": "26.x"
   },
   "overrides": {
-    "postcss": "$postcss",
-    "pixi-live2d-display": {
-      "gh-pages": "^6.3.0"
-    }
+    "postcss": "$postcss"
   },
   "scripts": {
     "dev": "next dev",
@@ -38,8 +35,8 @@
     "nodemailer": "^10.6.0",
     "normalize.css": "^8.0.1",
     "parallax-js": "^3.1.0",
-    "pixi-live2d-display": "^0.4.0",
-    "pixi.js": "^6.5.10",
+    "@jannchie/pixi-live2d-display": "^1.4.0",
+    "pixi.js": "^8.13.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.65.0",

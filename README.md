@@ -7,7 +7,7 @@
 - Next.js 15（App Router）+ React 19 + TypeScript
 - Tailwind CSS v4（沿用原设计 Token，无 UI 重写）
 - shadcn/ui（Radix）+ Motion + zod + react-hook-form
-- pixi.js + pixi-live2d-display（Live2D 形象）
+- PixiJS 8 + @jannchie/pixi-live2d-display（Cubism 4 Live2D 形象）
 - nodemailer + 139 邮箱 SMTP（Node Runtime Route Handler）
 
 ## 目录结构
