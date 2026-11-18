@@ -5,6 +5,17 @@ const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
   },
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '../build/polyfills/polyfill-module$': false,
+        '@pixi/polyfill': false,
+      };
+    }
+
+    return config;
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
