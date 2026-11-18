@@ -49,6 +49,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
         await pixiApp.init({
           canvas,
           resizeTo: canvas,
+          backgroundColor: 0x000000,
           backgroundAlpha: 0,
           resolution: 2,
           antialias: true,
