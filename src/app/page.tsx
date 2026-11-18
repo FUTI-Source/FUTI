@@ -68,7 +68,7 @@ const Home: React.FC = () => {
 
   return (
     <LazyMotion features={loadMotionFeatures} strict>
-      <ScrollArea className="futi-ui relative h-full w-full min-w-0 overflow-hidden pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border [&>[data-radix-scroll-area-viewport]>div]:!flex [&>[data-radix-scroll-area-viewport]>div]:h-full [&>[data-radix-scroll-area-viewport]>div]:flex-col">
+      <ScrollArea className="futi-ui relative flex h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border">
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />

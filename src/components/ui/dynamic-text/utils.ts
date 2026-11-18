@@ -1,5 +1,3 @@
-import { random } from 'underscore';
-
 // CONSTANTS
 export const NUMBER_AND_ENGLISH = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
 // ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ〇口甲乙丙丁戊己庚辛壬癸
@@ -34,7 +32,7 @@ const inRanges = (code: number | undefined, ranges: ReadonlyArray<readonly [numb
 const INSERTERS = new Set([' ', '-', '/', "'"]);
 export const isInserter = (target: string) => INSERTERS.has(target);
 
-export const getRandom = (texts: string[]) => texts[random(0, texts.length - 1)];
+export const getRandom = (texts: string[]) => texts[Math.floor(Math.random() * texts.length)];
 
 /** 单次取码点，避免重复调用 codePointAt */
 const codeOf = (target: string) => target.codePointAt(0);
