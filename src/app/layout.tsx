@@ -71,7 +71,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'FUTI',
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'black',
   },
 };
 
@@ -79,6 +79,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  colorScheme: 'dark',
   themeColor: '#15161a',
 };
 
