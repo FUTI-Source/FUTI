@@ -20,7 +20,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <motion.a
             href="/"
-            className={cn('futi-center font-russoOne relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+            className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}

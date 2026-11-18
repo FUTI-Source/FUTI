@@ -5,8 +5,6 @@
   --font-monaspace-neon: 'MonaspaceNeon', monospace;
   --font-kanit: 'Kanit', sans-serif;
   --font-ubuntu: 'Ubuntu', sans-serif;
-  --font-monospaceNeon: 'MonaspaceNeon', monospace;
-  --font-russoOne: 'Russo One', 'Ubuntu', sans-serif;
 }
 
 /* 安全区变量，给沉浸式 + WCO 共用 */
@@ -78,6 +76,8 @@
     background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, .2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
     background-blend-mode: overlay, normal;
     background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     @apply font-sans text-foreground flex flex-col;
   }
 }
@@ -184,6 +184,7 @@ body [contenteditable=''] {
 
 @font-face {
   font-family: MonaspaceNeon;
+  font-display: swap;
   src: url('/fonts/MonaspaceNeon.woff') format('woff');
 }
 
