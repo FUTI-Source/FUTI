@@ -1,15 +1,64 @@
 import { NextResponse } from 'next/server';
 
+import { checkMailRateLimit } from '@/lib/mail-rate-limit';
 import { sendContactMail } from '@/lib/mailer';
 import { sendMailSchema } from '@/lib/validations';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const MAX_BODY_BYTES = 24 * 1024;
+
 export async function POST(request: Request) {
+  const clientId =
+    request.headers.get('x-real-ip')?.trim() ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown';
+  const rateLimit = checkMailRateLimit(clientId);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'RATE_LIMITED',
+          message: '提交过于频繁，请稍后再试',
+        },
+      },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) },
+      },
+    );
+  }
+
+  const contentLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { error: { code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大' } },
+      { status: 413 },
+    );
+  }
+
+  let body: string;
+  try {
+    body = await request.text();
+  } catch {
+    return NextResponse.json(
+      { error: { code: 'BAD_REQUEST', message: '请求体不是合法 JSON' } },
+      { status: 400 },
+    );
+  }
+
+  if (new TextEncoder().encode(body).byteLength > MAX_BODY_BYTES) {
+    return NextResponse.json(
+      { error: { code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大' } },
+      { status: 413 },
+    );
+  }
+
   let raw: unknown;
   try {
-    raw = await request.json();
+    raw = JSON.parse(body);
   } catch {
     return NextResponse.json(
       { error: { code: 'BAD_REQUEST', message: '请求体不是合法 JSON' } },

@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 const emailSchema = z.object({
   email: z.string().min(1, '请输入邮箱地址').email('邮箱格式不正确'),
   content: z.string().min(1, '请输入发送内容'),
+  website: z.string(),
 });
 
 type EmailFormData = z.infer<typeof emailSchema>;
@@ -56,12 +57,12 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
 
   const form = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
-    defaultValues: { email: '', content: '' },
+    defaultValues: { email: '', content: '', website: '' },
   });
 
   const onSubmit = async (data: EmailFormData) => {
     try {
-      const result = await sendMail(data.email, data.content);
+      const result = await sendMail(data.email, data.content, data.website);
       if (result.confirmationSent) {
         toast.success('留言已发送，确认邮件已送达你的邮箱', {
           description: `内容已发送至 ${recipient}，并已向 ${data.email} 发出确认邮件`,
@@ -113,6 +114,14 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-4">
+              <input
+                {...form.register('website')}
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="absolute -left-[10000px] size-px overflow-hidden"
+              />
               <FormField
                 control={form.control}
                 name="email"

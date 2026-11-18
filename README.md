@@ -67,6 +67,8 @@ npm run start
 1. 第一封发给站长（`MAIL_TO`），`replyTo` 设为顾客邮箱；**失败则整体返回错误，不发确认信**。
 2. 第一封成功后，第二封「留言提交成功」确认信发给顾客邮箱；第二封失败不推翻第一封结果，仅在响应里把 `confirmationSent` 置为 `false`。
 
+接口包含基础反滥用措施：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 和 `Retry-After`；表单包含隐藏蜜罐字段，另限制请求体为 24 KiB。速率记录保存在 Node 进程内存中，Serverless 多实例间不共享；若需要全局精确限流，应接入共享存储（如 Redis）或使用部署平台的 WAF 限流规则。
+
 Vercel Serverless 的关键约束（已在代码中落实）：
 
 - 使用 `export const runtime = 'nodejs'`（nodemailer 不能跑在 Edge Runtime）。
