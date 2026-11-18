@@ -2,7 +2,8 @@
 import React, { useEffect } from 'react';
 
 import { logger } from '@/lib/logger';
-import { motion, MotionProps } from 'motion/react';
+import type { MotionProps } from 'motion/react';
+import * as m from 'motion/react-m';
 import { Application } from '@pixi/app';
 import { BatchRenderer, extensions } from '@pixi/core';
 import { Ticker, TickerPlugin } from '@pixi/ticker';
@@ -128,7 +129,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     };
   }, [event$]);
 
-  return <motion.canvas ref={canvasRef} {...rest} />;
+  return <m.canvas ref={canvasRef} {...rest} />;
 };
 
 export default Live2DCore;

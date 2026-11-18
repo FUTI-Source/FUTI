@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import type Parallax from 'parallax-js';
 
 import { BasicsProps } from '@/components/type';
@@ -50,7 +50,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   );
 
   return (
-    <motion.div
+    <m.div
       ref={node}
       className="absolute top-0 left-0 z-[-1] size-full overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
       initial={{ opacity: 0 }}
@@ -77,6 +77,6 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         loading="lazy"
         onLoad={() => setIsRightLoaded(true)}
       />
-    </motion.div>
+    </m.div>
   );
 };

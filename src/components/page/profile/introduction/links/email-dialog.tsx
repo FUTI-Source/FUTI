@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { CircleAlert, CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
 import type { IconType } from '@icons-pack/react-simple-icons';
 import { useForm } from 'react-hook-form';
@@ -104,7 +104,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <motion.button
+        <m.button
           type="button"
           variants={itemVariants}
           aria-label={label}
@@ -115,7 +115,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
         >
           <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
           {label}
-        </motion.button>
+        </m.button>
       </DialogTrigger>
       <DialogContent className="email-dialog-content overflow-y-auto rounded-2xl border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
         <div className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />

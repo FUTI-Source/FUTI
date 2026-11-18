@@ -1,7 +1,8 @@
 import React, { lazy, Suspense, useState } from 'react';
 
 import type { IconType } from '@icons-pack/react-simple-icons';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 
 import { buttonVariants } from '@/components/ui/button.tsx';
 
@@ -32,7 +33,7 @@ const itemVariants = {
 const EmailTrigger: React.FC<
   IEmailLinkProps & { onClick?: React.MouseEventHandler<HTMLButtonElement> }
 > = ({ Icon, label, onClick }) => (
-  <motion.button
+  <m.button
     type="button"
     variants={itemVariants}
     aria-label={label}
@@ -45,7 +46,7 @@ const EmailTrigger: React.FC<
   >
     <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
     {label}
-  </motion.button>
+  </m.button>
 );
 
 const DeferredEmailLink: React.FC<IEmailLinkProps> = (props) => {
@@ -64,7 +65,7 @@ const DeferredEmailLink: React.FC<IEmailLinkProps> = (props) => {
 
 export const Links: React.FC<ILinksProps> = ({ className, style }) => (
   <AnimatePresence>
-    <motion.div
+    <m.div
       className={cn(
         'flex flex-wrap justify-center gap-x-4 gap-y-1 max-sm:w-full max-sm:max-w-[22rem] max-sm:px-2 max-sm:gap-x-1',
         className,
@@ -114,7 +115,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
         }
 
         return (
-          <motion.a
+          <m.a
             key={i}
             href={href}
             target="_blank"
@@ -124,9 +125,9 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
           >
             {icon}
             {label}
-          </motion.a>
+          </m.a>
         );
       })}
-    </motion.div>
+    </m.div>
   </AnimatePresence>
 );

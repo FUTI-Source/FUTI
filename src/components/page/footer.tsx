@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 
 import { Separator } from '@/components/ui/separator.tsx';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
@@ -18,7 +18,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
     <div className={cn('flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:py-6 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <motion.a
+          <m.a
             href="/"
             className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
@@ -27,15 +27,15 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
           >
             Drawn by NAVILAB
             <FutiIcon className="absolute h-7 [&>path]:fill-white/20" />
-          </motion.a>
+          </m.a>
         </TooltipTrigger>
         <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
       </Tooltip>
 
-      <motion.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
+      <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
         <Separator orientation="vertical" className="!h-8 bg-white/20" />
-      </motion.div>
-      <motion.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
+      </m.div>
+      <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
         <div className="flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-6 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-white/30 [&_p]:text-white/20">
           <p className="max-sm:max-w-full max-sm:text-center">
@@ -60,7 +60,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             <TooltipContent sideOffset={16}>AGPL-3.0</TooltipContent>
           </Tooltip>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 };

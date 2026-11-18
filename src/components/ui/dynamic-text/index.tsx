@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { DOMMotionComponents, motion, MotionProps } from 'motion/react';
+import type { DOMMotionComponents, MotionProps } from 'motion/react';
+import * as m from 'motion/react-m';
 import { AsComp, BasicsProps } from '@/components/type.ts';
 import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
@@ -43,7 +44,7 @@ export const FUTIDynamicText: React.FC<IFUTIDynamicTextProps> = memo(
     instant = false,
     onAnimationComplete,
     onPlaceholderComplete,
-    as: Element = motion.h1,
+    as: Element = m.h1,
     ...rest
   }) => {
     Element = Element as DOMMotionComponents['h1'];
