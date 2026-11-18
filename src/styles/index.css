@@ -88,11 +88,6 @@
 }
 
 @font-face {
-  font-family: Geometos;
-  src: url('/fonts/Geometos.woff') format('woff');
-}
-
-@font-face {
   font-family: MonaspaceNeon;
   src: url('/fonts/MonaspaceNeon.woff') format('woff');
 }

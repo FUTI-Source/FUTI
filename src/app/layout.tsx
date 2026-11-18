@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next';
+import localFont from 'next/font/local';
 
 import './globals.css';
+
+const geometos = localFont({
+  src: '../../public/fonts/Geometos.woff',
+  display: 'swap',
+  variable: '--font-geometos',
+  preload: true,
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://zhang-wentao.tech'),
@@ -31,7 +39,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body>
+      <body className={geometos.variable}>
         {children}
       </body>
     </html>
