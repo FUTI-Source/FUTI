@@ -56,6 +56,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         alt=""
         className="absolute !-top-8 !-left-20 h-[calc(100dvh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
+        sizes="35vw"
         loading="eager"
         onLoad={() => setIsLeftLoaded(true)}
       />
@@ -65,6 +66,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         alt=""
         className="absolute !-top-[2rem] !left-[26vw] h-[calc(100dvh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
+        sizes="80vw"
         loading="eager"
         onLoad={() => setIsRightLoaded(true)}
       />

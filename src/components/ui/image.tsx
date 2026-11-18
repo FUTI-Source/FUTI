@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 
+import NextImage from 'next/image';
+
 import { cn } from '@/lib/utils';
 
 type ImageFormat = 'jpg' | 'png' | 'webp' | 'bmp' | 'gif' | 'tiff';
@@ -20,6 +22,7 @@ export interface ImageProps extends Omit<NativeImgProps, 'src'> {
   quality?: number;
   format?: ImageFormat;
   breakpoints?: Array<number>;
+  priority?: boolean;
 }
 
 const DEFAULT_QUALITY = 80;
@@ -119,9 +122,11 @@ export const Image = React.forwardRef<HTMLImageElement, ImageProps>(
       sizes,
       srcSet: userSrcSet,
       breakpoints = DEFAULT_RESOLUTIONS,
+      alt,
       className,
       loading = 'lazy',
       decoding = 'async',
+      priority,
       ...rest
     },
     ref,
@@ -132,12 +137,35 @@ export const Image = React.forwardRef<HTMLImageElement, ImageProps>(
       [],
     );
 
+    if (typeof src !== 'string' && !userSrcSet) {
+      return (
+        <NextImage
+          {...rest}
+          ref={ref}
+          src={src}
+          alt={alt ?? ''}
+          width={typeof width === 'number' ? width : src.width}
+          height={typeof height === 'number' ? height : src.height}
+          sizes={sizes}
+          quality={quality}
+          priority={priority}
+          className={cn(
+            'bg-linear-to-b from-gray-50/20 to-gray-200/20',
+            className,
+          )}
+          loading={priority ? undefined : loading}
+          decoding={decoding}
+        />
+      );
+    }
+
     if (!isTargetSrc(originSrc)) {
       return (
         <img
           {...rest}
           ref={ref}
           src={originSrc}
+          alt={alt}
           width={width}
           height={height}
           sizes={sizes}
@@ -176,6 +204,7 @@ export const Image = React.forwardRef<HTMLImageElement, ImageProps>(
         {...rest}
         ref={ref}
         src={baseSrc}
+        alt={alt}
         width={width}
         height={height}
         sizes={sizes}
