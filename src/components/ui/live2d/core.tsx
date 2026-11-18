@@ -28,6 +28,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let initialized = false;
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
+    let initialization: Promise<void> | null = null;
 
     const handleContextLost = (contextEvent: Event) => {
       contextEvent.preventDefault();
@@ -43,7 +44,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     const destroy = () => {
       if (model) {
         model.parent?.removeChild(model);
-        model.destroy({ children: true, texture: true, textureSource: true });
+        model.destroy({ children: true, texture: false, textureSource: false });
         model = null;
       }
 
@@ -101,13 +102,17 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
       }
     };
 
-    void initialize();
+    initialization = initialize();
 
     return () => {
       disposed = true;
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
-      destroy();
+      if (initialization) {
+        void initialization.then(destroy);
+      } else {
+        destroy();
+      }
     };
   }, [event$]);
 
