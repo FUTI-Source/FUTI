@@ -1,0 +1,206 @@
+@theme {
+  --color-futi: oklch(0.63 0.15 252.19);
+
+  --font-geometos: 'Geometos', sans-serif;
+  --font-kanit: 'Kanit', sans-serif;
+  --font-ubuntu: 'Ubuntu', sans-serif;
+}
+
+/* 安全区变量，给沉浸式 + WCO 共用 */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+
+/* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --safe-top: 0px;
+  }
+  .header-drag {
+    width: 100%;
+    height: max(env(titlebar-area-height, 0px), 2rem);
+    margin-top: env(titlebar-area-y, 0px);
+    padding-top: 0;
+    background-color: #15161a;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+  .header-drag::before {
+    position: absolute;
+    top: 0;
+    left: env(titlebar-area-x, 0px);
+    width: env(titlebar-area-width, 100%);
+    height: max(env(titlebar-area-height, 0px), 2rem);
+    content: '';
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+  .header-drag > div:first-child {
+    top: auto;
+    bottom: 0;
+    height: 1px;
+    opacity: 0.28;
+  }
+  .header-no-drag {
+    position: relative;
+    z-index: 1;
+    color: rgba(255, 255, 255, 0.68);
+    font-family: system-ui, sans-serif;
+    letter-spacing: 0.02em;
+    text-shadow: none;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #app,
+  #root {
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+  }
+
+  .futi-ui * {
+    @apply transition-colors;
+  }
+
+  body {
+    background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, .2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
+    background-blend-mode: overlay, normal;
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply font-sans text-foreground flex flex-col;
+  }
+}
+
+.futi-footer-line {
+  background-image: linear-gradient(90deg, rgba(119, 119, 119, 0.2), rgba(72, 72, 72, 0.2), rgba(103, 103, 103, 0.2), rgba(60, 60, 60, 0.2));
+}
+
+.futi-profile-line {
+  background-image: linear-gradient(to right, rgb(55, 239, 249), rgb(0, 145, 228), rgb(100, 198, 244), rgb(100, 192, 236));
+}
+
+.profile-title {
+  font-size: 1.875rem !important;
+  padding-inline: clamp(0.25rem, 4vw, 1rem);
+  white-space: nowrap;
+}
+
+.profile-description {
+  max-width: calc(100vw - 1rem);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+body,
+body * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+body input,
+body textarea,
+body select,
+body [contenteditable='true'],
+body [contenteditable=''] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+.email-dialog-content {
+  width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
+  max-width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
+  max-height: calc(100dvh - clamp(1rem, 6vh, 2rem));
+}
+
+.email-dialog-content [data-slot='dialog-close'] {
+  top: clamp(0.5rem, 3vw, 1rem);
+  right: clamp(0.5rem, 3vw, 1rem);
+}
+
+.email-dialog-body {
+  padding: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.email-dialog-form {
+  margin-top: clamp(0.75rem, 3vh, 1.25rem);
+}
+
+.email-dialog-form > * + * {
+  margin-top: clamp(0.75rem, 2.5vh, 1rem);
+}
+
+@media (max-width: 640px) {
+  .header-no-drag {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: clamp(0.25rem, 2vw, 0.5rem);
+    font-size: clamp(0.625rem, 5vw, 1.25rem) !important;
+    text-align: center;
+  }
+
+  .profile-description > h2 {
+    flex-shrink: 0;
+    font-size: 1.125rem !important;
+    white-space: nowrap;
+  }
+}
+
+.futi-center {
+  @apply flex items-center justify-center;
+}
+
+.futi-text-lyrics {
+  text-shadow: rgba(6, 7, 25, 0.32) 0.05em 0.05em 0;
+}
+
+.futi-cursor::after {
+  animation: cursor-fade-out 0.3s ease infinite alternate-reverse;
+
+  @apply block h-full w-[1.67px] border-[#528bff] bg-[#528bff] content-[''];
+}
+
+@keyframes cursor-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@font-face {
+  font-family: Kanit;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/Kanit-300.woff2') format("woff2");
+}
+
+@font-face {
+  font-family: Kanit;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Kanit-400.woff2') format("woff2");
+}
+
+@font-face {
+  font-family: Ubuntu;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/Ubuntu.woff2') format("woff2");
+}

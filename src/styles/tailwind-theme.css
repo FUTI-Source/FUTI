@@ -1,0 +1,89 @@
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(220 14% 14%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 14% 14%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 14% 14%);
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(220 14% 98%);
+  --secondary: hsl(220 14% 96%);
+  --secondary-foreground: hsl(220 14% 14%);
+  --muted: hsl(220 14% 96%);
+  --muted-foreground: hsl(218 7% 59%);
+  --accent: hsl(220 14% 96%);
+  --accent-foreground: hsl(220 14% 14%);
+  --destructive: hsl(2 84% 62%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(220 14% 89%);
+  --input: hsl(220 14% 89%);
+  --ring: hsl(221 83% 53%);
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+  --font-mono:
+    'SFMono-Regular', 'Cascadia Code', 'Roboto Mono', 'Noto Sans Mono CJK SC',
+    Consolas, 'Liberation Mono', monospace;
+  --radius: 0.5rem;
+  --shadow-x: 0px;
+  --shadow-y: 2px;
+  --shadow-blur: 12px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.02;
+  --shadow-color: #000000;
+  --shadow-2xs: 0px 2px 12px 0px hsl(0 0% 0% / 0.01);
+  --shadow-xs: 0px 2px 12px 0px hsl(0 0% 0% / 0.01);
+  --shadow-sm:
+    0px 2px 12px 0px hsl(0 0% 0% / 0.02), 0px 1px 2px -1px hsl(0 0% 0% / 0.02);
+  --shadow:
+    0px 2px 12px 0px hsl(0 0% 0% / 0.02), 0px 1px 2px -1px hsl(0 0% 0% / 0.02);
+  --shadow-md:
+    0px 2px 12px 0px hsl(0 0% 0% / 0.02), 0px 2px 4px -1px hsl(0 0% 0% / 0.02);
+  --shadow-lg:
+    0px 2px 12px 0px hsl(0 0% 0% / 0.02), 0px 4px 6px -1px hsl(0 0% 0% / 0.02);
+  --shadow-xl:
+    0px 2px 12px 0px hsl(0 0% 0% / 0.02), 0px 8px 10px -1px hsl(0 0% 0% / 0.02);
+  --shadow-2xl: 0px 2px 12px 0px hsl(0 0% 0% / 0.05);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}

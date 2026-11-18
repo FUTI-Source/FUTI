@@ -1,0 +1,51 @@
+import React from 'react';
+
+import * as m from 'motion/react-m';
+
+import { Separator } from '@/components/ui/separator.tsx';
+
+import { BasicsProps } from '@/components/type';
+
+import { FutiIcon } from '@/assets/svg/futi.tsx';
+import { cn } from '@/lib/utils.ts';
+import Link from 'next/link';
+
+type IFooterProps = BasicsProps;
+
+export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
+  return (
+    <div className={cn('flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:py-6 max-sm:pl-0', className)} style={style}>
+      <m.a
+        href="/"
+        title="Drawn by Navigator Kepler"
+        className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { delay: 1 } }}
+        transition={{ duration: 0.2 }}
+      >
+        Drawn by NAVILAB
+        <FutiIcon className="absolute h-7 [&>path]:fill-white/20" />
+      </m.a>
+
+      <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
+        <Separator orientation="vertical" className="!h-8 bg-white/20" />
+      </m.div>
+      <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
+        <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
+        <div className="flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-6 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-white/30 [&_p]:text-white/20">
+          <p className="max-sm:max-w-full max-sm:text-center">
+            Copyright &copy; 2017 - {new Date().getFullYear()}
+            <Link href="/" className="mx-1" title="🙃 Independent Websites Developer">
+              FUTI
+            </Link>
+            All rights reserved.
+          </p>
+          <p className="max-sm:hidden">/</p>
+          <Link href="/" target="_blank" rel="noreferrer" title="AGPL-3.0">
+            Github Open Source
+          </Link>
+        </div>
+      </m.div>
+    </div>
+  );
+};
