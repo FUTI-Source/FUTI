@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { motion } from 'motion/react';
 import Parallax from 'parallax-js';
@@ -8,14 +8,26 @@ import { BasicsProps } from '@/components/type';
 import backgroundLeftImage from '@/assets/webp/background_left.webp';
 import backgroundRightImage from '@/assets/webp/background_right.webp';
 import useDebounceEffect from '@/hooks/use-debounce-effect.ts';
+import { Image } from '@/components/ui/image';
 
 type IDetroitBackgroundProps = BasicsProps;
 
 export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   const node = useRef<HTMLDivElement>(null);
+  const leftImage = useRef<HTMLImageElement>(null);
+  const rightImage = useRef<HTMLImageElement>(null);
 
   const [isLeftLoaded, setIsLeftLoaded] = useState(false);
   const [isRightLoaded, setIsRightLoaded] = useState(false);
+
+  useEffect(() => {
+    // 缓存图片可能在水合前完成加载，需要补同步加载状态。
+    const left = leftImage.current;
+    const right = rightImage.current;
+    if (left?.complete && left.naturalWidth > 0) setIsLeftLoaded(true);
+    if (right?.complete && right.naturalWidth > 0) setIsRightLoaded(true);
+  }, []);
+
   useDebounceEffect(
     () => {
       if (isLeftLoaded && isRightLoaded && node.current) {
@@ -38,18 +50,22 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
       animate={{ opacity: isLeftLoaded && isRightLoaded ? 1 : 0, transition: { delay: 0.2 } }}
       transition={{ duration: 0.2 }}
     >
-      <img
+      <Image
+        ref={leftImage}
         src={backgroundLeftImage}
         alt="ga_background_left"
         className="absolute !-top-8 !-left-20 h-[calc(100vh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
+        loading="eager"
         onLoad={() => setIsLeftLoaded(true)}
       />
-      <img
+      <Image
+        ref={rightImage}
         src={backgroundRightImage}
         alt="ga_background_left"
         className="absolute !-top-[2rem] !left-[26vw] h-[calc(100vh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
+        loading="eager"
         onLoad={() => setIsRightLoaded(true)}
       />
     </motion.div>

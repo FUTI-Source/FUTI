@@ -139,7 +139,7 @@ export function initCustomCursor() {
   return () => {
     cancelAnimationFrame(rafId);
     document.removeEventListener('mouseover', handleMouseOver, true);
-    document.removeEventListener('mousemove', handleMouseMove, { passive: true });
+    document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseenter', handleMouseEnter);
     document.removeEventListener('mouseleave', handleMouseLeave);
     document.removeEventListener('mousedown', handleMouseDown);

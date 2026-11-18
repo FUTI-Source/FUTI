@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components,react-compiler/react-compiler */
 import React, { useEffect, useRef, useState } from 'react';
 
 import { Highlighter } from '@/components/ui/highlighter';
@@ -23,7 +22,7 @@ const TYPING_SPEED = 15;
 const HOLD_AFTER_TYPING = 200;
 
 export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimationComplete, className, style }) => {
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const started = useRef<boolean>(false);
   const text = useRef<string>('');
 
@@ -69,7 +68,6 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
       clearTimeout(timer.current);
       started.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 每次渲染都会注册一次，但 handler 引用稳定且 start() 已幂等，

@@ -9,6 +9,7 @@ import { BasicsProps } from '@/components/type';
 
 import { FutiIcon } from '@/assets/svg/futi.tsx';
 import { cn } from '@/lib/utils.ts';
+import Link from 'next/link';
 
 type IFooterProps = BasicsProps;
 
@@ -19,7 +20,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <motion.a
             href="/"
-            className={cn('futi-center font-russoOne text-opacity-15 relative cursor-pointer text-xs text-[#737373] select-none', className)}
+            className={cn('futi-center font-russoOne relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
@@ -41,9 +42,9 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             Copyright &copy; 2017 - {new Date().getFullYear()}
             <Tooltip>
               <TooltipTrigger asChild>
-                <a className="mx-1" href="/">
+                <Link href="/" className="mx-1">
                   FUTI
-                </a>
+                </Link>
               </TooltipTrigger>
               <TooltipContent sideOffset={16}>🙃 Independent Websites Developer</TooltipContent>
             </Tooltip>
@@ -52,9 +53,9 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
           <p className="max-sm:hidden">/</p>
           <Tooltip>
             <TooltipTrigger asChild>
-              <a href="/" target="_blank" rel="noreferrer">
+              <Link href="/" target="_blank" rel="noreferrer">
                 Github Open Source
-              </a>
+              </Link>
             </TooltipTrigger>
             <TooltipContent sideOffset={16}>AGPL-3.0</TooltipContent>
           </Tooltip>

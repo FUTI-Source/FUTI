@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { buttonVariants } from '@/components/ui/button.tsx';
 
 import { LINKS } from '@/components/page/profile/introduction/links/consts.tsx';
-import { BasicsProps } from '@/components/type.ts';
+import { EmailLink } from '@/components/page/profile/introduction/links/email-dialog.tsx';
+import { BasicsProps } from '@/components/type';
 
 import { cn } from '@/lib/utils';
 
@@ -23,19 +24,23 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
       initial="hidden"
       animate="visible"
     >
-      {LINKS.map(({ Icon, href, label }, i) => (
-        <motion.a
-          key={i}
-          href={href}
-          target="_blank"
-          className={cn(buttonVariants({ variant: 'ghost' }), 'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2')}
-          rel="noreferrer"
-          variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
-        >
-          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
-          {label}
-        </motion.a>
-      ))}
+      {LINKS.map(({ Icon, href, label }, i) =>
+        label === 'Email' ? (
+          <EmailLink key={i} Icon={Icon} href={href} label={label} />
+        ) : (
+          <motion.a
+            key={i}
+            href={href}
+            target="_blank"
+            className={cn(buttonVariants({ variant: 'ghost' }), 'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2')}
+            rel="noreferrer"
+            variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
+          >
+            <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
+            {label}
+          </motion.a>
+        ),
+      )}
     </motion.div>
   </AnimatePresence>
 );

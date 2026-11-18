@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { logger } from '@/lib/logger';
+
 type JsOptions = {
   type: 'js';
   js?: Partial<HTMLScriptElement>;
@@ -103,17 +105,19 @@ const useExternal = (path?: string, options?: Options) => {
       return;
     }
     const pathname = path.replace(/[|#].*$/, '');
-    if (options?.type === 'css' || (!options?.type && /(^css!|\.css$)/.test(pathname))) {
-      const result = loadCss(path, options?.css);
+    const isCss = options?.type === 'css' || (!options?.type && /(^css!|\.css$)/.test(pathname));
+    const isJs = options?.type === 'js' || (!options?.type && /(^js!|\.js$)/.test(pathname));
+    if (isCss) {
+      const result = loadCss(path, options && 'css' in options ? options.css : undefined);
       ref.current = result.ref;
       setStatus(result.status);
-    } else if (options?.type === 'js' || (!options?.type && /(^js!|\.js$)/.test(pathname))) {
-      const result = loadScript(path, options?.js);
+    } else if (isJs) {
+      const result = loadScript(path, options && 'js' in options ? options.js : undefined);
       ref.current = result.ref;
       setStatus(result.status);
     } else {
       // do nothing
-      console.error("Cannot infer the type of external resource, and please provide a type ('js' | 'css'). " + 'Refer to the https://ahooks.js.org/hooks/dom/use-external/#options');
+      logger.error("Cannot infer the type of external resource, and please provide a type ('js' | 'css'). " + 'Refer to the https://ahooks.js.org/hooks/dom/use-external/#options');
     }
 
     if (!ref.current) {

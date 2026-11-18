@@ -1,4 +1,3 @@
-// eslint-disable-next-line react-compiler/react-compiler
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useRef } from 'react';
 

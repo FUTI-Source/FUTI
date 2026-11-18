@@ -2,7 +2,7 @@ import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 import { trackEvent } from './umami';
 
 function sendToUmami(metric: Metric) {
-  if (!import.meta.env.PROD) return;
+  if (process.env.NODE_ENV !== 'production') return;
 
   let retries = 0;
   const maxRetries = 10; // 最多等待 5 秒，避免脚本加载失败时无限重试
@@ -24,7 +24,7 @@ function sendToUmami(metric: Metric) {
 }
 
 export function initWebVitals() {
-  if (!import.meta.env.PROD) return;
+  if (process.env.NODE_ENV !== 'production') return;
 
   onCLS(sendToUmami);
   onINP(sendToUmami);

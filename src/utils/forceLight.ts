@@ -22,6 +22,7 @@ export function initForceLightTheme() {
 
   // 锁定 iOS Safari 顶部刘海/灵动岛状态栏与底部安全区为浅色（防止系统深色时上下边栏变黑）
   setOrUpdateMeta('theme-color', '#ffffff');
+  setOrUpdateMeta('mobile-web-app-capable', 'yes');
   setOrUpdateMeta('apple-mobile-web-app-capable', 'yes');
   setOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default');
 

@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export async function toggleFullscreen() {
   const doc = document as any;
   const root = document.documentElement as any;
@@ -33,7 +35,7 @@ export async function toggleFullscreen() {
       }
     }
   } catch (err) {
-    console.warn('全屏切换失败:', err);
+    logger.warn('全屏切换失败:', err);
   }
 }
 

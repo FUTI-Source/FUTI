@@ -1,4 +1,5 @@
-/* eslint-disable react-refresh/only-export-components,react-compiler/react-compiler */
+'use client';
+
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 
 import { AnimatePresence } from 'framer-motion';
@@ -15,18 +16,38 @@ const Live2DCore = lazy(() => import('./core.tsx'));
 export enum Live2DEvent {
   INIT = 'init',
   SHOW = 'show',
+  FAILED = 'failed',
 }
 
 type ILive2DProps = BasicsProps & {
   event$?: EventEmitter<Live2DEvent>;
 };
 
+const detectWebGL = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      window.WebGLRenderingContext &&
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')),
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
-  const cubismSDKStatus = useExternal('/live2d/live2dcubismcore.min.js', {
-    js: {
-      async: true,
+  const [webglSupported] = useState<boolean>(detectWebGL);
+  const [failed, setFailed] = useState(false);
+
+  const cubismSDKStatus = useExternal(
+    webglSupported ? '/live2d/live2dcubismcore.min.js' : undefined,
+    {
+      js: {
+        async: true,
+      },
     },
-  });
+  );
 
   const [cubismSdkInit, setCubismSdkInit] = useState(false);
   useEffect(() => {
@@ -44,8 +65,14 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
         event$?.emit(Live2DEvent.INIT);
         break;
       }
+      case Live2DEvent.FAILED: {
+        setFailed(true);
+        break;
+      }
     }
   });
+
+  if (!webglSupported || failed) return null;
 
   return (
     <div className="relative size-64">

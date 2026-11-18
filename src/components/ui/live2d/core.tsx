@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 
+import { logger } from '@/lib/logger';
 import { motion, MotionProps } from 'motion/react';
 import { Application, Ticker } from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
@@ -14,6 +15,7 @@ import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 
 Live2DModel.registerTicker(Ticker);
 
+
 type ILive2DCoreProps = BasicsProps<'canvas'> &
   MotionProps & {
     event$?: EventEmitter<Live2DEvent>;
@@ -23,7 +25,8 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   useAsyncEffect(async () => {
-    if (canvasRef.current) {
+    if (!canvasRef.current) return;
+    try {
       const pixiApp = new Application({
         view: canvasRef.current,
         resizeTo: canvasRef.current,
@@ -43,6 +46,9 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
       pixiApp.stage.addChild(model);
 
       event$?.emit(Live2DEvent.INIT);
+    } catch (error) {
+      logger.warn('Live2D 初始化失败，保留静态形象', error);
+      event$?.emit(Live2DEvent.FAILED);
     }
   }, []);
 

@@ -21,7 +21,7 @@ export function initContentProtection(options: ContentProtectionOptions = {}) {
   } = options;
 
   if (typeof window === 'undefined') return;
-  if (prodOnly && !import.meta.env.PROD) return;
+  if (prodOnly && process.env.NODE_ENV !== 'production') return;
 
   const isEditableElement = (target: EventTarget | null): boolean => {
     if (!(target instanceof HTMLElement)) return false;

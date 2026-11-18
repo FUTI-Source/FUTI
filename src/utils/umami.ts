@@ -27,7 +27,7 @@ export function initUmami(options: UmamiOptions) {
   }
 
   // 仅在生产环境加载 Umami 统计脚本
-  if (!import.meta.env.PROD || !url || !websiteId) return;
+  if (process.env.NODE_ENV !== 'production' || !url || !websiteId) return;
 
   if (document.querySelector('script[data-website-id]')) return;
 
@@ -43,7 +43,7 @@ export function getCurrentLang(): string {
 }
 
 export function trackEvent(eventName: string, data?: Record<string, any>) {
-  if (!import.meta.env.PROD || typeof window === 'undefined' || !window.umami) {
+  if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined' || !window.umami) {
     return;
   }
 
