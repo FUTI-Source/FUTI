@@ -1,6 +1,4 @@
-import { useMemo } from 'react';
-
-import { debounce } from 'underscore';
+import { useCallback, useRef } from 'react';
 
 import useLatest from '@/hooks/use-latest';
 import useUnmount from '@/hooks/use-unmount';
@@ -17,25 +15,32 @@ const useDebounceFn = <T extends noop>(fn: T, options?: DebounceOptions) => {
 
   const wait = options?.wait ?? 1000;
 
-  // 主要调整点：使用 debounce 并转换参数
-  const debounced = useMemo(
-    () =>
-      debounce(
-        (...args: Parameters<T>): ReturnType<T> => fnRef.current(...args),
-        wait,
-        options?.leading, // Underscore 的第三个参数对应 leading 选项
-      ),
-    [wait, options?.leading], // 依赖项需包含实际使用的参数
+  const timerRef = useRef<number | null>(null);
+  const leading = options?.leading;
+
+  const cancel = useCallback(() => {
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }, []);
+
+  const run = useCallback(
+    (...args: Parameters<T>) => {
+      const callLeading = leading && timerRef.current === null;
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = null;
+        if (!leading) fnRef.current(...args);
+      }, wait);
+
+      if (callLeading) return fnRef.current(...args);
+    },
+    [fnRef, leading, wait],
   );
 
-  useUnmount(() => {
-    debounced.cancel();
-  });
+  useUnmount(cancel);
 
-  return {
-    run: debounced,
-    cancel: debounced.cancel,
-  };
+  return { run, cancel };
 };
 
 export default useDebounceFn;

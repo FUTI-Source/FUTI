@@ -1,4 +1,4 @@
-import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
+import type { Metric } from 'web-vitals';
 import { trackEvent } from './umami';
 
 function sendToUmami(metric: Metric) {
@@ -26,7 +26,9 @@ function sendToUmami(metric: Metric) {
 export function initWebVitals() {
   if (process.env.NODE_ENV !== 'production') return;
 
-  onCLS(sendToUmami);
-  onINP(sendToUmami);
-  onLCP(sendToUmami);
+  void import('web-vitals').then(({ onCLS, onINP, onLCP }) => {
+    onCLS(sendToUmami);
+    onINP(sendToUmami);
+    onLCP(sendToUmami);
+  });
 }
