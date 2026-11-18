@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
+import { CircleAlert, CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
 import type { IconType } from '@icons-pack/react-simple-icons';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -52,11 +52,13 @@ interface IEmailLinkProps {
 
 export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
   const [open, setOpen] = useState(false);
-  const [submitState, setSubmitState] = useState<'idle' | 'success' | 'error'>(
-    'idle',
-  );
+  const [submitState, setSubmitState] = useState<
+    'idle' | 'success' | 'partial' | 'error'
+  >('idle');
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const recipient = href.replace(/^mailto:/, '');
+  const isSubmitted =
+    submitState === 'success' || submitState === 'partial';
 
   const form = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
@@ -66,11 +68,11 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
   const onSubmit = async (data: EmailFormData) => {
     try {
       const result = await sendMail(data.email, data.content, data.website);
-      setSubmitState('success');
+      setSubmitState(result.confirmationSent ? 'success' : 'partial');
       setFeedbackMessage(
         result.confirmationSent
           ? `留言已发送至 ${recipient}，确认邮件也已发送。再次点击按钮可清空表单。`
-          : `留言已发送至 ${recipient}，但确认邮件未能送达 ${data.email}。再次点击按钮可清空表单。`,
+          : `站长已收到留言，但确认邮件未能送达 ${data.email}。请检查邮箱地址或垃圾邮件文件夹；留言已成功提交，无需重复发送。点击“完成”清空表单。`,
       );
     } catch (error) {
       const message = (
@@ -85,7 +87,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      if (submitState === 'success') form.reset();
+      if (isSubmitted) form.reset();
       setSubmitState('idle');
       setFeedbackMessage('');
     }
@@ -93,7 +95,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
   };
 
   const resetAfterResult = () => {
-    if (submitState === 'success') form.reset();
+    if (isSubmitted) form.reset();
     setSubmitState('idle');
     setFeedbackMessage('');
   };
@@ -184,7 +186,9 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
                     'text-sm',
                     submitState === 'error'
                       ? 'text-[#ff8a8a]'
-                      : 'text-[#64c6f4]',
+                      : submitState === 'partial'
+                        ? 'text-[#ffd166]'
+                        : 'text-[#64c6f4]',
                   )}
                 >
                   {feedbackMessage}
@@ -200,14 +204,16 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
                   取消
                 </Button>
                 <Button
-                  type={submitState === 'success' ? 'button' : 'submit'}
-                  onClick={submitState === 'success' ? resetAfterResult : undefined}
+                  type={isSubmitted ? 'button' : 'submit'}
+                  onClick={isSubmitted ? resetAfterResult : undefined}
                   disabled={form.formState.isSubmitting}
                   className={cn(
                     'text-white shadow-[0_0_18px_rgba(2_149_229_0.45)]',
                     submitState === 'error'
                       ? 'bg-[#c94b55] hover:bg-[#c94b55]/90'
-                      : 'bg-[#0295e5] hover:bg-[#0295e5]/90',
+                      : submitState === 'partial'
+                        ? 'bg-[#9b741e] hover:bg-[#9b741e]/90'
+                        : 'bg-[#0295e5] hover:bg-[#0295e5]/90',
                   )}
                 >
                   {form.formState.isSubmitting ? (
@@ -219,6 +225,11 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
                     <>
                       <CircleCheck className="size-4" />
                       已发送
+                    </>
+                  ) : submitState === 'partial' ? (
+                    <>
+                      <CircleAlert className="size-4" />
+                      完成
                     </>
                   ) : submitState === 'error' ? (
                     <>
