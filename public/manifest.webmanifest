@@ -5,7 +5,7 @@
   "lang": "zh-CN",
   "description": "FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。",
   "display": "standalone",
-  "display_override": ["window-controls-overlay"],
+  "display_override": ["window-controls-overlay", "standalone"],
   "scope": "/",
   "start_url": "/",
   "theme_color": "#15161a",

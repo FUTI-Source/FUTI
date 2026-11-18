@@ -19,14 +19,17 @@
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
 @media (display-mode: window-controls-overlay) {
   :root {
-    --safe-top: env(titlebar-area-height, 0px);
+    --safe-top: 0px;
   }
-  /* Header 拖拽区域 */
   .header-drag {
+    width: env(titlebar-area-width, 100%);
+    height: env(titlebar-area-height, 2.5rem);
+    margin-top: env(titlebar-area-y, 0px);
+    margin-left: env(titlebar-area-x, 0px);
+    padding-top: 0;
     -webkit-app-region: drag;
     app-region: drag;
   }
-  /* Header 里面按钮/可交互元素禁止拖拽 */
   .header-no-drag {
     -webkit-app-region: no-drag;
     app-region: no-drag;
