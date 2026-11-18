@@ -55,10 +55,10 @@ export const metadata: Metadata = {
     description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'FUTI 个人主页',
+        url: '/icon-512.png',
+        width: 512,
+        height: 512,
+        alt: 'FUTI 应用图标',
       },
     ],
   },
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'FUTI · 个人主页',
     description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
-    images: ['/og-image.png'],
+    images: ['/icon-512.png'],
   },
   appleWebApp: {
     capable: true,
