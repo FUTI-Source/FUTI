@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/icon-192-round.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
-    apple: '/icon-192-round.png',
+    apple: '/icon-192.png',
   },
   manifest: '/manifest.webmanifest',
   robots: {
