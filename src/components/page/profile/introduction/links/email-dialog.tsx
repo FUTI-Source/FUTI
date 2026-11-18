@@ -48,10 +48,11 @@ interface IEmailLinkProps {
   Icon: IconType;
   href: string;
   label: string;
+  initialOpen?: boolean;
 }
 
-export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
-  const [open, setOpen] = useState(false);
+export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initialOpen = false }) => {
+  const [open, setOpen] = useState(initialOpen);
   const [submitState, setSubmitState] = useState<
     'idle' | 'success' | 'partial' | 'error'
   >('idle');

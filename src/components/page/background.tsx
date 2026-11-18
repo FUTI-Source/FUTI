@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { motion } from 'motion/react';
-import Parallax from 'parallax-js';
+import type Parallax from 'parallax-js';
 
 import { BasicsProps } from '@/components/type';
 
@@ -31,10 +31,17 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   useDebounceEffect(
     () => {
       if (isLeftLoaded && isRightLoaded && node.current) {
-        const parallax = new Parallax(node.current);
+        let cancelled = false;
+        let parallax: InstanceType<typeof Parallax> | undefined;
+
+        void import('parallax-js').then(({ default: Parallax }) => {
+          if (cancelled || !node.current) return;
+          parallax = new Parallax(node.current);
+        });
 
         return () => {
-          parallax.destroy();
+          cancelled = true;
+          parallax?.destroy();
         };
       }
     },

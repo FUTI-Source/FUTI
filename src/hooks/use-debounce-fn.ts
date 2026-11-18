@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import _ from 'underscore';
+import { debounce } from 'underscore';
 
 import useLatest from '@/hooks/use-latest';
 import useUnmount from '@/hooks/use-unmount';
@@ -17,10 +17,10 @@ const useDebounceFn = <T extends noop>(fn: T, options?: DebounceOptions) => {
 
   const wait = options?.wait ?? 1000;
 
-  // 主要调整点：使用 _.debounce 并转换参数
+  // 主要调整点：使用 debounce 并转换参数
   const debounced = useMemo(
     () =>
-      _.debounce(
+      debounce(
         (...args: Parameters<T>): ReturnType<T> => fnRef.current(...args),
         wait,
         options?.leading, // Underscore 的第三个参数对应 leading 选项

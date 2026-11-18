@@ -1,6 +1,5 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { DOMMotionComponents, motion, MotionProps } from 'motion/react';
-import { isEmpty } from 'underscore';
 import { AsComp, BasicsProps } from '@/components/type.ts';
 import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
@@ -61,7 +60,7 @@ export const FUTIDynamicText: React.FC<IFUTIDynamicTextProps> = memo(
       const runId = ++runIdRef.current;
       const isStale = () => runId !== runIdRef.current;
 
-      if (!target || isEmpty(target)) return;
+      if (!target) return;
       prevTextRef.current = target;
 
       const texts = target.split('');

@@ -1,8 +1,8 @@
+import { useEffect, useState } from 'react';
+
 import { createHighlighterCore } from '@shikijs/core';
-import { transformerNotationDiff, transformerNotationErrorLevel, transformerNotationFocus, transformerNotationHighlight, transformerNotationWordHighlight } from '@shikijs/transformers';
 import type { HighlighterCore } from '@shikijs/types';
 import { createOnigurumaEngine } from 'shiki/engine/oniguruma';
-import useSWR from 'swr';
 
 import { SHIKI_LANGS } from './langs';
 import { SHIKI_THEME } from './themes';
@@ -28,21 +28,31 @@ const initHighlighter = (): Promise<HighlighterCore> => {
   return highlighterPromise;
 };
 
-export const useHighlight = (text: string, lang: string, theme = 'one-dark-pro') =>
-  useSWR(
-    [lang.toLowerCase(), theme, text].join('-'),
-    async () => {
-      try {
-        const language = lang.toLowerCase();
-        const highlighter = await initHighlighter();
-        return highlighter.codeToHtml(text, {
+export const useHighlight = (text: string, lang: string, theme = 'one-dark-pro') => {
+  const language = lang.toLowerCase();
+  const key = [language, theme, text].join('-');
+  const [result, setResult] = useState<{ key: string; html: string }>();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void initHighlighter()
+      .then((highlighter) => {
+        const html = highlighter.codeToHtml(text, {
           lang: languageMap.includes(language as any) ? language : FALLBACK_LANG,
           theme,
-          transformers: [transformerNotationDiff(), transformerNotationHighlight(), transformerNotationWordHighlight(), transformerNotationFocus(), transformerNotationErrorLevel()],
         });
-      } catch {
-        return '';
-      }
-    },
-    { revalidateOnFocus: false },
-  );
+        if (!cancelled) setResult({ key, html });
+      })
+      .catch(() => {
+        if (!cancelled) setResult({ key, html: '' });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key, language, text, theme]);
+
+  const data = result?.key === key ? result.html : undefined;
+  return { data, isLoading: data === undefined };
+};

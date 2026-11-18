@@ -3,7 +3,9 @@ import React, { useEffect } from 'react';
 
 import { logger } from '@/lib/logger';
 import { motion, MotionProps } from 'motion/react';
-import { Application, Ticker } from 'pixi.js';
+import { Application } from '@pixi/app';
+import { BatchRenderer, extensions } from '@pixi/core';
+import { Ticker, TickerPlugin } from '@pixi/ticker';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
 import { Live2DEvent } from '@/components/ui/live2d/index.tsx';
@@ -12,6 +14,7 @@ import { BasicsProps } from '@/components/type.ts';
 
 import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 
+extensions.add(BatchRenderer, TickerPlugin);
 Live2DModel.registerTicker(Ticker);
 
 type ILive2DCoreProps = BasicsProps<'canvas'> &
