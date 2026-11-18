@@ -10,31 +10,22 @@ import { SHIKI_THEME } from './themes';
 export const languageMap = SHIKI_LANGS.map(({ name }) => name);
 
 const FALLBACK_LANG = 'txt';
-const FALLBACK_LANGS = [FALLBACK_LANG];
 
-let cacheHighlighter: HighlighterCore;
+let highlighterPromise: Promise<HighlighterCore> | undefined;
 
-const initHighlighter = async (lang: string): Promise<HighlighterCore> => {
-  let highlighter = cacheHighlighter;
-  const language = lang.toLowerCase();
-
-  if (highlighter && FALLBACK_LANGS.includes(language)) {
-    return highlighter;
+const initHighlighter = (): Promise<HighlighterCore> => {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighterCore({
+      langs: SHIKI_LANGS,
+      themes: SHIKI_THEME,
+      engine: createOnigurumaEngine(() => import('shiki/wasm')),
+    }).catch((error: unknown) => {
+      highlighterPromise = undefined;
+      throw error;
+    });
   }
 
-  if (languageMap.includes(language as any) && !FALLBACK_LANGS.includes(language)) {
-    FALLBACK_LANGS.push(language);
-  }
-
-  highlighter = await createHighlighterCore({
-    langs: SHIKI_LANGS,
-    themes: SHIKI_THEME,
-    engine: createOnigurumaEngine(() => import('shiki/wasm')),
-  });
-
-  cacheHighlighter = highlighter;
-
-  return highlighter;
+  return highlighterPromise;
 };
 
 export const useHighlight = (text: string, lang: string, theme = 'one-dark-pro') =>
@@ -43,8 +34,8 @@ export const useHighlight = (text: string, lang: string, theme = 'one-dark-pro')
     async () => {
       try {
         const language = lang.toLowerCase();
-        const highlighter = await initHighlighter(language);
-        return highlighter?.codeToHtml(text, {
+        const highlighter = await initHighlighter();
+        return highlighter.codeToHtml(text, {
           lang: languageMap.includes(language as any) ? language : FALLBACK_LANG,
           theme,
           transformers: [transformerNotationDiff(), transformerNotationHighlight(), transformerNotationWordHighlight(), transformerNotationFocus(), transformerNotationErrorLevel()],
