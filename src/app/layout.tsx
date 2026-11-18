@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://zhang-wentao.tech'),
   title: 'FUTI · 个人主页',
   description: '独立开发者个人主页，欢迎通过邮件与我联系。',
   icons: {

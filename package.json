@@ -6,6 +6,7 @@
     "node": "26.x"
   },
   "overrides": {
+    "postcss": "$postcss",
     "pixi-live2d-display": {
       "gh-pages": "^6.3.0"
     }
