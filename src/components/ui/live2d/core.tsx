@@ -29,6 +29,17 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
 
+    const handleContextLost = (contextEvent: Event) => {
+      contextEvent.preventDefault();
+      event$?.emit(Live2DEvent.CONTEXT_LOST);
+    };
+    const handleContextRestored = () => {
+      event$?.emit(Live2DEvent.CONTEXT_RESTORED);
+    };
+
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+
     const destroy = () => {
       if (model) {
         model.parent?.removeChild(model);
@@ -94,9 +105,11 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
     return () => {
       disposed = true;
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       destroy();
     };
-  }, []);
+  }, [event$]);
 
   return <motion.canvas ref={canvasRef} {...rest} />;
 };

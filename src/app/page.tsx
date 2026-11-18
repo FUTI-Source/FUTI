@@ -29,6 +29,11 @@ const Home: React.FC = () => {
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
   live2dEvent$.useSubscription((target) => {
     switch (target) {
+      case Live2DEvent.LOADING:
+      case Live2DEvent.FAILED: {
+        setProfileImageVisible(true);
+        break;
+      }
       case Live2DEvent.SHOW: {
         setProfileImageVisible(false);
         break;
