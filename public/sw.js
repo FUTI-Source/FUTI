@@ -1,11 +1,9 @@
-const CACHE_NAME = 'futi-site-v1';
+const CACHE_NAME = 'futi-site-v2';
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-192-maskable.png',
-  '/icon-512.png',
-  '/icon-512-maskable.png',
+  '/icon-192-round.png',
+  '/icon-512-round.png',
   '/og-image.png',
   '/fonts/Geometos.woff',
   '/fonts/Kanit-300.woff2',
