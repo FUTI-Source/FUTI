@@ -1,20 +1,16 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { logger } from '@/lib/logger';
 import { motion, MotionProps } from 'motion/react';
-import { Application, Ticker } from 'pixi.js';
-import { Live2DModel } from 'pixi-live2d-display/cubism4';
+import { Application } from 'pixi.js';
+import { Live2DModel } from '@jannchie/pixi-live2d-display/cubism4';
 
 import { Live2DEvent } from '@/components/ui/live2d/index.tsx';
 
 import { BasicsProps } from '@/components/type.ts';
 
-import useAsyncEffect from '@/hooks/use-async-effect.ts';
 import { EventEmitter } from '@/hooks/use-event-emitter.ts';
-
-Live2DModel.registerTicker(Ticker);
-
 
 type ILive2DCoreProps = BasicsProps<'canvas'> &
   MotionProps & {
@@ -24,32 +20,82 @@ type ILive2DCoreProps = BasicsProps<'canvas'> &
 const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-  useAsyncEffect(async () => {
-    if (!canvasRef.current) return;
-    try {
-      const pixiApp = new Application({
-        view: canvasRef.current,
-        resizeTo: canvasRef.current,
-        backgroundAlpha: 0,
-        resolution: 2,
-        antialias: true,
-      });
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      const model = await Live2DModel.from('/live2d/futiwolf/futi.model3.json', { autoInteract: false });
+    let disposed = false;
+    let initialized = false;
+    let pixiApp: Application | null = null;
+    let model: Live2DModel | null = null;
 
-      model.scale.set(0.125);
+    const destroy = () => {
+      if (model) {
+        model.parent?.removeChild(model);
+        model.destroy({ children: true, texture: true, textureSource: true });
+        model = null;
+      }
 
-      model.position.x = -70;
-      model.position.y = 10;
-      model.anchor.set(0, 0);
+      if (pixiApp && initialized) {
+        pixiApp.destroy({ removeView: false }, { children: true });
+        pixiApp = null;
+        initialized = false;
+      }
+    };
 
-      pixiApp.stage.addChild(model);
+    const initialize = async () => {
+      try {
+        pixiApp = new Application();
+        await pixiApp.init({
+          canvas,
+          resizeTo: canvas,
+          backgroundColor: 0x000000,
+          backgroundAlpha: 0,
+          resolution: 1,
+          antialias: true,
+        });
+        initialized = true;
 
-      event$?.emit(Live2DEvent.INIT);
-    } catch (error) {
-      logger.warn('Live2D 初始化失败，保留静态形象', error);
-      event$?.emit(Live2DEvent.FAILED);
-    }
+        if (disposed) {
+          destroy();
+          return;
+        }
+
+        model = await Live2DModel.from(
+          '/live2d/futiwolf/futi.model3.json',
+          {
+            autoHitTest: false,
+            autoFocus: false,
+            ticker: pixiApp.ticker,
+          },
+        );
+
+        if (disposed) {
+          destroy();
+          return;
+        }
+
+        model.scale.set(0.125);
+        model.position.set(-70, 10);
+        model.anchor.set(0, 0);
+
+        pixiApp.stage.addChild(model);
+        event$?.emit(Live2DEvent.INIT);
+      } catch (error) {
+        destroy();
+        if (disposed) return;
+
+        logger.warn('Live2D 初始化失败，保留静态形象', error);
+        event$?.emit(Live2DEvent.FAILED);
+      }
+    };
+
+    void initialize();
+
+    return () => {
+      disposed = true;
+      destroy();
+    };
   }, []);
 
   return <motion.canvas ref={canvasRef} {...rest} />;
