@@ -6,7 +6,12 @@ for (const key of Object.keys(process.env)) {
   }
 }
 
-const result = spawnSync("npm", ["ci"], {
+const command = process.argv.slice(2);
+if (command.length === 0) {
+  throw new Error("Pass an npm command to run.");
+}
+
+const result = spawnSync("npm", command, {
   env: process.env,
   stdio: "inherit",
 });
