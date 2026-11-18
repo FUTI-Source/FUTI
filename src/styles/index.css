@@ -102,6 +102,23 @@
   white-space: nowrap;
 }
 
+body,
+body * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+body input,
+body textarea,
+body select,
+body [contenteditable='true'],
+body [contenteditable=''] {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
 .email-dialog-content {
   width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
   max-width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/components/pwa/service-worker-registration';
+import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SITE_URL } from '@/lib/site';
 
 import './globals.css';
@@ -102,6 +103,7 @@ export default function RootLayout({
       <body className={geometos.variable}>
         {children}
         <ServiceWorkerRegistration />
+        <SiteInteractionGuard />
       </body>
     </html>
   );
