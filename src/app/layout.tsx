@@ -73,6 +73,9 @@ export const metadata: Metadata = {
     title: 'FUTI',
     statusBarStyle: 'black',
   },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+  },
 };
 
 export const viewport: Viewport = {
