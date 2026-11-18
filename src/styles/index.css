@@ -85,22 +85,6 @@
   background-image: linear-gradient(to right, rgb(55, 239, 249), rgb(0, 145, 228), rgb(100, 198, 244), rgb(100, 192, 236));
 }
 
-.home-hero {
-  transform-origin: center;
-}
-
-@media (min-width: 1024px) and (min-height: 600px) and (max-width: 1599px) {
-  .home-hero {
-    transform: scale(1.06);
-  }
-}
-
-@media (min-width: 1280px) and (min-height: 620px) and (max-width: 1599px) {
-  .home-hero {
-    transform: scale(1.1);
-  }
-}
-
 .futi-center {
   @apply flex items-center justify-center;
 }

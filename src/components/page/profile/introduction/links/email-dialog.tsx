@@ -109,10 +109,10 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
           aria-label={label}
           className={cn(
             buttonVariants({ variant: 'ghost' }),
-            'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-1 max-sm:text-sm',
+            'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2',
           )}
         >
-          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85 max-sm:size-3.5" />
+          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
           {label}
         </motion.button>
       </DialogTrigger>

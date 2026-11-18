@@ -68,7 +68,7 @@ const Home: React.FC = () => {
       <Header />
       <main className="flex flex-1 flex-col">
         <DetroitBackground />
-        <div className="home-hero flex h-full w-full flex-col items-center justify-center gap-4 text-center">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
           <ProfileWrapper
             className="futi-center relative overflow-hidden"
             initial={{ opacity: 0, width: 0, height: 0 }}

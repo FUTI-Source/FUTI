@@ -16,7 +16,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
   <AnimatePresence>
     <motion.div
       className={cn(
-        'flex flex-wrap justify-center gap-x-4 gap-y-1 max-sm:w-full max-sm:flex-nowrap max-sm:px-0 max-sm:gap-x-0',
+        'flex flex-wrap justify-center gap-x-4 gap-y-1 max-sm:w-full max-sm:px-2 max-sm:gap-x-1',
         className,
       )}
       style={style}
@@ -34,10 +34,10 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
 
         const className = cn(
           buttonVariants({ variant: 'ghost' }),
-          'group cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:!bg-accent/20 hover:text-white max-sm:px-1 max-sm:text-sm',
+          'group cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:!bg-accent/20 hover:text-white max-sm:px-2',
         );
         const icon = (
-          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85 max-sm:size-3.5" />
+          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
         );
 
         if (!href) {
