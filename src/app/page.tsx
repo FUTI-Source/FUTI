@@ -78,7 +78,7 @@ const Home: React.FC = () => {
             <AnimatePresence>
               {profileImageVisible && (
                 <motion.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                  <Image src={profileImage} alt="futiwolf,LF112" className="size-64" loading="eager" />
+                  <Image src={profileImage} alt="futiwolf,LF112" className="size-64 bg-none" loading="eager" />
                 </motion.div>
               )}
             </AnimatePresence>
