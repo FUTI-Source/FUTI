@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/patch-live2d-parser.cjs && next build",
     "start": "next start",
     "postinstall": "node scripts/patch-live2d-parser.cjs",
     "lint": "next lint",
