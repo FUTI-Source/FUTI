@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { Loader2, Send } from 'lucide-react';
+import { CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
 import type { IconType } from '@icons-pack/react-simple-icons';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -40,22 +39,6 @@ const emailSchema = z.object({
 
 type EmailFormData = z.infer<typeof emailSchema>;
 
-const mailToastOptions = {
-  className: 'font-sans',
-  descriptionClassName: '!text-[#ecf6ff]/60',
-  duration: 5000,
-  style: {
-    background: 'rgba(27, 30, 36, 0.96)',
-    border: '1px solid rgba(2, 149, 229, 0.4)',
-    borderTop: '2px solid #0295e5',
-    borderRadius: '12px',
-    boxShadow: '0 0 36px rgba(2, 149, 229, 0.28)',
-    color: '#ecf6ff',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-  },
-};
-
 const itemVariants = {
   hidden: { opacity: 0, y: -10 },
   visible: { opacity: 1, y: 0 },
@@ -69,6 +52,10 @@ interface IEmailLinkProps {
 
 export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
   const [open, setOpen] = useState(false);
+  const [submitState, setSubmitState] = useState<'idle' | 'success' | 'error'>(
+    'idle',
+  );
+  const [feedbackMessage, setFeedbackMessage] = useState('');
   const recipient = href.replace(/^mailto:/, '');
 
   const form = useForm<EmailFormData>({
@@ -79,32 +66,40 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
   const onSubmit = async (data: EmailFormData) => {
     try {
       const result = await sendMail(data.email, data.content, data.website);
-      if (result.confirmationSent) {
-        toast.success('留言已发送，确认邮件已送达你的邮箱', {
-          description: `内容已发送至 ${recipient}，并已向 ${data.email} 发出确认邮件`,
-          ...mailToastOptions,
-        });
-      } else {
-        toast.success('留言已发送', {
-          description: `内容已发送至 ${recipient}，但确认邮件未能送达 ${data.email}`,
-          ...mailToastOptions,
-        });
-      }
-      setOpen(false);
-      form.reset();
+      setSubmitState('success');
+      setFeedbackMessage(
+        result.confirmationSent
+          ? `留言已发送至 ${recipient}，确认邮件也已发送。再次点击按钮可清空表单。`
+          : `留言已发送至 ${recipient}，但确认邮件未能送达 ${data.email}。再次点击按钮可清空表单。`,
+      );
     } catch (error) {
       const message = (
         error as { response?: { data?: { error?: { message?: string } } } }
       ).response?.data?.error?.message;
-      toast.error('发送失败', {
-        description: message ?? '请稍后重试',
-        ...mailToastOptions,
-      });
+      setSubmitState('error');
+      setFeedbackMessage(
+        `${message ?? '发送失败，请稍后重试'}；点击“重试提交”可保留内容再次发送。`,
+      );
     }
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      if (submitState === 'success') form.reset();
+      setSubmitState('idle');
+      setFeedbackMessage('');
+    }
+    setOpen(nextOpen);
+  };
+
+  const resetAfterResult = () => {
+    if (submitState === 'success') form.reset();
+    setSubmitState('idle');
+    setFeedbackMessage('');
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <motion.button
           type="button"
@@ -182,6 +177,19 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
                   </FormItem>
                 )}
               />
+              {feedbackMessage && (
+                <p
+                  role={submitState === 'error' ? 'alert' : 'status'}
+                  className={cn(
+                    'text-sm',
+                    submitState === 'error'
+                      ? 'text-[#ff8a8a]'
+                      : 'text-[#64c6f4]',
+                  )}
+                >
+                  {feedbackMessage}
+                </p>
+              )}
               <DialogFooter className="mt-2">
                 <Button
                   type="button"
@@ -192,14 +200,30 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label }) => {
                   取消
                 </Button>
                 <Button
-                  type="submit"
+                  type={submitState === 'success' ? 'button' : 'submit'}
+                  onClick={submitState === 'success' ? resetAfterResult : undefined}
                   disabled={form.formState.isSubmitting}
-                  className="bg-[#0295e5] text-white shadow-[0_0_18px_rgba(2_149_229_0.45)] hover:bg-[#0295e5]/90"
+                  className={cn(
+                    'text-white shadow-[0_0_18px_rgba(2_149_229_0.45)]',
+                    submitState === 'error'
+                      ? 'bg-[#c94b55] hover:bg-[#c94b55]/90'
+                      : 'bg-[#0295e5] hover:bg-[#0295e5]/90',
+                  )}
                 >
                   {form.formState.isSubmitting ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
                       发送中…
+                    </>
+                  ) : submitState === 'success' ? (
+                    <>
+                      <CircleCheck className="size-4" />
+                      已发送
+                    </>
+                  ) : submitState === 'error' ? (
+                    <>
+                      <CircleX className="size-4" />
+                      重试提交
                     </>
                   ) : (
                     <>
