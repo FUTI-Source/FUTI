@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: SITE_URL,
       changeFrequency: 'monthly',
       priority: 1,
+      images: [`${SITE_URL}/og-image.png`],
     },
   ];
 }

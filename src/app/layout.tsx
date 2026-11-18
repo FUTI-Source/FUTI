@@ -14,6 +14,32 @@ const geometos = localFont({
   preload: true,
 });
 
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: 'FUTI · 个人主页',
+      inLanguage: 'zh-CN',
+      about: { '@id': `${SITE_URL}/#person` },
+      publisher: { '@id': `${SITE_URL}/#person` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${SITE_URL}/#person`,
+      name: '张文涛',
+      alternateName: 'FUTI',
+      url: SITE_URL,
+      image: `${SITE_URL}/og-image.png`,
+      description: 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。',
+      jobTitle: '全栈开发者',
+      knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
+    },
+  ],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: 'FUTI',
@@ -101,6 +127,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={geometos.variable}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+          }}
+        />
         {children}
         <ServiceWorkerRegistration />
         <SiteInteractionGuard />
