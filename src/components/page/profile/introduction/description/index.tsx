@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 
 import { FUTIDynamicText } from '@/components/ui/dynamic-text';
 
@@ -32,7 +32,7 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
     >
       <FUTIDynamicText
         className="font-ubuntu !leading-none"
-        as={motion.h2}
+        as={m.h2}
         onAnimationComplete={() => typingEvent$.emit(TextDeveloperEvent.START)}
       >
         A Full Stack
