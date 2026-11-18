@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    inlineCss: true,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
