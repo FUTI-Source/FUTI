@@ -57,11 +57,12 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
       }
     };
 
-    const initialize = async () => {
+    const initialize = async (width: number, height: number) => {
       try {
         pixiApp = new Application({
           view: canvas,
-          resizeTo: canvas,
+          width,
+          height,
           backgroundColor: 0x000000,
           backgroundAlpha: 0,
           resolution: 1,
@@ -99,10 +100,21 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
       }
     };
 
-    initialization = initialize();
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (disposed || width <= 0 || height <= 0) return;
+
+      if (pixiApp) {
+        pixiApp.renderer.resize(width, height);
+      } else if (!initialization) {
+        initialization = initialize(width, height);
+      }
+    });
+    resizeObserver.observe(canvas);
 
     return () => {
       disposed = true;
+      resizeObserver.disconnect();
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       if (initialization) {
