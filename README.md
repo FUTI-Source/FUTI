@@ -73,6 +73,7 @@ Vercel Serverless 的关键约束（已在代码中落实）：
 
 - 使用 `export const runtime = 'nodejs'`（nodemailer 不能跑在 Edge Runtime）。
 - 两封邮件都 `await` 发送完成后才 `return Response`，避免函数提前冻结丢信。
+- Nodemailer 启用最多 2 条 SMTP 连接的连接池，复用连接发送站长邮件与确认邮件，并在实例温热时减少重复 TLS/SMTP 握手；冷启动仍需建立新连接。
 - Vercel 仅封出站 25 端口，465/587 开放，139 的 465 可直连。
 - 显式设置较短的连接/握手/套接字超时（8s/8s/10s），控制在函数超时预算内。
 - 保留 EHLO `name`（发件域名）与 `tls.servername`，规避 139 反垃圾 `550 Mail rejected score`。
