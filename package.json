@@ -5,6 +5,14 @@
   "engines": {
     "node": "26.x"
   },
+  "browserslist": [
+    "chrome >= 125",
+    "edge >= 125",
+    "firefox >= 126",
+    "safari >= 17.5",
+    "ios >= 17.5",
+    "and_chr >= 125"
+  ],
   "overrides": {
     "postcss": "$postcss"
   },
