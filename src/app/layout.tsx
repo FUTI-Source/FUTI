@@ -17,6 +17,7 @@ const geometos = localFont({
 // 公共常量配置（建议图片使用带域名的绝对路径，以确保微信/QQ抓取成功）
 const SITE_NAME = 'FUTI · 个人主页';
 const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
+const SITE_ICON_PATH = '/favicon.ico';
 const SITE_IMAGE_PATH = '/icon-192.png';
 const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
 const SOCIAL_IMAGE_PATH = '/og-image.png';
@@ -65,10 +66,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: SITE_IMAGE_PATH, sizes: '192x192', type: 'image/png' },
+      { url: SITE_ICON_PATH },
     ],
-    apple: SITE_IMAGE_PATH,
+    apple: SITE_ICON_PATH,
   },
   manifest: '/manifest.webmanifest',
   robots: {
