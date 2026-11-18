@@ -44,7 +44,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
       )} 
       style={style}
     >
-      <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4] shadow-sm" />
+      <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-[#37eff9]/60 via-[#0091e4]/60 to-[#64c6f4]/60" />
 
       <FUTIDynamicText
         as={motion.p}

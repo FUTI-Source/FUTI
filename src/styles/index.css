@@ -44,10 +44,15 @@
     top: auto;
     bottom: 0;
     height: 1px;
+    opacity: 0.28;
   }
   .header-no-drag {
     position: relative;
     z-index: 1;
+    color: rgba(255, 255, 255, 0.68);
+    font-family: system-ui, sans-serif;
+    letter-spacing: 0.02em;
+    text-shadow: none;
     -webkit-app-region: no-drag;
     app-region: no-drag;
   }
