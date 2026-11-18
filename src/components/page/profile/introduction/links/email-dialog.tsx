@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { CircleAlert, CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
 import type { IconType } from '@icons-pack/react-simple-icons';
 import { useForm } from 'react-hook-form';

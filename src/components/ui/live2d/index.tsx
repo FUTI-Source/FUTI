@@ -2,7 +2,7 @@
 
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 
 import { Loading } from '@/components/ui/loading';
 

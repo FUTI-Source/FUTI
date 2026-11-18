@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 import { Live2D, Live2DEvent } from '@/components/ui/live2d';
 import { ScrollArea } from '@/components/ui/scroll-area';

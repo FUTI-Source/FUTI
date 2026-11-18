@@ -6,7 +6,7 @@
 
 - Next.js 15（App Router）+ React 19 + TypeScript
 - Tailwind CSS v4（沿用原设计 Token，无 UI 重写）
-- shadcn/ui（Radix）+ framer-motion + sonner + zod + react-hook-form
+- shadcn/ui（Radix）+ Motion + zod + react-hook-form
 - pixi.js + pixi-live2d-display（Live2D 形象）
 - nodemailer + 139 邮箱 SMTP（Node Runtime Route Handler）
 
@@ -15,7 +15,7 @@
 ```
 nextjs-site/
 ├── app/
-│   ├── layout.tsx            # 根布局（metadata、字体、Toaster）
+│   ├── layout.tsx            # 根布局（metadata 与全局字体）
 │   ├── page.tsx              # 首页（客户端组件，迁移自原 Home）
 │   ├── globals.css           # 样式入口
 │   ├── error.tsx             # 渲染错误边界

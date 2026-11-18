@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { DOMMotionComponents, motion, MotionProps } from 'framer-motion';
+import { DOMMotionComponents, motion, MotionProps } from 'motion/react';
 
 import { AsComp, BasicsProps } from '@/components/type.ts';
 
