@@ -1,5 +1,7 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
+import { SITE_URL } from '@/lib/site';
+
 import type { SendMailRequest, SendMailResponse } from '../types';
 
 interface SmtpConfig {
@@ -58,33 +60,135 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
+const SITE_NAME = 'FUTI · 个人主页';
+const MAIL_LOGO = `${SITE_URL}/icon-192.png`;
+const ACCENT = '#3A8CE0';
+const ACCENT_TEXT = '#1D6FC7';
+const ACCENT_TINT = '#E9F2FD';
+const TITLE_COLOR = '#15181E';
+const MUTED_COLOR = '#6B7280';
+const FAINT_COLOR = '#9AA3AF';
+
+/** 收件箱预览文本：压平换行并截断，避免整段正文被塞进摘要 */
+function toPreheader(value: string, max = 90): string {
+  const flat = value.replace(/\s+/g, ' ').trim();
+  return escapeHtml(flat.length > max ? `${flat.slice(0, max)}…` : flat);
+}
+
+interface MailShellOptions {
+  preheader: string;
+  title: string;
+  subtitle: string;
+  cardLabel: string;
+  cardHighlight?: string;
+  cardBody: string;
+  ctaText: string;
+  ctaHref: string;
+  footerNote: string;
+}
+
+/**
+ * 统一的邮件外壳：600px 单列卡片 + 顶部品牌色条 + 圆角图标 + 留言卡 + 胶囊按钮。
+ * 全程表格布局与内联样式，避免 Gmail / Outlook / QQ 邮箱剥离 <style> 后变形。
+ */
+function buildMailShell({
+  preheader,
+  title,
+  subtitle,
+  cardLabel,
+  cardHighlight,
+  cardBody,
+  ctaText,
+  ctaHref,
+  footerNote,
+}: MailShellOptions): string {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light only" />
+<meta name="supported-color-schemes" content="light only" />
+<title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F2F5F9;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;color:transparent;">${preheader}</div>
+<div style="margin:0;padding:28px 12px;background-color:#F2F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Arial,sans-serif;">
+  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;margin:0 auto;background-color:#FFFFFF;border:1px solid #E8EDF4;border-radius:16px;">
+    <tr>
+      <td style="height:6px;background-color:${ACCENT};border-radius:16px 16px 0 0;font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:32px 24px 0;">
+        <img src="${MAIL_LOGO}" width="72" height="72" alt="${SITE_NAME}" style="display:block;width:72px;height:72px;border:0;border-radius:18px;" />
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:20px 28px 0;">
+        <h1 style="margin:0;font-size:22px;line-height:1.45;font-weight:700;color:${TITLE_COLOR};">${title}</h1>
+        <p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:${MUTED_COLOR};">${subtitle}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px 28px 0;">
+        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;background-color:#F7F9FC;border-radius:12px;">
+          <tr>
+            <td style="padding:20px;">
+              <div style="font-size:12px;font-weight:600;letter-spacing:0.08em;color:${FAINT_COLOR};">${cardLabel}</div>
+              ${cardHighlight ? `<div style="margin-top:6px;font-size:15px;font-weight:600;color:${ACCENT_TEXT};word-break:break-all;">${cardHighlight}</div>` : ''}
+              <div style="margin:16px 0;border-top:1px dashed #DBE4F0;font-size:0;line-height:0;">&nbsp;</div>
+              <div style="font-size:15px;line-height:1.8;color:#2B3038;word-break:break-word;">${cardBody}</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:26px 28px 0;">
+        <a href="${ctaHref}" style="display:inline-block;padding:12px 30px;font-size:14px;font-weight:600;line-height:1;color:${ACCENT_TEXT};text-decoration:none;background-color:${ACCENT_TINT};border-radius:999px;">${ctaText}</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding:26px 28px 30px;">
+        <div style="border-top:1px dashed #E3E9F2;font-size:0;line-height:0;">&nbsp;</div>
+        <p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:${FAINT_COLOR};">${footerNote}</p>
+        <p style="margin:6px 0 0;font-size:12px;line-height:1.7;"><a href="${SITE_URL}" style="color:${ACCENT_TEXT};text-decoration:none;">www.zhang-wentao.tech</a></p>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>`;
+}
+
 function buildOwnerHtml(dto: SendMailRequest): string {
   const safeEmail = escapeHtml(dto.email);
   const safeContent = escapeHtml(dto.content).replace(/\n/g, '<br />');
-  return [
-    '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333;">',
-    '<p style="margin:0 0 12px;">你好，你收到一条来自网站联系表单的新留言。</p>',
-    `<p style="margin:0 0 12px;"><strong>发件人邮箱：</strong>${safeEmail}</p>`,
-    '<div style="padding:12px 16px;background:#f5f7fa;border-radius:8px;line-height:1.7;">',
-    safeContent,
-    '</div>',
-    '</div>',
-  ].join('');
+  return buildMailShell({
+    preheader: toPreheader(dto.content),
+    title: '收到一条新的留言',
+    subtitle: '来自网站联系表单',
+    cardLabel: '发件人',
+    cardHighlight: safeEmail,
+    cardBody: safeContent,
+    ctaText: '回复留言者',
+    ctaHref: `mailto:${safeEmail}?subject=${encodeURIComponent('回复：网站留言')}`,
+    footerNote: '此邮件由 FUTI 个人主页自动发出，直接回复将发送给留言者。',
+  });
 }
 
 function buildConfirmationHtml(dto: SendMailRequest): string {
-  const safeEmail = escapeHtml(dto.email);
   const safeContent = escapeHtml(dto.content).replace(/\n/g, '<br />');
-  return [
-    '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333;">',
-    `<p style="margin:0 0 12px;">你好 ${safeEmail}，</p>`,
-    '<p style="margin:0 0 12px;">你通过网站联系表单提交的留言已成功发送，我们会尽快查阅并回复你。</p>',
-    '<div style="padding:12px 16px;background:#f5f7fa;border-radius:8px;line-height:1.7;margin:0 0 12px;">',
-    safeContent,
-    '</div>',
-    '<p style="margin:0;color:#888;font-size:12px;">此邮件由系统自动发送，请勿直接回复。</p>',
-    '</div>',
-  ].join('');
+  return buildMailShell({
+    preheader: '你的留言已成功送达 FUTI，我会尽快查阅并回复。',
+    title: '留言已送达',
+    subtitle: `感谢你的来信，${escapeHtml(dto.email)}，我会尽快回复。`,
+    cardLabel: '你的留言',
+    cardBody: safeContent,
+    ctaText: '返回个人主页',
+    ctaHref: SITE_URL,
+    footerNote: '此邮件由系统自动发送，请勿直接回复。',
+  });
 }
 
 function mapMailError(error: unknown): string {
@@ -120,7 +224,17 @@ export async function sendContactMail(
       to: config.to,
       replyTo: dto.email,
       subject: `网站留言 · 来自 ${dto.email}`,
-      text: `发件人邮箱：${dto.email}\n\n${dto.content}`,
+      text: [
+        '你收到一条来自网站联系表单的新留言。',
+        '',
+        `发件人邮箱：${dto.email}`,
+        '',
+        dto.content,
+        '',
+        '——',
+        'FUTI · 个人主页',
+        SITE_URL,
+      ].join('\n'),
       html: buildOwnerHtml(dto),
     });
     ownerMessageId = info.messageId;
@@ -141,12 +255,16 @@ export async function sendContactMail(
       to: dto.email,
       subject: '留言提交成功 · 我们已收到你的消息',
       text: [
-        `你好 ${dto.email}，`,
+        '你好，',
         '',
-        '你通过网站联系表单提交的留言已成功发送，我们会尽快查阅并回复你。',
+        '你通过网站联系表单提交的留言已成功发送，我会尽快查阅并回复。',
         '',
         '你的留言内容：',
         dto.content,
+        '',
+        '——',
+        'FUTI · 个人主页',
+        SITE_URL,
       ].join('\n'),
       html: buildConfirmationHtml(dto),
     });
