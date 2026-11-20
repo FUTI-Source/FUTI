@@ -96,6 +96,8 @@ const Home: React.FC = () => {
                       sizes="(max-width: 640px) 48vw, 240px"
                       quality={80}
                       decoding="async"
+                      loading="eager"
+                      fetchPriority="high"
                       priority
                     />
                   </m.div>
