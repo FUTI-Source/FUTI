@@ -153,10 +153,19 @@ body [contenteditable=''] {
   user-select: text !important;
 }
 
+/* 邮件弹窗：宽度按视口留边，高度随 dvh 收缩，内容区自适应滚动。 */
 .email-dialog-content {
-  width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
-  max-width: min(28rem, calc(100vw - clamp(1rem, 8vw, 2rem)));
-  max-height: calc(100dvh - clamp(1rem, 6vh, 2rem));
+  --email-dialog-gutter: clamp(0.75rem, 5vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: min(28rem, calc(100dvw - var(--email-dialog-gutter)));
+  max-width: min(28rem, calc(100dvw - var(--email-dialog-gutter)));
+  max-height: calc(
+    100dvh - max(var(--email-dialog-gutter), var(--safe-top)) -
+      max(var(--email-dialog-gutter), var(--safe-bottom))
+  );
+  overflow: hidden;
 }
 
 .email-dialog-content [data-slot='dialog-close'] {
@@ -165,7 +174,20 @@ body [contenteditable=''] {
 }
 
 .email-dialog-body {
-  padding: clamp(0.75rem, 4vw, 1.5rem);
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: clamp(0.875rem, 4vw, 1.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.email-dialog-body [data-slot='dialog-title'] {
+  font-size: clamp(1.0625rem, 4.5vw, 1.25rem);
+}
+
+.email-dialog-body [data-slot='dialog-description'] {
+  font-size: clamp(0.8125rem, 3.5vw, 0.875rem);
+  line-height: 1.5;
 }
 
 .email-dialog-form {
@@ -173,7 +195,32 @@ body [contenteditable=''] {
 }
 
 .email-dialog-form > * + * {
-  margin-top: clamp(0.75rem, 2.5vh, 1rem);
+  margin-top: clamp(0.625rem, 2.5vh, 1rem);
+}
+
+.email-dialog-form textarea {
+  min-height: clamp(5.5rem, 20dvh, 8rem);
+  max-height: 32dvh;
+}
+
+/* 横屏手机 / 很矮的窗口：进一步压缩留白与输入区高度 */
+@media (max-height: 30rem) {
+  .email-dialog-body {
+    padding: clamp(0.625rem, 3vw, 1rem);
+  }
+
+  .email-dialog-form {
+    margin-top: 0.625rem;
+  }
+
+  .email-dialog-form > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .email-dialog-form textarea {
+    min-height: 4.5rem;
+    max-height: 8rem;
+  }
 }
 
 @media (max-width: 640px) {
