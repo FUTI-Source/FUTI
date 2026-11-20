@@ -84,7 +84,7 @@ const Home: React.FC = () => {
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />
-          <div className="my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
+          <div className="futi-home-stack my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
             <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
               <AnimatePresence>
                 {profileImageVisible && (
