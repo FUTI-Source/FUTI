@@ -21,6 +21,26 @@
   color-scheme: dark;
 }
 
+/* iOS 26.1+ 会在主屏应用的状态栏区域强制绘制深色渐变遮罩，网页侧无法关闭；
+   这里叠加一层反向的亮色渐变做视觉补偿，让顶部与下方背景平顺衔接。
+   仅对 iOS 主屏应用生效（由首屏脚本添加 .ios-standalone）。 */
+.ios-standalone::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--safe-top);
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.08) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
 /* 无层级的 reset 里 main 被固定为 display:block，会盖过 utilities 的 flex；
    这里显式恢复纵向 flex，让 main 撑满剩余高度、内部 my-auto 生效。 */
 main {
