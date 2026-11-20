@@ -23,10 +23,45 @@ type ILive2DCoreProps = BasicsProps<'canvas'> &
     event$?: EventEmitter<Live2DEvent>;
   };
 
-const MODEL_BASE_SIZE = 256;
-const MODEL_BASE_SCALE = 0.125;
-const MODEL_BASE_X = -70;
-const MODEL_BASE_Y = 10;
+type ContentBounds = { x: number; y: number; width: number; height: number };
+
+const CONTENT_PADDING = 0.05;
+
+// 读取当前姿态下所有可见 drawable 的顶点范围，换算成模型本地像素坐标。
+const measureContentBounds = (target: Live2DModel): ContentBounds => {
+  const internal = target.internalModel as unknown as {
+    pixelsPerUnit: number;
+    originalWidth: number;
+    originalHeight: number;
+    coreModel: {
+      getDrawableCount: () => number;
+      getDrawableOpacity: (index: number) => number;
+      getDrawableVertexPositions: (index: number) => Float32Array;
+    };
+  };
+  const { pixelsPerUnit, originalWidth, originalHeight, coreModel } = internal;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (let index = 0; index < coreModel.getDrawableCount(); index += 1) {
+    if (coreModel.getDrawableOpacity(index) <= 0.01) continue;
+
+    const vertices = coreModel.getDrawableVertexPositions(index);
+    for (let vertex = 0; vertex < vertices.length; vertex += 2) {
+      const x = vertices[vertex] * pixelsPerUnit + originalWidth / 2;
+      const y = -vertices[vertex + 1] * pixelsPerUnit + originalHeight / 2;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+};
 
 const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -40,13 +75,24 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
+    let contentBounds: ContentBounds | null = null;
 
-    // 画布随视口缩放时，按比例同步模型大小与位移，避免人物被裁切或偏位。
+    // 按当前姿态的实际内容范围等比缩放并居中，保证人物始终完整落在头像框内。
     const applyModelLayout = (width: number, height: number) => {
       if (!model) return;
-      const ratio = Math.min(width, height) / MODEL_BASE_SIZE;
-      model.scale.set(MODEL_BASE_SCALE * ratio);
-      model.position.set(MODEL_BASE_X * ratio, MODEL_BASE_Y * ratio);
+      contentBounds ??= measureContentBounds(model);
+
+      const { x, y, width: contentWidth, height: contentHeight } = contentBounds;
+      const scale = Math.min(
+        (width * (1 - 2 * CONTENT_PADDING)) / contentWidth,
+        (height * (1 - 2 * CONTENT_PADDING)) / contentHeight,
+      );
+
+      model.scale.set(scale);
+      model.position.set(
+        (width - contentWidth * scale) / 2 - x * scale,
+        (height - contentHeight * scale) / 2 - y * scale,
+      );
     };
 
     const handleContextLost = (contextEvent: Event) => {
