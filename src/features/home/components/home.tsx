@@ -20,7 +20,9 @@ import { Footer } from './footer';
 import { Header } from './header';
 
 import profileImage from '@/assets/webp/futiwolf.webp';
+import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import useEventEmitter from '@/hooks/use-event-emitter';
+import { CONTACT_EMAIL } from '@/lib/site';
 import { initCustomCursor } from '../utils/custom-cursor';
 import { initUmami } from '@/utils/umami';
 import { initWebVitals } from '@/utils/webVitals';
@@ -40,6 +42,8 @@ const Home: React.FC = () => {
   const handleEmailOpenChange = (open: boolean) => {
     setEmailDialog((current) => (current ? { ...current, open } : current));
   };
+
+  useWebMcpTools(() => setEmailDialog({ href: `mailto:${CONTACT_EMAIL}`, open: true }));
 
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
   live2dEvent$.useSubscription((target) => {
