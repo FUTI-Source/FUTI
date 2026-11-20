@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
-import { SiteInteractionGuard } from '@/features/home/components/site-interaction-guard';
+import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SITE_URL } from '@/lib/site';
 
 import './globals.css';
