@@ -5,13 +5,11 @@ export function initCustomCursor() {
     return () => {};
   }
 
-  const supportsCustomPointer = window.matchMedia(
-    '(hover: hover) and (pointer: fine)',
-  ).matches;
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   ).matches;
-  if (!supportsCustomPointer || prefersReducedMotion) return () => {};
+  if (isCoarsePointer) return () => {};
 
   if (document.getElementById('custom-cursor-dot')) return () => {};
 
@@ -30,9 +28,9 @@ export function initCustomCursor() {
       box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.45), 0 0 24px 6px rgba(255, 255, 255, 0.2);
       z-index: 10086;
       pointer-events: none;
-      scale: 1;
+      transform: scale(1);
       transition: 0.2s ease-in-out;
-      transition-property: opacity, scale, box-shadow;
+      transition-property: opacity, transform, box-shadow;
     }
 
     #custom-cursor-dot.hidden {
@@ -41,13 +39,13 @@ export function initCustomCursor() {
 
     #custom-cursor-dot.hover {
       opacity: 0.2;
-      scale: 2.2;
+      transform: scale(2.2);
       box-shadow: 0 0 18px 4px rgba(255, 255, 255, 0.5), 0 0 36px 10px rgba(255, 255, 255, 0.25);
     }
 
     #custom-cursor-dot.active {
       opacity: 0.65;
-      scale: 0.6;
+      transform: scale(0.6);
       box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
     }
 
@@ -69,9 +67,12 @@ export function initCustomCursor() {
 
   let rafId: number | undefined;
   let paused = document.visibilityState === 'hidden';
+  // 减少动态效果时不做缓动跟随，直接贴合指针
+  const followRatio = prefersReducedMotion ? 1 : 0.15;
 
   const move = (left: number, top: number) => {
-    cursor.style.translate = `${left}px ${top}px`;
+    cursor.style.left = `${left}px`;
+    cursor.style.top = `${top}px`;
   };
 
   const isPointerElement = (target: EventTarget | null): boolean => {
@@ -154,8 +155,8 @@ export function initCustomCursor() {
     if (paused || !pos.curr) return;
 
     if (!pos.prev) pos.prev = { ...pos.curr };
-    pos.prev.x = lerp(pos.prev.x, pos.curr.x, 0.15);
-    pos.prev.y = lerp(pos.prev.y, pos.curr.y, 0.15);
+    pos.prev.x = lerp(pos.prev.x, pos.curr.x, followRatio);
+    pos.prev.y = lerp(pos.prev.y, pos.curr.y, followRatio);
     move(pos.prev.x, pos.prev.y);
 
     const remainingX = pos.curr.x - pos.prev.x;
