@@ -229,8 +229,19 @@ body [contenteditable=''] {
     max-width: 100%;
     min-width: 0;
     padding-inline: clamp(0.25rem, 2vw, 0.5rem);
+    /* 移动端屏幕亮度高、字号更大，压低透明度以贴近电脑端的灰色观感 */
+    color: rgba(255, 255, 255, 0.45);
     font-size: clamp(0.625rem, 5vw, 1.25rem) !important;
     text-align: center;
+  }
+
+  .futi-footer-text,
+  .futi-footer-text p {
+    color: rgba(255, 255, 255, 0.16);
+  }
+
+  .futi-footer-text a {
+    color: rgba(255, 255, 255, 0.24);
   }
 
   .profile-description > h2 {
