@@ -24,29 +24,43 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
-        {/* iOS 主屏应用冷启动时视口高度先按浏览器 UI 计算，首帧前校正为整屏高度 */}
+        {/* 首帧前用真实视口高度校正 --app-height：
+            1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度；
+            2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，
+               这里取 innerHeight 与 visualViewport.height 的较大值，保证铺满画布。 */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
+var root=document.documentElement;
 var nav=window.navigator;
 var ios=/iPad|iPhone|iPod/.test(nav.userAgent)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
 var standalone=window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||nav.standalone===true;
-if(!ios||!standalone)return;
-document.documentElement.classList.add('ios-standalone');
+var homeScreen=ios&&standalone;
+if(homeScreen)root.classList.add('ios-standalone');
 var lastWidth=0,lastHeight=0;
 var update=function(){
-var w=window.innerWidth,h=window.innerHeight,screenHeight=window.screen.height;
+var w=window.innerWidth||0;
+var inner=window.innerHeight||0;
+var vv=window.visualViewport;
+var h=inner;
+if(vv&&vv.height>h)h=vv.height;
+if(homeScreen){
 /* 冷启动时 innerHeight 仍是带 Safari 工具栏的高度，屏幕高度更接近整屏 */
+var screenHeight=window.screen.height;
 if(screenHeight>h&&screenHeight-h<=200)h=screenHeight;
+}
+if(!w||!h)return;
 /* 宽度不变的高度收缩来自键盘等临时状态，忽略以免整页抖动 */
 if(h<lastHeight&&w===lastWidth)return;
+if(h===lastHeight&&w===lastWidth)return;
 lastWidth=w;lastHeight=h;
-document.documentElement.style.setProperty('--app-height',h+'px');
+root.style.setProperty('--app-height',h+'px');
 };
 update();
 window.addEventListener('resize',update);
 window.addEventListener('orientationchange',update);
 window.addEventListener('pageshow',update);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',update);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
 }catch(e){}})();`,
           }}
