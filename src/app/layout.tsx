@@ -80,18 +80,6 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
         <meta itemProp="name" content={SITE_NAME} />
         <meta itemProp="image" content={SITE_IMAGE_URL} />
         <meta name="description" itemProp="description" content={SITE_DESCRIPTION} />
-
-        {/* WeChat Sharing 专用全局变量 */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              var WECHAT_TITLE = ${JSON.stringify(SITE_NAME)};
-              var WECHAT_DESC = ${JSON.stringify(SITE_DESCRIPTION)};
-              var WECHAT_IMAGE = ${JSON.stringify(SITE_IMAGE_URL)};
-              var WCHAT_NO_GA = '';
-            `,
-          }}
-        />
       </head>
       <body className={geometos.variable}>
         <script
