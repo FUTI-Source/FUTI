@@ -15,6 +15,14 @@
   color-scheme: dark;
 }
 
+/* 无层级的 reset 里 main 被固定为 display:block，会盖过 utilities 的 flex；
+   这里显式恢复纵向 flex，让 main 撑满剩余高度、内部 my-auto 生效。 */
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
 @media (display-mode: window-controls-overlay) {
   :root {
