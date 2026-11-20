@@ -13,7 +13,7 @@
   font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
 }
 
-/* iOS 主屏应用冷启动时 dvh 会先按浏览器视口计算，由启动脚本校正 */
+/* 首帧前的兜底值；真实的像素高度由 layout 中的内联脚本按 visualViewport 写入 */
 :root {
   --app-height: 100dvh;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -25,15 +25,6 @@
   --futi-c-footer: rgba(255, 255, 255, 0.2);
   --futi-c-footer-link: rgba(255, 255, 255, 0.3);
   color-scheme: dark;
-}
-
-/* iPadOS 26 Safari 横屏把标签栏悬浮在页面之上时，dvh 会减去工具栏高度，
-   但页面实际仍从窗口顶部开始绘制，导致页面底部留出一条空白。
-   这类大屏横屏改用 100vh（含工具栏的大视口）铺满窗口；手机横屏仍用 dvh。 */
-@media (orientation: landscape) and (min-height: 28rem) {
-  :root {
-    --app-height: 100vh;
-  }
 }
 
 /* iOS 26.1+ 会在主屏应用的状态栏区域强制绘制深色渐变遮罩，网页侧无法关闭；
