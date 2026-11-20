@@ -84,21 +84,16 @@ const Home: React.FC = () => {
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />
-          <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-center">
-            <ProfileWrapper
-              className="futi-center relative overflow-hidden"
-              initial={{ opacity: 0, width: 0, height: 0 }}
-              animate={{ opacity: 1, width: 256, height: 256 }}
-              transition={{ duration: 0.2 }}
-            >
+          <div className="my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
+            <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
               <AnimatePresence>
                 {profileImageVisible && (
                   <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                     <Image
                       src={profileImage}
                       alt="FUTI 个人头像"
-                      className="size-64 bg-none"
-                      sizes="256px"
+                      className="size-full bg-none"
+                      sizes="(max-width: 640px) 48vw, 240px"
                       quality={80}
                       decoding="async"
                       priority

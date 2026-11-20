@@ -23,6 +23,9 @@ type ILive2DCoreProps = BasicsProps<'canvas'> &
     event$?: EventEmitter<Live2DEvent>;
   };
 
+// 与原始 256px 画布设计保持一致的构图比例，随画布等比缩放。
+const BASE_SIZE = 256;
+
 const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -35,6 +38,15 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
+
+    // 以原始 256px 构图为准按宽度等比缩放，画布变化时保持同样的取景。
+    const applyModelLayout = (width: number, height: number) => {
+      if (!model) return;
+      const ratio = width / BASE_SIZE;
+
+      model.scale.set(0.125 * ratio);
+      model.position.set(-70 * ratio, 10 * ratio);
+    };
 
     const handleContextLost = (contextEvent: Event) => {
       contextEvent.preventDefault();
@@ -89,11 +101,10 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
           return;
         }
 
-        model.scale.set(0.125);
-        model.position.set(-70, 10);
         model.anchor.set(0, 0);
 
         pixiApp.stage.addChild(model);
+        applyModelLayout(pixiApp.screen.width, pixiApp.screen.height);
         event$?.emit(Live2DEvent.INIT);
       } catch (error) {
         destroy();
@@ -110,6 +121,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
       if (pixiApp) {
         pixiApp.renderer.resize(width, height);
+        applyModelLayout(width, height);
       } else if (!initialization) {
         initialization = initialize(width, height);
       }

@@ -10,7 +10,17 @@
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* 主体头像尺寸：随视口收缩，短屏笔记本与手机都不再占满首屏 */
+  --futi-profile-size: clamp(9.5rem, min(48vw, 30vh), 15rem);
   color-scheme: dark;
+}
+
+/* 无层级的 reset 里 main 被固定为 display:block，会盖过 utilities 的 flex；
+   这里显式恢复纵向 flex，让 main 撑满剩余高度、内部 my-auto 生效。 */
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
@@ -90,9 +100,34 @@
 }
 
 .profile-title {
-  font-size: 1.875rem !important;
+  font-size: clamp(1.375rem, 1rem + 1.2vmin, 1.75rem) !important;
   padding-inline: clamp(0.25rem, 4vw, 1rem);
   white-space: nowrap;
+}
+
+.futi-profile-reveal {
+  width: var(--futi-profile-size);
+  height: var(--futi-profile-size);
+  animation: futi-profile-reveal 0.22s ease-out both;
+}
+
+@keyframes futi-profile-reveal {
+  from {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    width: var(--futi-profile-size);
+    height: var(--futi-profile-size);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .futi-profile-reveal {
+    animation: none;
+  }
 }
 
 .profile-description {
@@ -153,7 +188,7 @@ body [contenteditable=''] {
 
   .profile-description > h2 {
     flex-shrink: 0;
-    font-size: 1.125rem !important;
+    font-size: 1rem !important;
     white-space: nowrap;
   }
 }
