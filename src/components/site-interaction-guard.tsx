@@ -17,6 +17,23 @@ const BLOCKED_PAGE_EVENTS = [
 const isEditableTarget = (target: EventTarget | null) =>
   target instanceof Element && target.closest(EDITABLE_SELECTOR) !== null;
 
+/** F11 或 Ctrl/Cmd+Shift+F 切换全屏 */
+const isFullscreenShortcut = (event: KeyboardEvent) => {
+  const key = event.key.toLowerCase();
+  return key === 'f11' || ((event.ctrlKey || event.metaKey) && event.shiftKey && key === 'f');
+};
+
+const toggleFullscreen = () => {
+  if (document.fullscreenElement) {
+    void document.exitFullscreen().catch(() => {});
+    return;
+  }
+
+  const root = document.documentElement;
+  if (typeof root.requestFullscreen !== 'function') return;
+  void root.requestFullscreen().catch(() => {});
+};
+
 export const SiteInteractionGuard = () => {
   useEffect(() => {
     const preventPageInteraction = (event: Event) => {
@@ -25,31 +42,36 @@ export const SiteInteractionGuard = () => {
       }
     };
 
-    const preventClipboardShortcut = (event: KeyboardEvent) => {
+    // 只放行全屏快捷键；其余带修饰键或功能键的快捷键一律拦截，输入框内保持正常编辑。
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isFullscreenShortcut(event)) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFullscreen();
+        return;
+      }
+
       if (isEditableTarget(event.target)) return;
 
-      const key = event.key.toLowerCase();
-      const isClipboardShortcut =
-        (event.ctrlKey || event.metaKey) &&
-        ['a', 'c', 'x', 'v'].includes(key);
-      const isInsertShortcut =
-        event.key === 'Insert' && (event.ctrlKey || event.shiftKey);
+      const isFunctionKey = /^F\d{1,2}$/.test(event.key);
+      const isModifierShortcut = event.ctrlKey || event.metaKey || event.altKey;
 
-      if (isClipboardShortcut || isInsertShortcut) {
+      if (isModifierShortcut || isFunctionKey) {
         event.preventDefault();
+        event.stopPropagation();
       }
     };
 
     BLOCKED_PAGE_EVENTS.forEach((eventName) => {
       document.addEventListener(eventName, preventPageInteraction, true);
     });
-    document.addEventListener('keydown', preventClipboardShortcut, true);
+    document.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
       BLOCKED_PAGE_EVENTS.forEach((eventName) => {
         document.removeEventListener(eventName, preventPageInteraction, true);
       });
-      document.removeEventListener('keydown', preventClipboardShortcut, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, []);
 
