@@ -262,6 +262,26 @@ body [contenteditable=''] {
   }
 }
 
+/* 横屏手机 / 很矮的窗口：压缩页头、头像与页脚，让主内容一屏可见 */
+@media (orientation: landscape) and (max-height: 32rem) {
+  :root {
+    --futi-profile-size: clamp(6rem, 28vh, 8rem);
+  }
+
+  .header-drag {
+    height: 2.75rem;
+  }
+
+  .futi-home-stack {
+    gap: 0.5rem;
+    padding-block: 0.25rem;
+  }
+
+  .futi-footer {
+    height: 3.25rem;
+  }
+}
+
 .futi-center {
   @apply flex items-center justify-center;
 }
