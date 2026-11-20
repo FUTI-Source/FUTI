@@ -25,11 +25,8 @@ type ILive2DCoreProps = BasicsProps<'canvas'> &
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
-// 头部约占模型内容的上方区域，取这一区域做特写构图。
-const HEAD_REGION_RATIO = 0.4;
-const HEAD_SIDE_PADDING = 0.06;
-const HEAD_TOP_PADDING = 0.09;
-const HEAD_MAX_BOTTOM = 0.94;
+// 模型整体等比收进头像框，四周留少量边距，任何姿态都不越界。
+const CONTENT_PADDING = 0.05;
 
 const unionBounds = (list: Bounds[]): Bounds => {
   let minX = Infinity;
@@ -48,7 +45,7 @@ const unionBounds = (list: Bounds[]): Bounds => {
 };
 
 // 读取当前姿态下所有可见 drawable 的顶点范围，换算成模型本地像素坐标。
-const measureBounds = (target: Live2DModel): { content: Bounds; head: Bounds } => {
+const measureBounds = (target: Live2DModel): Bounds => {
   const internal = target.internalModel as unknown as {
     pixelsPerUnit: number;
     originalWidth: number;
@@ -85,11 +82,7 @@ const measureBounds = (target: Live2DModel): { content: Bounds; head: Bounds } =
     }
   }
 
-  const content = unionBounds(drawables);
-  const headLimit = content.y + content.height * HEAD_REGION_RATIO;
-  const headParts = drawables.filter((drawable) => drawable.y + drawable.height / 2 <= headLimit);
-
-  return { content, head: headParts.length > 0 ? unionBounds(headParts) : content };
+  return unionBounds(drawables);
 };
 
 const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
@@ -104,23 +97,23 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
-    let headBounds: Bounds | null = null;
+    let contentBounds: Bounds | null = null;
 
-    // 按头部区域等比缩放：头部完整留在框内并水平居中，身体在底部自然裁切。
+    // 整体等比缩放并居中，保证模型（含待机动作）始终完整留在框内。
     const applyModelLayout = (width: number, height: number) => {
       if (!model) return;
-      headBounds ??= measureBounds(model).head;
+      contentBounds ??= measureBounds(model);
 
-      const { x, y, width: headWidth, height: headHeight } = headBounds;
+      const { x, y, width: contentWidth, height: contentHeight } = contentBounds;
       const scale = Math.min(
-        (width * (1 - 2 * HEAD_SIDE_PADDING)) / headWidth,
-        (height * (HEAD_MAX_BOTTOM - HEAD_TOP_PADDING)) / headHeight,
+        (width * (1 - 2 * CONTENT_PADDING)) / contentWidth,
+        (height * (1 - 2 * CONTENT_PADDING)) / contentHeight,
       );
 
       model.scale.set(scale);
       model.position.set(
-        width / 2 - (x + headWidth / 2) * scale,
-        height * HEAD_TOP_PADDING - y * scale,
+        width / 2 - (x + contentWidth / 2) * scale,
+        height / 2 - (y + contentHeight / 2) * scale,
       );
     };
 
