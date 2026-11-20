@@ -1,6 +1,7 @@
 module.exports = {
-  postcssPlugin: 'remove-invalid-vertical-align',
+  postcssPlugin: 'remove-invalid-css-declarations',
   OnceExit(root) {
+    root.walkDecls('-webkit-user-select', (decl) => decl.remove());
     root.walkDecls('vertical-align', (decl) => {
       const rule = decl.parent;
       if (

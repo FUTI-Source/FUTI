@@ -149,7 +149,6 @@ main {
 body,
 body * {
   -webkit-touch-callout: none;
-  -webkit-user-select: none !important;
   user-select: none !important;
 }
 
@@ -159,7 +158,6 @@ body select,
 body [contenteditable='true'],
 body [contenteditable=''] {
   -webkit-touch-callout: default;
-  -webkit-user-select: text !important;
   user-select: text !important;
 }
 
