@@ -1,1 +1,1 @@
-export const SITE_URL = 'https://zhang-wentao.tech';
+export const SITE_URL = 'https://www.zhang-wentao.tech';
