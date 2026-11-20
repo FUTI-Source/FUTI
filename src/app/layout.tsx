@@ -174,6 +174,32 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
+        {/* iOS 主屏应用冷启动时视口高度先按浏览器 UI 计算，首帧前校正为整屏高度 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+var nav=window.navigator;
+var ios=/iPad|iPhone|iPod/.test(nav.userAgent)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
+var standalone=window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||nav.standalone===true;
+if(!ios||!standalone)return;
+var lastWidth=0,lastHeight=0;
+var update=function(){
+var w=window.innerWidth,h=window.innerHeight,screenHeight=window.screen.height;
+/* 冷启动时 innerHeight 仍是带 Safari 工具栏的高度，屏幕高度更接近整屏 */
+if(screenHeight>h&&screenHeight-h<=200)h=screenHeight;
+/* 宽度不变的高度收缩来自键盘等临时状态，忽略以免整页抖动 */
+if(h<lastHeight&&w===lastWidth)return;
+lastWidth=w;lastHeight=h;
+document.documentElement.style.setProperty('--app-height',h+'px');
+};
+update();
+window.addEventListener('resize',update);
+window.addEventListener('orientationchange',update);
+window.addEventListener('pageshow',update);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
+}catch(e){}})();`,
+          }}
+        />
         <link
           rel="preconnect"
           href="https://umami.zhang-wentao.tech"
