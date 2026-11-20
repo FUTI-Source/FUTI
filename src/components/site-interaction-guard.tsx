@@ -23,6 +23,13 @@ const isFullscreenShortcut = (event: KeyboardEvent) => {
   return key === 'f11' || ((event.ctrlKey || event.metaKey) && event.shiftKey && key === 'f');
 };
 
+/** 刷新快捷键：Ctrl/Cmd+R、Ctrl/Cmd+Shift+R、F5、Shift+F5、Ctrl+F5 均放行 */
+const isRefreshShortcut = (event: KeyboardEvent) => {
+  const key = event.key.toLowerCase();
+  if (key === 'f5') return true;
+  return (event.ctrlKey || event.metaKey) && !event.altKey && key === 'r';
+};
+
 const toggleFullscreen = () => {
   if (document.fullscreenElement) {
     void document.exitFullscreen().catch(() => {});
@@ -42,7 +49,7 @@ export const SiteInteractionGuard = () => {
       }
     };
 
-    // 只放行全屏快捷键；其余带修饰键或功能键的快捷键一律拦截，输入框内保持正常编辑。
+    // 只放行全屏与刷新快捷键；其余带修饰键或功能键的快捷键一律拦截，输入框内保持正常编辑。
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isFullscreenShortcut(event)) {
         event.preventDefault();
@@ -50,6 +57,9 @@ export const SiteInteractionGuard = () => {
         toggleFullscreen();
         return;
       }
+
+      // 刷新交给浏览器原生处理，不做拦截
+      if (isRefreshShortcut(event)) return;
 
       if (isEditableTarget(event.target)) return;
 
