@@ -18,6 +18,43 @@ const geometos = localFont({
 const SITE_NAME = 'FUTI · 个人主页';
 const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
 const SITE_ICON_PATH = '/favicon.ico';
+
+// iOS 主屏图标必须是 PNG 且不透明，.ico 会被系统忽略。
+const APPLE_TOUCH_ICONS = [180, 167, 152, 120].map((size) => ({
+  url: `/apple-touch-icon-${size}x${size}.png`,
+  sizes: `${size}x${size}`,
+  type: 'image/png',
+}));
+
+// iOS 启动图按设备逻辑尺寸 + 像素比精确匹配，未命中会显示空白背景。
+const APPLE_SPLASH_SCREENS = [
+  [320, 568, 2],
+  [375, 667, 2],
+  [414, 736, 3],
+  [375, 812, 3],
+  [414, 896, 2],
+  [390, 844, 3],
+  [393, 852, 3],
+  [402, 874, 3],
+  [414, 896, 3],
+  [428, 926, 3],
+  [430, 932, 3],
+  [440, 956, 3],
+  [768, 1024, 1],
+  [768, 1024, 2],
+  [834, 1112, 2],
+  [834, 1194, 2],
+  [1024, 1366, 2],
+  [820, 1180, 2],
+  [744, 1133, 2],
+  [1024, 768, 1],
+  [1024, 768, 2],
+  [1112, 834, 2],
+  [1194, 834, 2],
+  [1366, 1024, 2],
+  [1180, 820, 2],
+  [1133, 744, 2],
+] as const;
 const SITE_IMAGE_PATH = '/icon-192.png';
 const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
 const SOCIAL_IMAGE_PATH = '/og-image.png';
@@ -68,7 +105,7 @@ export const metadata: Metadata = {
     icon: [
       { url: SITE_ICON_PATH },
     ],
-    apple: SITE_ICON_PATH,
+    apple: APPLE_TOUCH_ICONS,
   },
   manifest: '/manifest.webmanifest',
   robots: {
@@ -108,7 +145,16 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'FUTI',
-    statusBarStyle: 'black',
+    statusBarStyle: 'black-translucent',
+    startupImage: APPLE_SPLASH_SCREENS.map(([width, height, ratio]) => ({
+      url: `/launch/splash-${width * ratio}x${height * ratio}.png`,
+      media: `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio})`,
+    })),
+  },
+  other: {
+    // iOS 18 起采用标准属性，旧版系统仍读取 apple- 前缀。
+    'apple-mobile-web-app-capable': 'yes',
+    'format-detection': 'telephone=no',
   },
 };
 
