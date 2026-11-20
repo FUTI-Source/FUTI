@@ -2,7 +2,7 @@ import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
-import { qqSharingMeta, siteMetadata, siteViewport, structuredData, wechatSharingVars } from '@/lib/seo';
+import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
 
 import './globals.css';
 
@@ -80,8 +80,6 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
         <meta itemProp="name" content={qqSharingMeta.name} />
         <meta itemProp="image" content={qqSharingMeta.image} />
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
-        {/* 微信分享兼容变量，需在首屏同步声明 */}
-        <script dangerouslySetInnerHTML={{ __html: wechatSharingVars }} />
       </head>
       <body className={geometos.variable}>
         <script
