@@ -13,8 +13,14 @@ interface WebMcpTool {
   execute: (args: Record<string, unknown>) => Promise<ToolTextResult>;
 }
 
+interface WebMcpToolInfo extends WebMcpTool {
+  origin?: string;
+}
+
 interface ModelContextLike {
   registerTool: (tool: WebMcpTool, options?: { signal?: AbortSignal }) => Promise<void>;
+  getTools?: () => Promise<WebMcpToolInfo[]>;
+  executeTool?: (tool: WebMcpToolInfo, args?: Record<string, unknown>) => Promise<unknown>;
 }
 
 function getModelContext(): ModelContextLike | null {
@@ -23,6 +29,41 @@ function getModelContext(): ModelContextLike | null {
     (document as Document & { modelContext?: ModelContextLike }).modelContext ??
     (navigator as Navigator & { modelContext?: ModelContextLike }).modelContext;
   return context && typeof context.registerTool === 'function' ? context : null;
+}
+
+/**
+ * 开发环境调试入口：在控制台用 __webmcp.list() / __webmcp.call(name, args) 手动调用工具。
+ * 生产构建时 process.env.NODE_ENV 被内联为 production，整段逻辑会被移除。
+ */
+function exposeDebugApi(modelContext: ModelContextLike | null) {
+  const requireContext = () => {
+    if (!modelContext) throw new Error('当前浏览器不支持 WebMCP（document.modelContext 不可用）');
+    if (typeof modelContext.getTools !== 'function' || typeof modelContext.executeTool !== 'function') {
+      throw new Error('当前浏览器未实现 getTools() / executeTool()');
+    }
+    return modelContext as Required<Pick<ModelContextLike, 'getTools' | 'executeTool'>>;
+  };
+
+  const api = {
+    available: Boolean(modelContext),
+    list: () => requireContext().getTools(),
+    call: async (name: string, args: Record<string, unknown> = {}) => {
+      const context = requireContext();
+      const tools = await context.getTools();
+      const tool = tools.find((item) => item.name === name);
+      if (!tool) {
+        throw new Error(`未找到工具：${name}，可用：${tools.map((item) => item.name).join(', ') || '无'}`);
+      }
+      return context.executeTool(tool, args);
+    },
+  };
+
+  const target = window as unknown as { __webmcp?: typeof api };
+  target.__webmcp = api;
+
+  return () => {
+    delete target.__webmcp;
+  };
 }
 
 /**
@@ -38,8 +79,6 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
 
   useEffect(() => {
     const modelContext = getModelContext();
-    if (!modelContext) return;
-
     const controller = new AbortController();
 
     const tools: WebMcpTool[] = [
@@ -83,11 +122,19 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
       },
     ];
 
-    for (const tool of tools) {
-      // 权限策略拒绝或页面卸载时不抛错，页面功能不受影响。
-      void modelContext.registerTool(tool, { signal: controller.signal }).catch(() => {});
+    if (modelContext) {
+      for (const tool of tools) {
+        // 权限策略拒绝或页面卸载时不抛错，页面功能不受影响。
+        void modelContext.registerTool(tool, { signal: controller.signal }).catch(() => {});
+      }
     }
 
-    return () => controller.abort();
+    const cleanupDebug =
+      process.env.NODE_ENV === 'production' ? undefined : exposeDebugApi(modelContext);
+
+    return () => {
+      controller.abort();
+      cleanupDebug?.();
+    };
   }, []);
 }
