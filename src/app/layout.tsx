@@ -2,7 +2,7 @@ import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
-import { SITE_DESCRIPTION, SITE_IMAGE_URL, SITE_NAME, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
+import { qqSharingMeta, siteMetadata, siteViewport, structuredData, wechatSharingVars } from '@/lib/seo';
 
 import './globals.css';
 
@@ -77,21 +77,11 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
           crossOrigin="anonymous"
         />
         {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
-        <meta itemProp="name" content={SITE_NAME} />
-        <meta itemProp="image" content={SITE_IMAGE_URL} />
-        <meta name="description" itemProp="description" content={SITE_DESCRIPTION} />
-
-        {/* WeChat Sharing 专用全局变量 */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              var WECHAT_TITLE = ${JSON.stringify(SITE_NAME)};
-              var WECHAT_DESC = ${JSON.stringify(SITE_DESCRIPTION)};
-              var WECHAT_IMAGE = ${JSON.stringify(SITE_IMAGE_URL)};
-              var WCHAT_NO_GA = '';
-            `,
-          }}
-        />
+        <meta itemProp="name" content={qqSharingMeta.name} />
+        <meta itemProp="image" content={qqSharingMeta.image} />
+        <meta name="description" itemProp="description" content={qqSharingMeta.description} />
+        {/* 微信分享兼容变量，需在首屏同步声明 */}
+        <script dangerouslySetInnerHTML={{ __html: wechatSharingVars }} />
       </head>
       <body className={geometos.variable}>
         <script
