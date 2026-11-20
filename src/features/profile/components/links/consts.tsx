@@ -1,6 +1,8 @@
 import { HandHeart } from 'lucide-react';
 import { IconType, SiGithub, SiGmail, SiSteamdeck } from '@icons-pack/react-simple-icons';
 
+import { CONTACT_EMAIL } from '@/lib/site';
+
 interface ILink {
   Icon: IconType;
   href: string;
@@ -25,7 +27,7 @@ export const LINKS: ILink[] = [
   },
   {
     Icon: SiGmail,
-    href: 'mailto:mine@139.com',
+    href: `mailto:${CONTACT_EMAIL}`,
     label: 'Email',
   },
 ];
