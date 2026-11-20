@@ -23,6 +23,11 @@ type ILive2DCoreProps = BasicsProps<'canvas'> &
     event$?: EventEmitter<Live2DEvent>;
   };
 
+const MODEL_BASE_SIZE = 256;
+const MODEL_BASE_SCALE = 0.125;
+const MODEL_BASE_X = -70;
+const MODEL_BASE_Y = 10;
+
 const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -35,6 +40,14 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
+
+    // 画布随视口缩放时，按比例同步模型大小与位移，避免人物被裁切或偏位。
+    const applyModelLayout = (width: number, height: number) => {
+      if (!model) return;
+      const ratio = Math.min(width, height) / MODEL_BASE_SIZE;
+      model.scale.set(MODEL_BASE_SCALE * ratio);
+      model.position.set(MODEL_BASE_X * ratio, MODEL_BASE_Y * ratio);
+    };
 
     const handleContextLost = (contextEvent: Event) => {
       contextEvent.preventDefault();
@@ -89,11 +102,10 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
           return;
         }
 
-        model.scale.set(0.125);
-        model.position.set(-70, 10);
         model.anchor.set(0, 0);
 
         pixiApp.stage.addChild(model);
+        applyModelLayout(pixiApp.screen.width, pixiApp.screen.height);
         event$?.emit(Live2DEvent.INIT);
       } catch (error) {
         destroy();
@@ -110,6 +122,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
       if (pixiApp) {
         pixiApp.renderer.resize(width, height);
+        applyModelLayout(width, height);
       } else if (!initialization) {
         initialization = initialize(width, height);
       }

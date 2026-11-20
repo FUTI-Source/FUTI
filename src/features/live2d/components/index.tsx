@@ -114,7 +114,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
   if (!webglSupported || failed) return null;
 
   return (
-    <div className="relative size-64">
+    <div className="relative size-full">
       <AnimatePresence>
         {!init && (
           <Loading
@@ -130,7 +130,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
           {cubismSdkInit && (
             <Live2DCore
               key={`futi-live2d-${instanceKey}`}
-              className="size-64"
+              className="size-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: init ? 1 : 0, transition: { delay: 0.2 } }}
               transition={{ duration: 0.2 }}

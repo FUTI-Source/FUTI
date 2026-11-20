@@ -39,7 +39,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
   return (
     <header 
       className={cn(
-        'header-drag relative flex h-20 items-center pt-1 max-sm:justify-center', 
+        'header-drag relative flex h-20 shrink-0 items-center pt-1 max-sm:justify-center',
         className
       )} 
       style={style}
