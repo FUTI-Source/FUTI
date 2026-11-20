@@ -39,10 +39,10 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
 
-    // 以原始 256px 构图为准等比缩放，画布变化时保持同样的取景。
+    // 以原始 256px 构图为准按宽度等比缩放，画布变化时保持同样的取景。
     const applyModelLayout = (width: number, height: number) => {
       if (!model) return;
-      const ratio = Math.min(width, height) / BASE_SIZE;
+      const ratio = width / BASE_SIZE;
 
       model.scale.set(0.125 * ratio);
       model.position.set(-70 * ratio, 10 * ratio);

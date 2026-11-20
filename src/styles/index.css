@@ -107,7 +107,7 @@ main {
 
 .futi-profile-reveal {
   width: var(--futi-profile-size);
-  height: var(--futi-profile-size);
+  height: calc(var(--futi-profile-size) * 0.8);
   animation: futi-profile-reveal 0.22s ease-out both;
 }
 
@@ -119,7 +119,7 @@ main {
   }
   to {
     width: var(--futi-profile-size);
-    height: var(--futi-profile-size);
+    height: calc(var(--futi-profile-size) * 0.8);
     opacity: 1;
   }
 }
