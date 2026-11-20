@@ -29,18 +29,6 @@ export const qqSharingMeta = {
   description: SITE_DESCRIPTION,
 };
 
-/**
- * 微信分享兼容变量。
- * 旧版微信分享脚本会读取这几个全局变量后再决定分享卡片的标题、描述与图片，
- * 因此在首屏同步声明，保持其可直接使用。
- */
-export const wechatSharingVars = [
-  `var WECHAT_TITLE = ${JSON.stringify(SITE_NAME)};`,
-  `var WECHAT_DESC = ${JSON.stringify(SITE_DESCRIPTION)};`,
-  `var WECHAT_IMAGE = ${JSON.stringify(SITE_IMAGE_URL)};`,
-  `var WCHAT_NO_GA = '';`,
-].join('\n');
-
 // iOS 主屏图标必须是 PNG 且不透明，.ico 会被系统忽略。
 const APPLE_TOUCH_ICONS = [180, 167, 152, 120].map((size) => ({
   url: `/apple-touch-icon-${size}x${size}.png`,
