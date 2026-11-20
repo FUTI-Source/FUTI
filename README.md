@@ -12,6 +12,31 @@
 - pixi.js + pixi-live2d-display（Live2D 形象）
 - nodemailer + 139 邮箱 SMTP（Node Runtime Route Handler）
 
+## PWA 与 iOS 主屏幕
+
+### iOS 26 起：添加到主屏幕默认以 Web 应用打开
+
+- iOS 26 / iPadOS 26 改变了主屏幕图标的启动方式：WebKit 在 Safari 26.0 说明中明确，**默认每个添加到主屏幕的网站都以 Web 应用打开**（独立的应用切换器条目、无 Safari 工具栏）；用户在添加面板中关闭「Open as Web App」才会存为书签，即使站点已配置为 Web 应用。
+- Safari 26 起「可安装性」要求为零：不再要求 manifest 或 Service Worker，也不检查 HTTPS。manifest 不再决定「是否」以应用方式打开，但仍决定**外观**：图标、名称、启动图、主题色、`start_url` / `scope` 照旧生效。
+- 旧系统兼容仍然保留：manifest 的 `display: standalone` 与 `<meta name="apple-mobile-web-app-capable" content="yes">` 在 iOS 16.4 至 18（及更早）决定是否以独立模式打开。本项目两者都保留，见 `public/manifest.webmanifest` 与 `src/lib/seo.ts`。
+- 检测方式不变：页面只能在启动后根据显示上下文判断，本项目用 `matchMedia('(display-mode: standalone)')` 或 `navigator.standalone === true`（`src/app/layout.tsx` 首屏脚本），命中时添加 `.ios-standalone` 并校正 `--app-height`。
+- Web 页面无法拦截或探测「添加到主屏幕」动作；iOS 各版本均不触发 `beforeinstallprompt`。
+
+### viewport-fit=cover 的用法
+
+- 本项目在 `src/lib/seo.ts` 的 `siteViewport` 中设置 `viewportFit: 'cover'`，输出：
+
+  ```html
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  ```
+
+- 作用：让布局视口铺满屏幕，包含圆角、刘海/灵动岛与底部 Home 指示条区域。不设置时 Safari 会自行内缩，`env(safe-area-inset-*)` 恒为 `0`。
+- 必须配合安全区变量使用，否则内容会被遮挡。本项目在 `src/styles/index.css` 定义 `--safe-top`、`--safe-bottom`（取值 `env(safe-area-inset-top/bottom, 0px)`），页头、页脚与邮件弹窗据此留白；满屏背景铺在 `html` 画布上，内容用 padding 避让。
+- 在 iOS 上单独使用 `viewport-fit=cover` 只延伸底部安全区；要让页面画到状态栏之下、并获得非零的 `env(safe-area-inset-top)`，还需 `apple-mobile-web-app-status-bar-style` 为 `black-translucent`（本项目由 `siteMetadata.appleWebApp.statusBarStyle` 输出）。
+- 桌面 WCO（`window-controls-overlay`）模式会覆盖 `--safe-top: 0`，改用 `env(titlebar-area-*)` 计算标题栏与拖拽区，见 `src/styles/index.css` 的对应媒体查询。
+
+参考：[OpenPWA · iOS 添加到主屏幕](https://openpwa.net/zh/reference/installation/ios-add-to-home-screen/)、[OpenPWA · iOS 18.6.2 主屏 Web 应用真机实测](https://openpwa.net/zh/news/testing-home-screen-web-apps-on-ios-18-6-2/)、[WebKit Features in Safari 26.0](https://webkit.org/blog/17333/webkit-features-in-safari-26-0/)。
+
 ## 目录结构
 
 ```

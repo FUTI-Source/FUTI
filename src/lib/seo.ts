@@ -170,6 +170,9 @@ export const siteMetadata: Metadata = {
 export const siteViewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // 布局视口铺满屏幕（含圆角、刘海与底部指示条），env(safe-area-inset-*) 才有值；
+  // 未设置时 Safari 会自行内缩，安全区恒为 0，满屏背景会出现留白。
+  // 内容侧需用 --safe-top / --safe-bottom 避让，见 src/styles/index.css。
   viewportFit: 'cover',
   colorScheme: 'dark',
   // 与壁纸顶部实测色调一致，让 Safari 顶部工具栏着色融入页面背景
