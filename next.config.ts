@@ -52,6 +52,8 @@ const nextConfig: NextConfig = {
         '../build/polyfills/polyfill-module$': false,
         '@pixi/polyfill': false,
         'parallax-js$': 'parallax-js/src/parallax.js',
+        'object-assign': require.resolve('./src/lib/native-object-assign.js'),
+        'raf$': require.resolve('./src/lib/native-raf.js'),
       };
     }
 
