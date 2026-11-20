@@ -1,6 +1,6 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
-import type { SendMailRequest, SendMailResponse } from '@/types/mail';
+import type { SendMailRequest, SendMailResponse } from '../types';
 
 interface SmtpConfig {
   host: string;

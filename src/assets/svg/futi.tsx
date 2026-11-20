@@ -15,12 +15,3 @@ export const FutiIcon: React.FC<IFutiIconProps> = (props) => (
     <FutiPath fill="#fff" />
   </svg>
 );
-
-type IFutiClipPathProps = BasicsProps<'svg', 'id'>;
-export const FutiClipPath: React.FC<IFutiClipPathProps> = ({ id = 'futi-icon-clip', ...props }) => (
-  <svg aria-hidden {...props}>
-    <clipPath id={id}>
-      <FutiPath />
-    </clipPath>
-  </svg>
-);

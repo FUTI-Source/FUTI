@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as m from 'motion/react-m';
 import { CircleAlert, CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
-import type { IconType } from '@icons-pack/react-simple-icons';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -28,31 +24,17 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-import { sendMail } from '@/api';
+import { sendMail, SendMailError } from './send-mail';
+import { sendMailSchema, type SendMailInput } from '../schema';
 import { cn } from '@/lib/utils';
 
-const emailSchema = z.object({
-  email: z.string().min(1, '请输入邮箱地址').email('邮箱格式不正确'),
-  content: z.string().min(1, '请输入发送内容'),
-  website: z.string(),
-});
-
-type EmailFormData = z.infer<typeof emailSchema>;
-
-const itemVariants = {
-  hidden: { opacity: 0, y: -10 },
-  visible: { opacity: 1, y: 0 },
-};
-
-interface IEmailLinkProps {
-  Icon: IconType;
+interface IEmailDialogProps {
   href: string;
-  label: string;
-  initialOpen?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initialOpen = false }) => {
-  const [open, setOpen] = useState(initialOpen);
+export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenChange }) => {
   const [submitState, setSubmitState] = useState<
     'idle' | 'success' | 'partial' | 'error'
   >('idle');
@@ -61,14 +43,14 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
   const isSubmitted =
     submitState === 'success' || submitState === 'partial';
 
-  const form = useForm<EmailFormData>({
-    resolver: zodResolver(emailSchema),
+  const form = useForm<SendMailInput>({
+    resolver: zodResolver(sendMailSchema),
     defaultValues: { email: '', content: '', website: '' },
   });
 
-  const onSubmit = async (data: EmailFormData) => {
+  const onSubmit = async (data: SendMailInput) => {
     try {
-      const result = await sendMail(data.email, data.content, data.website);
+      const result = await sendMail(data);
       setSubmitState(result.confirmationSent ? 'success' : 'partial');
       setFeedbackMessage(
         result.confirmationSent
@@ -76,9 +58,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
           : `站长已收到留言，但确认邮件未能送达 ${data.email}。请检查邮箱地址或垃圾邮件文件夹；留言已成功提交，无需重复发送。点击“完成”清空表单。`,
       );
     } catch (error) {
-      const message = (
-        error as { response?: { data?: { error?: { message?: string } } } }
-      ).response?.data?.error?.message;
+      const message = error instanceof SendMailError ? error.message : undefined;
       setSubmitState('error');
       setFeedbackMessage(
         `${message ?? '发送失败，请稍后重试'}；点击“重试提交”可保留内容再次发送。`,
@@ -92,7 +72,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
       setSubmitState('idle');
       setFeedbackMessage('');
     }
-    setOpen(nextOpen);
+    onOpenChange(nextOpen);
   };
 
   const resetAfterResult = () => {
@@ -103,20 +83,6 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <m.button
-          type="button"
-          variants={itemVariants}
-          aria-label={label}
-          className={cn(
-            buttonVariants({ variant: 'ghost' }),
-            'group hover:!bg-accent/20 cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:text-white max-sm:px-2',
-          )}
-        >
-          <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
-          {label}
-        </m.button>
-      </DialogTrigger>
       <DialogContent className="email-dialog-content overflow-y-auto rounded-2xl border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
         <div className="h-1 w-full rounded-t-2xl bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />
         <div className="email-dialog-body">
@@ -200,7 +166,7 @@ export const EmailLink: React.FC<IEmailLinkProps> = ({ Icon, href, label, initia
                   type="button"
                   variant="ghost"
                   className="text-white/60 hover:bg-white/10 hover:text-white"
-                  onClick={() => setOpen(false)}
+                  onClick={() => onOpenChange(false)}
                 >
                   取消
                 </Button>

@@ -10,11 +10,9 @@ export const ServiceWorkerRegistration = () => {
       return;
     }
 
-    const wasControlled = Boolean(navigator.serviceWorker.controller);
     let registration: ServiceWorkerRegistration | undefined;
     let updateCheckInterval: number | undefined;
     let disposed = false;
-    let isReloading = false;
 
     const checkForUpdates = () => {
       if (
@@ -36,18 +34,8 @@ export const ServiceWorkerRegistration = () => {
       }
     };
 
-    const handleControllerChange = () => {
-      if (!wasControlled || isReloading) return;
-      isReloading = true;
-      window.location.reload();
-    };
-
     window.addEventListener('online', checkForUpdates);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    navigator.serviceWorker.addEventListener(
-      'controllerchange',
-      handleControllerChange,
-    );
 
     navigator.serviceWorker
       .register('/sw.js', { scope: '/', updateViaCache: 'none' })
@@ -71,10 +59,6 @@ export const ServiceWorkerRegistration = () => {
       }
       window.removeEventListener('online', checkForUpdates);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      navigator.serviceWorker.removeEventListener(
-        'controllerchange',
-        handleControllerChange,
-      );
     };
   }, []);
 

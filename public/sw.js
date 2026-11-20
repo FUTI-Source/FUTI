@@ -1,15 +1,13 @@
-const CACHE_NAME = 'futi-site-v3';
+const CACHE_VERSION = 'v4';
+const CACHE_NAME = `futi-site-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/icon-192.png',
-  '/icon-512.png',
-  '/og-image.png',
   '/fonts/Geometos.woff',
   '/fonts/Kanit-300.woff2',
   '/fonts/Kanit-400.woff2',
-  '/fonts/MonaspaceNeon.woff',
   '/fonts/Ubuntu.woff2',
   '/offline.html',
 ];
@@ -33,7 +31,6 @@ self.addEventListener('install', (event) => {
         }),
       );
 
-      await self.skipWaiting();
     })(),
   );
 });

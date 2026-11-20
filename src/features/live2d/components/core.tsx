@@ -9,7 +9,7 @@ import { BatchRenderer, extensions } from '@pixi/core';
 import { Ticker, TickerPlugin } from '@pixi/ticker';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
-import { Live2DEvent } from '@/components/ui/live2d/index.tsx';
+import { Live2DEvent } from '../events';
 
 import { BasicsProps } from '@/components/type.ts';
 
