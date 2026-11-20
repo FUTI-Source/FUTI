@@ -9,37 +9,45 @@ const nextConfig: NextConfig = {
   webpack(config, { dev, isServer }) {
     if (!dev && !isServer) {
       // This project only supports modern browsers; remove Next.js's legacy
-      // nomodule bundle before the build manifest can reference it.
+      // nomodule bundle and its manifest references.
       config.plugins.push({
         apply(compiler: any) {
-          compiler.hooks.emit.tap('RemoveLegacyPolyfills', (compilation: any) => {
-            for (const asset of compilation.getAssets()) {
-              if (asset.name.startsWith('static/chunks/polyfills-')) {
-                compilation.deleteAsset(asset.name);
-              }
-            }
+          compiler.hooks.thisCompilation.tap('RemoveLegacyPolyfills', (compilation: any) => {
+            compilation.hooks.processAssets.tap(
+              {
+                name: 'RemoveLegacyPolyfills',
+                stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_REPORT,
+              },
+              () => {
+                for (const asset of compilation.getAssets()) {
+                  if (asset.name.startsWith('static/chunks/polyfills-')) {
+                    compilation.deleteAsset(asset.name);
+                  }
+                }
 
-            const manifest = compilation.getAsset('build-manifest.json');
-            if (manifest) {
-              const content = JSON.parse(manifest.source.source().toString());
-              content.polyfillFiles = [];
-              compilation.updateAsset(
-                manifest.name,
-                new compiler.webpack.sources.RawSource(JSON.stringify(content, null, 2)),
-              );
-            }
+                const manifest = compilation.getAsset('build-manifest.json');
+                if (manifest) {
+                  const content = JSON.parse(manifest.source.source().toString());
+                  content.polyfillFiles = [];
+                  compilation.updateAsset(
+                    manifest.name,
+                    new compiler.webpack.sources.RawSource(JSON.stringify(content, null, 2)),
+                  );
+                }
 
-            const middlewareManifest = compilation.getAsset('server/middleware-build-manifest.js');
-            if (middlewareManifest) {
-              const content = middlewareManifest.source
-                .source()
-                .toString()
-                .replace(/polyfillFiles:\[[^\]]*\]/, 'polyfillFiles:[]');
-              compilation.updateAsset(
-                middlewareManifest.name,
-                new compiler.webpack.sources.RawSource(content),
-              );
-            }
+                const middlewareManifest = compilation.getAsset('server/middleware-build-manifest.js');
+                if (middlewareManifest) {
+                  const content = middlewareManifest.source
+                    .source()
+                    .toString()
+                    .replace(/polyfillFiles:\[[^\]]*\]/, 'polyfillFiles:[]');
+                  compilation.updateAsset(
+                    middlewareManifest.name,
+                    new compiler.webpack.sources.RawSource(content),
+                  );
+                }
+              },
+            );
           });
         },
       });
