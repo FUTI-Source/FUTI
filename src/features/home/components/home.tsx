@@ -86,22 +86,24 @@ const Home: React.FC = () => {
           <DetroitBackground />
           <div className="my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
             <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
-              <AnimatePresence>
-                {profileImageVisible && (
-                  <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <Image
-                      src={profileImage}
-                      alt="FUTI 个人头像"
-                      className="size-full bg-none"
-                      sizes="(max-width: 640px) 48vw, 240px"
-                      quality={80}
-                      decoding="async"
-                      priority
-                    />
-                  </m.div>
-                )}
-              </AnimatePresence>
-              {live2dVisible && <Live2D event$={live2dEvent$} />}
+              <div className="absolute inset-0 [clip-path:inset(0_0_var(--futi-frame-inset-bottom)_0)]">
+                <AnimatePresence>
+                  {profileImageVisible && (
+                    <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <Image
+                        src={profileImage}
+                        alt="FUTI 个人头像"
+                        className="size-full bg-none"
+                        sizes="(max-width: 640px) 48vw, 240px"
+                        quality={80}
+                        decoding="async"
+                        priority
+                      />
+                    </m.div>
+                  )}
+                </AnimatePresence>
+                {live2dVisible && <Live2D event$={live2dEvent$} />}
+              </div>
             </ProfileWrapper>
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} onAnimationComplete={() => setNameVisible(true)} />
             <div className="h-7">{nameVisible && <Description />}</div>
