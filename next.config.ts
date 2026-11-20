@@ -51,6 +51,7 @@ const nextConfig: NextConfig = {
         ...config.resolve.alias,
         '../build/polyfills/polyfill-module$': false,
         '@pixi/polyfill': false,
+        'parallax-js$': 'parallax-js/src/parallax.js',
       };
     }
 
