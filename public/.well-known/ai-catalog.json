@@ -1,0 +1,9 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "FUTI",
+    "identifier": "did:web:zhang-wentao.tech",
+    "documentationUrl": "https://zhang-wentao.tech/"
+  },
+  "entries": []
+}
