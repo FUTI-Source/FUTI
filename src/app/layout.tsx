@@ -168,7 +168,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   colorScheme: 'dark',
-  themeColor: '#15161a',
+  // 与壁纸顶部实测色调一致，让 Safari 顶部工具栏着色融入页面背景
+  themeColor: '#1d1e20',
 };
 
 export default function RootLayout({
