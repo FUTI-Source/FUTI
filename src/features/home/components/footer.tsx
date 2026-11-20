@@ -15,7 +15,7 @@ type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
   return (
-    <div className={cn('flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:py-6 max-sm:pl-0', className)} style={style}>
+    <div className={cn('flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
           <m.a
@@ -37,7 +37,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       </m.div>
       <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
-        <div className="futi-footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-6 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--futi-c-footer-link)] [&_p]:text-[color:var(--futi-c-footer)]">
+        <div className="futi-footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--futi-c-footer-link)] [&_p]:text-[color:var(--futi-c-footer)]">
           <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; 2017 - {new Date().getFullYear()}
             <Tooltip>
