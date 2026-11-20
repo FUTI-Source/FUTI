@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import * as m from 'motion/react-m';
 import type Parallax from 'parallax-js';
 
 import { BasicsProps } from '@/components/type';
@@ -50,12 +49,9 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   );
 
   return (
-    <m.div
+    <div
       ref={node}
       className="absolute top-0 left-0 z-[-1] size-full overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isLeftLoaded && isRightLoaded ? 1 : 0, transition: { delay: 0.2 } }}
-      transition={{ duration: 0.2 }}
     >
       <Image
         ref={leftImage}
@@ -81,6 +77,6 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         decoding="async"
         onLoad={() => setIsRightLoaded(true)}
       />
-    </m.div>
+    </div>
   );
 };
