@@ -187,6 +187,7 @@ var nav=window.navigator;
 var ios=/iPad|iPhone|iPod/.test(nav.userAgent)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
 var standalone=window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||nav.standalone===true;
 if(!ios||!standalone)return;
+document.documentElement.classList.add('ios-standalone');
 var lastWidth=0,lastHeight=0;
 var update=function(){
 var w=window.innerWidth,h=window.innerHeight,screenHeight=window.screen.height;
