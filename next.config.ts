@@ -71,6 +71,9 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    // Serve the existing local WebP assets directly; FaaS runtimes cannot
+    // reliably persist Next.js's on-demand image optimization cache.
+    unoptimized: true,
     deviceSizes: [448, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     remotePatterns: [],
   },
