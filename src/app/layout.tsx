@@ -26,34 +26,33 @@ const APPLE_TOUCH_ICONS = [180, 167, 152, 120].map((size) => ({
   type: 'image/png',
 }));
 
-// iOS 启动图按设备逻辑尺寸 + 像素比精确匹配，未命中会显示空白背景。
+// iOS 26/27 会把启动图 media 里的 device-height 误判为 Safari 当时的可见视口高度，
+// 精确的宽高匹配会全部落空（WebKit #326500）；改为只按 device-width + 像素比匹配。
+// 1024@2 同时对应 12.9" iPad 竖屏与 10.2" iPad 横屏，需用 orientation 区分。
 const APPLE_SPLASH_SCREENS = [
-  [320, 568, 2],
-  [375, 667, 2],
-  [414, 736, 3],
-  [375, 812, 3],
-  [414, 896, 2],
-  [390, 844, 3],
-  [393, 852, 3],
-  [402, 874, 3],
-  [414, 896, 3],
-  [428, 926, 3],
-  [430, 932, 3],
-  [440, 956, 3],
-  [768, 1024, 1],
-  [768, 1024, 2],
-  [834, 1112, 2],
-  [834, 1194, 2],
-  [1024, 1366, 2],
-  [820, 1180, 2],
-  [744, 1133, 2],
-  [1024, 768, 1],
-  [1024, 768, 2],
-  [1112, 834, 2],
-  [1194, 834, 2],
-  [1366, 1024, 2],
-  [1180, 820, 2],
-  [1133, 744, 2],
+  { width: 320, height: 568, ratio: 2 },
+  { width: 375, height: 667, ratio: 2 },
+  { width: 375, height: 812, ratio: 3 },
+  { width: 390, height: 844, ratio: 3 },
+  { width: 393, height: 852, ratio: 3 },
+  { width: 402, height: 874, ratio: 3 },
+  { width: 414, height: 896, ratio: 2 },
+  { width: 414, height: 896, ratio: 3 },
+  { width: 428, height: 926, ratio: 3 },
+  { width: 430, height: 932, ratio: 3 },
+  { width: 440, height: 956, ratio: 3 },
+  { width: 768, height: 1024, ratio: 1 },
+  { width: 768, height: 1024, ratio: 2 },
+  { width: 820, height: 1180, ratio: 2 },
+  { width: 834, height: 1194, ratio: 2 },
+  { width: 1024, height: 1366, ratio: 2, orientation: 'portrait' },
+  { width: 1024, height: 768, ratio: 2, orientation: 'landscape' },
+  { width: 744, height: 1133, ratio: 2 },
+  { width: 1112, height: 834, ratio: 2 },
+  { width: 1133, height: 744, ratio: 2 },
+  { width: 1180, height: 820, ratio: 2 },
+  { width: 1194, height: 834, ratio: 2 },
+  { width: 1366, height: 1024, ratio: 2 },
 ] as const;
 const SITE_IMAGE_PATH = '/icon-192.png';
 const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
@@ -146,9 +145,15 @@ export const metadata: Metadata = {
     capable: true,
     title: 'FUTI',
     statusBarStyle: 'black-translucent',
-    startupImage: APPLE_SPLASH_SCREENS.map(([width, height, ratio]) => ({
+    startupImage: APPLE_SPLASH_SCREENS.map(({ width, height, ratio, ...screen }) => ({
       url: `/launch/splash-${width * ratio}x${height * ratio}.png`,
-      media: `(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio})`,
+      media: [
+        'orientation' in screen ? `(orientation: ${screen.orientation})` : null,
+        `(device-width: ${width}px)`,
+        `(-webkit-device-pixel-ratio: ${ratio})`,
+      ]
+        .filter(Boolean)
+        .join(' and '),
     })),
   },
   other: {
