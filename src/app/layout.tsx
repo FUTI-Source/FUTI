@@ -1,9 +1,8 @@
-import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
-import { SITE_URL } from '@/lib/site';
+import { SITE_DESCRIPTION, SITE_IMAGE_URL, SITE_NAME, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
 
 import './globals.css';
 
@@ -14,163 +13,8 @@ const geometos = localFont({
   preload: true,
 });
 
-// 公共常量配置（建议图片使用带域名的绝对路径，以确保微信/QQ抓取成功）
-const SITE_NAME = 'FUTI · 个人主页';
-const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
-const SITE_ICON_PATH = '/favicon.ico';
-
-// iOS 主屏图标必须是 PNG 且不透明，.ico 会被系统忽略。
-const APPLE_TOUCH_ICONS = [180, 167, 152, 120].map((size) => ({
-  url: `/apple-touch-icon-${size}x${size}.png`,
-  sizes: `${size}x${size}`,
-  type: 'image/png',
-}));
-
-// iOS 26/27 会把启动图 media 里的 device-height 误判为 Safari 当时的可见视口高度，
-// 精确的宽高匹配会全部落空（WebKit #326500）；改为只按 device-width + 像素比匹配。
-// 1024@2 同时对应 12.9" iPad 竖屏与 10.2" iPad 横屏，需用 orientation 区分。
-const APPLE_SPLASH_SCREENS = [
-  { width: 320, height: 568, ratio: 2 },
-  { width: 375, height: 667, ratio: 2 },
-  { width: 375, height: 812, ratio: 3 },
-  { width: 390, height: 844, ratio: 3 },
-  { width: 393, height: 852, ratio: 3 },
-  { width: 402, height: 874, ratio: 3 },
-  { width: 414, height: 896, ratio: 2 },
-  { width: 414, height: 896, ratio: 3 },
-  { width: 428, height: 926, ratio: 3 },
-  { width: 430, height: 932, ratio: 3 },
-  { width: 440, height: 956, ratio: 3 },
-  { width: 768, height: 1024, ratio: 1 },
-  { width: 768, height: 1024, ratio: 2 },
-  { width: 820, height: 1180, ratio: 2 },
-  { width: 834, height: 1194, ratio: 2 },
-  { width: 1024, height: 1366, ratio: 2, orientation: 'portrait' },
-  { width: 1024, height: 768, ratio: 2, orientation: 'landscape' },
-  { width: 744, height: 1133, ratio: 2 },
-  { width: 1112, height: 834, ratio: 2 },
-  { width: 1133, height: 744, ratio: 2 },
-  { width: 1180, height: 820, ratio: 2 },
-  { width: 1194, height: 834, ratio: 2 },
-  { width: 1366, height: 1024, ratio: 2 },
-] as const;
-const SITE_IMAGE_PATH = '/icon-192.png';
-const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
-const SOCIAL_IMAGE_PATH = '/og-image.png';
-const SOCIAL_IMAGE_URL = `${SITE_URL}${SOCIAL_IMAGE_PATH}`;
-
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE_URL}/#website`,
-      url: SITE_URL,
-      name: SITE_NAME,
-      inLanguage: 'zh-CN',
-      about: { '@id': `${SITE_URL}/#person` },
-      publisher: { '@id': `${SITE_URL}/#person` },
-    },
-    {
-      '@type': 'Person',
-      '@id': `${SITE_URL}/#person`,
-      name: '张文涛',
-      alternateName: 'FUTI',
-      url: SITE_URL,
-      image: SOCIAL_IMAGE_URL,
-      description: SITE_DESCRIPTION,
-      jobTitle: '全栈开发者',
-      knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
-      sameAs: [],
-    },
-  ],
-};
-
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  applicationName: 'FUTI',
-  title: {
-    default: SITE_NAME,
-    template: '%s | FUTI',
-  },
-  description: SITE_DESCRIPTION,
-  authors: [{ name: 'FUTI', url: SITE_URL }],
-  creator: 'FUTI',
-  publisher: 'FUTI',
-  alternates: {
-    canonical: '/',
-  },
-  icons: {
-    icon: [
-      { url: SITE_ICON_PATH },
-    ],
-    apple: APPLE_TOUCH_ICONS,
-  },
-  manifest: '/manifest.webmanifest',
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
-    },
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'zh_CN',
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    images: [
-      {
-        url: SOCIAL_IMAGE_URL,
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} 封面图`,
-        type: 'image/png',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    images: [SOCIAL_IMAGE_URL],
-  },
-  appleWebApp: {
-    capable: true,
-    title: 'FUTI',
-    statusBarStyle: 'black-translucent',
-    startupImage: APPLE_SPLASH_SCREENS.map(({ width, height, ratio, ...screen }) => ({
-      url: `/launch/splash-${width * ratio}x${height * ratio}.png`,
-      media: [
-        'orientation' in screen ? `(orientation: ${screen.orientation})` : null,
-        `(device-width: ${width}px)`,
-        `(-webkit-device-pixel-ratio: ${ratio})`,
-      ]
-        .filter(Boolean)
-        .join(' and '),
-    })),
-  },
-  other: {
-    // iOS 18 起采用标准属性，旧版系统仍读取 apple- 前缀。
-    'apple-mobile-web-app-capable': 'yes',
-    'format-detection': 'telephone=no',
-  },
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
-  colorScheme: 'dark',
-  // 与壁纸顶部实测色调一致，让 Safari 顶部工具栏着色融入页面背景
-  themeColor: '#1d1e20',
-};
+export const metadata = siteMetadata;
+export const viewport = siteViewport;
 
 export default function RootLayout({
   children,
