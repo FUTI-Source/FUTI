@@ -53,12 +53,12 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
         onAnimationComplete={() => setReady(true)}
         className={cn(
           // 基础排版
-          'header-no-drag futi-text-lyrics font-geometos my-0 select-none text-white/55',
+          'header-no-drag futi-text-lyrics font-geometos my-0 select-none text-[color:var(--futi-c-time)]',
           'tabular-nums inline-block whitespace-nowrap',
           // 桌面：16px、左内边距、最小宽度、左对齐
           '!text-base pl-10 min-w-[19ch] text-left',
-          // 移动端：去掉间距、放大字号、取消最小宽度、居中
-          'max-sm:pl-0 max-sm:!text-xl max-sm:min-w-0 max-sm:text-center',
+          // 移动端：去掉间距、取消最小宽度、居中（字号由样式表统一控制）
+          'max-sm:pl-0 max-sm:min-w-0 max-sm:text-center',
         )}
       />
     </header>

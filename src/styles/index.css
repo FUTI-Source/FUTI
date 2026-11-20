@@ -12,6 +12,10 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   /* 主体头像尺寸：随视口收缩，短屏笔记本与手机都不再占满首屏 */
   --futi-profile-size: clamp(9.5rem, min(48vw, 30vh), 15rem);
+  /* 文字色统一收敛为令牌，移动端只改令牌值，保证各终端观感一致 */
+  --futi-c-time: rgba(255, 255, 255, 0.55);
+  --futi-c-footer: rgba(255, 255, 255, 0.2);
+  --futi-c-footer-link: rgba(255, 255, 255, 0.3);
   color-scheme: dark;
 }
 
@@ -77,6 +81,12 @@ main {
     padding: 0;
   }
 
+  /* 关闭 iOS Safari 横屏文字自动放大，避免同一字号在不同终端大小不一 */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   .futi-ui * {
     @apply transition-colors;
   }
@@ -132,7 +142,7 @@ main {
 
 .profile-description {
   max-width: calc(100vw - 1rem);
-  min-width: 0;
+  min-width: min(245.47px, calc(100vw - 1rem));
   white-space: nowrap;
 }
 
@@ -223,30 +233,31 @@ body [contenteditable=''] {
   }
 }
 
-@media (max-width: 640px) {
+/* 手机窄屏：只调整颜色令牌与个别排版，视觉层级与桌面端保持一致 */
+@media (width < 40rem) {
+  :root {
+    /* iOS 屏幕亮度高、字号偏大，统一下调透明度以贴近电脑端的观感 */
+    --futi-c-time: rgba(255, 255, 255, 0.45);
+    --futi-c-footer: rgba(255, 255, 255, 0.16);
+    --futi-c-footer-link: rgba(255, 255, 255, 0.24);
+  }
+
   .header-no-drag {
     width: 100%;
     max-width: 100%;
     min-width: 0;
     padding-inline: clamp(0.25rem, 2vw, 0.5rem);
-    /* 移动端屏幕亮度高、字号更大，压低透明度以贴近电脑端的灰色观感 */
-    color: rgba(255, 255, 255, 0.45);
-    font-size: clamp(0.625rem, 5vw, 1.25rem) !important;
+    font-size: clamp(0.9375rem, 5vw, 1.25rem) !important;
     text-align: center;
   }
 
-  .futi-footer-text,
-  .futi-footer-text p {
-    color: rgba(255, 255, 255, 0.16);
-  }
-
-  .futi-footer-text a {
-    color: rgba(255, 255, 255, 0.24);
+  .profile-description {
+    min-width: min(245.47px, calc(100vw - 1rem));
   }
 
   .profile-description > h2 {
     flex-shrink: 0;
-    font-size: 1rem !important;
+    font-size: clamp(0.9375rem, 4.2vw, 1rem) !important;
     white-space: nowrap;
   }
 }
