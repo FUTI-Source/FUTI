@@ -51,13 +51,13 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   return (
     <div
       ref={node}
-      className="absolute top-0 left-0 z-[-1] size-full overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
+      className="fixed inset-0 z-[-1] overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
     >
       <Image
         ref={leftImage}
         src={backgroundLeftImage}
         alt=""
-        className="absolute !-top-8 !-left-20 h-[calc(var(--app-height)+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
+        className="absolute !-top-8 !-left-20 h-[calc(100%+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
         sizes="35vw"
         quality={80}
@@ -69,7 +69,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         ref={rightImage}
         src={backgroundRightImage}
         alt=""
-        className="absolute !-top-[2rem] !left-[26vw] h-[calc(var(--app-height)+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
+        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100%+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
         sizes="80vw"
         quality={80}
