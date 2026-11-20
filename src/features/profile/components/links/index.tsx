@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React from 'react';
 
 import type { IconType } from '@icons-pack/react-simple-icons';
 import { AnimatePresence } from 'motion/react';
@@ -6,22 +6,17 @@ import * as m from 'motion/react-m';
 
 import { buttonVariants } from '@/components/ui/button.tsx';
 
-import { LINKS } from '@/components/page/profile/introduction/links/consts.tsx';
+import { LINKS } from './consts.tsx';
 import { BasicsProps } from '@/components/type';
 
 import { cn } from '@/lib/utils';
 
-const EmailLink = lazy(() =>
-  import('@/components/page/profile/introduction/links/email-dialog.tsx').then(
-    ({ EmailLink: Component }) => ({ default: Component }),
-  ),
-);
+type ILinksProps = BasicsProps & {
+  onEmailClick: (href: string) => void;
+};
 
-type ILinksProps = BasicsProps;
-
-type IEmailLinkProps = {
+type IEmailTriggerProps = {
   Icon: IconType;
-  href: string;
   label: string;
 };
 
@@ -31,7 +26,7 @@ const itemVariants = {
 };
 
 const EmailTrigger: React.FC<
-  IEmailLinkProps & { onClick?: React.MouseEventHandler<HTMLButtonElement> }
+  IEmailTriggerProps & { onClick?: React.MouseEventHandler<HTMLButtonElement> }
 > = ({ Icon, label, onClick }) => (
   <m.button
     type="button"
@@ -49,21 +44,7 @@ const EmailTrigger: React.FC<
   </m.button>
 );
 
-const DeferredEmailLink: React.FC<IEmailLinkProps> = (props) => {
-  const [activated, setActivated] = useState(false);
-
-  if (!activated) {
-    return <EmailTrigger {...props} onClick={() => setActivated(true)} />;
-  }
-
-  return (
-    <Suspense fallback={<EmailTrigger {...props} />}>
-      <EmailLink {...props} initialOpen />
-    </Suspense>
-  );
-};
-
-export const Links: React.FC<ILinksProps> = ({ className, style }) => (
+export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick }) => (
   <AnimatePresence>
     <m.div
       className={cn(
@@ -80,7 +61,14 @@ export const Links: React.FC<ILinksProps> = ({ className, style }) => (
     >
       {LINKS.map(({ Icon, href, label }, i) => {
         if (label === 'Email') {
-          return <DeferredEmailLink key={i} Icon={Icon} href={href} label={label} />;
+          return (
+            <EmailTrigger
+              key={i}
+              Icon={Icon}
+              label={label}
+              onClick={() => onEmailClick(href)}
+            />
+          );
         }
 
         const className = cn(

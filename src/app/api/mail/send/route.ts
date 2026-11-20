@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { checkMailRateLimit } from '@/lib/mail-rate-limit';
-import { sendContactMail } from '@/lib/mailer';
-import { sendMailSchema } from '@/lib/validations';
+import { checkMailRateLimit, sendContactMail } from '@/features/mail/server';
+import { sendMailSchema } from '@/features/mail/schema';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

@@ -4,7 +4,7 @@ import * as m from 'motion/react-m';
 
 import { FUTIDynamicText } from '@/components/ui/dynamic-text';
 
-import { TextDeveloper, TextDeveloperEvent } from '@/components/page/profile/introduction/description/text-developer.tsx';
+import { TextDeveloper, TextDeveloperEvent } from './text-developer.tsx';
 import { BasicsProps } from '@/components/type.ts';
 
 import useEventEmitter from '@/hooks/use-event-emitter.ts';

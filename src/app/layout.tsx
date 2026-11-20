@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 
-import { ServiceWorkerRegistration } from '@/components/pwa/service-worker-registration';
+import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SITE_URL } from '@/lib/site';
 

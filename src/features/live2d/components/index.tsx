@@ -4,23 +4,16 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 
 import { AnimatePresence } from 'motion/react';
 
-import { Loading } from '@/components/ui/loading';
+import { Loading } from './loading';
 
 import { BasicsProps } from '@/components/type.ts';
 
 import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter.ts';
 import useExternal from '@/hooks/use-external.ts';
 
-const Live2DCore = lazy(() => import('./core.tsx'));
+import { Live2DEvent } from '../events';
 
-export enum Live2DEvent {
-  LOADING = 'loading',
-  INIT = 'init',
-  SHOW = 'show',
-  FAILED = 'failed',
-  CONTEXT_LOST = 'context-lost',
-  CONTEXT_RESTORED = 'context-restored',
-}
+const Live2DCore = lazy(() => import('./core.tsx'));
 
 type ILive2DProps = BasicsProps & {
   event$?: EventEmitter<Live2DEvent>;

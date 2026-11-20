@@ -8,7 +8,7 @@ import { BasicsProps } from '@/components/type';
 import backgroundLeftImage from '@/assets/webp/background_left.webp';
 import backgroundRightImage from '@/assets/webp/background_right.webp';
 import useDebounceEffect from '@/hooks/use-debounce-effect.ts';
-import { Image } from '@/components/ui/image';
+import Image from 'next/image';
 
 type IDetroitBackgroundProps = BasicsProps;
 
@@ -61,20 +61,24 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         ref={leftImage}
         src={backgroundLeftImage}
         alt=""
-        className="absolute !-top-8 !-left-20 h-[calc(100dvh+4rem)] w-[35vw] max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
+        className="absolute !-top-8 !-left-20 h-[calc(100dvh+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
         data-depth="0.2"
         sizes="35vw"
+        quality={80}
         loading="lazy"
+        decoding="async"
         onLoad={() => setIsLeftLoaded(true)}
       />
       <Image
         ref={rightImage}
         src={backgroundRightImage}
         alt=""
-        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100dvh+5rem)] w-[80vw] max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
+        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100dvh+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
         data-depth="0.3"
         sizes="80vw"
+        quality={80}
         loading="lazy"
+        decoding="async"
         onLoad={() => setIsRightLoaded(true)}
       />
     </m.div>
