@@ -101,6 +101,8 @@ main {
     min-height: var(--app-height);
     margin: 0;
     padding: 0;
+    /* 整页回弹会露出画布外的白色区域，应用式布局不需要回弹 */
+    overscroll-behavior: none;
   }
 
   /* 关闭 iOS Safari 横屏文字自动放大，避免同一字号在不同终端大小不一 */

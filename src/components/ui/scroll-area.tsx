@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 const ScrollArea = ({ className, children, ...props }: React.ComponentProps<'div'>) => {
   return (
-    <div data-slot="scroll-area" className={cn('relative overflow-auto [scrollbar-width:thin]', className)} {...props}>
+    <div data-slot="scroll-area" className={cn('relative overflow-auto overscroll-none [scrollbar-width:thin]', className)} {...props}>
       {children}
     </div>
   );
