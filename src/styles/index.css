@@ -1,9 +1,16 @@
 @theme {
   --color-futi: oklch(0.63 0.15 252.19);
 
-  --font-geometos: 'Geometos', sans-serif;
-  --font-kanit: 'Kanit', sans-serif;
-  --font-ubuntu: 'Ubuntu', sans-serif;
+  /* 品牌字体只有拉丁字形，中文必须显式补苹方，否则 Safari 会回退到宋体 */
+  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+}
+
+/* next/font 在 body 上注入的 --font-geometos 只含 geometos 与其度量回退字体，
+   不含中文字形，这里在工具类后追加中文字体，保证中文仍使用苹方。 */
+.font-geometos {
+  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
 }
 
 /* 安全区变量，给沉浸式 + WCO 共用 */
