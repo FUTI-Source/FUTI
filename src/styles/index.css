@@ -107,9 +107,9 @@ main {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* iOS Safari 的状态栏与玻璃工具栏以根画布为底：
-       背景必须画在 html 上并铺满整个画布，否则工具栏后方会露出系统黑底 */
-    background-color: #15161a;
+    /* iOS Safari 的玻璃工具栏以页面底色为底：底色需铺在 html 画布上，
+       取壁纸顶部实测色调，顶部工具栏才能与页面背景自然衔接 */
+    background-color: #1d1e20;
     background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, .2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
     background-blend-mode: overlay, normal;
     background-repeat: no-repeat;
