@@ -10,6 +10,8 @@ const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? '')
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
+  // 部署产物依赖 framework standalone 输出（自包含 server.js）
+  output: 'standalone',
   devIndicators: false,
   allowedDevOrigins,
   images: {
