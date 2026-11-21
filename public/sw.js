@@ -1,10 +1,10 @@
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `futi-site-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
   '/favicon.ico',
-  '/icon-192.png',
+  '/icon-192x192.png',
   '/fonts/Geometos.woff',
   '/fonts/Kanit-300.woff2',
   '/fonts/Kanit-400.woff2',

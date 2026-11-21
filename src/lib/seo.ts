@@ -6,7 +6,7 @@ export const SITE_NAME = 'FUTI · 个人主页';
 export const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
 
 const SITE_ICON_PATH = '/favicon.ico';
-const SITE_IMAGE_PATH = '/icon-192.png';
+const SITE_IMAGE_PATH = '/icon-192x192.png';
 
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 const SOCIAL_IMAGE = {
@@ -30,11 +30,15 @@ export const qqSharingMeta = {
 };
 
 // iOS 主屏图标必须是 PNG 且不透明，.ico 会被系统忽略。
-const APPLE_TOUCH_ICONS = [180, 167, 152, 120].map((size) => ({
-  url: `/apple-touch-icon-${size}x${size}.png`,
-  sizes: `${size}x${size}`,
-  type: 'image/png',
-}));
+// 默认路径 apple-touch-icon.png 供不读取 link 标签的抓取服务兜底。
+const APPLE_TOUCH_ICONS = [
+  { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+  ...[167, 152, 120].map((size) => ({
+    url: `/apple-touch-icon-${size}x${size}.png`,
+    sizes: `${size}x${size}`,
+    type: 'image/png',
+  })),
+];
 
 // iOS 26/27 会把启动图 media 里的 device-height 误判为 Safari 当时的可见视口高度，
 // 精确的宽高匹配会全部落空（WebKit #326500）；改为只按 device-width + 像素比匹配。

@@ -61,7 +61,7 @@ function escapeHtml(value: string): string {
 }
 
 const SITE_NAME = 'FUTI · 个人主页';
-const MAIL_LOGO = `${SITE_URL}/icon-192.png`;
+const MAIL_LOGO = `${SITE_URL}/icon-192x192.png`;
 const ACCENT = '#3A8CE0';
 const ACCENT_TEXT = '#1D6FC7';
 const ACCENT_TINT = '#E9F2FD';
