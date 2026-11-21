@@ -98,8 +98,8 @@ export const SitePreloader = () => {
             className="stroke-futi"
           />
         </svg>
-        <span className="font-geometos text-[10px] tracking-[0.42em] text-white/25 select-none">
-          FUTI
+        <span className="font-geometos -mr-[0.3em] text-[11px] tracking-[0.3em] text-white/25 select-none">
+          张文涛
         </span>
         <span className="sr-only">正在加载</span>
       </div>

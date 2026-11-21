@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 
 import { SITE_URL } from '@/lib/site';
 
-export const SITE_NAME = 'FUTI · 个人主页';
-export const SITE_DESCRIPTION = 'FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。';
+export const SITE_NAME = '张文涛 · 个人主页';
+export const SITE_DESCRIPTION = '张文涛的个人主页，分享全栈开发、开源项目与技术实践。';
 
 const SITE_ICON_PATH = '/favicon.ico';
 const SITE_IMAGE_PATH = '/icon-192x192.png';
@@ -98,7 +98,6 @@ export const structuredData = {
       '@type': 'Person',
       '@id': `${SITE_URL}/#person`,
       name: '张文涛',
-      alternateName: 'FUTI',
       url: SITE_URL,
       image: SITE_IMAGE_URL,
       description: SITE_DESCRIPTION,
@@ -119,15 +118,15 @@ const socialImage = {
 
 export const siteMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: 'FUTI',
+  applicationName: '张文涛',
   title: {
     default: SITE_NAME,
-    template: '%s | FUTI',
+    template: '%s | 张文涛',
   },
   description: SITE_DESCRIPTION,
-  authors: [{ name: 'FUTI', url: SITE_URL }],
-  creator: 'FUTI',
-  publisher: 'FUTI',
+  authors: [{ name: '张文涛', url: SITE_URL }],
+  creator: '张文涛',
+  publisher: '张文涛',
   alternates: {
     canonical: '/',
   },
@@ -164,7 +163,7 @@ export const siteMetadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: 'FUTI',
+    title: '张文涛',
     statusBarStyle: 'black-translucent',
     startupImage: APPLE_SPLASH_SCREENS.map(({ width, height, ratio, ...screen }) => ({
       url: `/launch/splash-${width * ratio}x${height * ratio}.png`,
