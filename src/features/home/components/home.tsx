@@ -19,7 +19,7 @@ import { DetroitBackground } from './background';
 import { Footer } from './footer';
 import { Header } from './header';
 
-import profileImage from '@/assets/avif/futiwolf.avif';
+import profileImage from '@/assets/webp/futiwolf.webp';
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';

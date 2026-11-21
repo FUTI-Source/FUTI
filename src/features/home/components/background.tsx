@@ -4,8 +4,8 @@ import type Parallax from 'parallax-js';
 
 import { BasicsProps } from '@/components/type';
 
-import backgroundLeftImage from '@/assets/avif/background_left.avif';
-import backgroundRightImage from '@/assets/avif/background_right.avif';
+import backgroundLeftImage from '@/assets/webp/background_left.webp';
+import backgroundRightImage from '@/assets/webp/background_right.webp';
 import useDebounceEffect from '@/hooks/use-debounce-effect.ts';
 import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
