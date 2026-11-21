@@ -10,6 +10,7 @@ const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? '')
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
+  devIndicators: false,
   allowedDevOrigins,
   images: {
     // Serve the existing local WebP assets directly; FaaS runtimes cannot
