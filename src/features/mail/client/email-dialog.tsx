@@ -87,8 +87,11 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="email-dialog-content rounded-2xl border-[#0295e5]/40 bg-[#1b1e24]/95 p-0 text-white shadow-[0_0_36px_rgba(2_149_229_0.28)] backdrop-blur-md">
-        <div className="h-1 w-full shrink-0 rounded-t-2xl bg-gradient-to-r from-[#37eff9] via-[#0091e4] to-[#64c6f4]" />
+      <DialogContent
+        overlayClassName="bg-[#07090c]/65 backdrop-blur-md"
+        className="email-dialog-content rounded-2xl border-white/10 bg-[#14171c]/92 p-0 text-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] backdrop-blur-xl"
+      >
+        <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
         <div className="email-dialog-body">
           <DialogHeader>
             <DialogTitle className="font-geometos text-xl tracking-wide text-white/90">
@@ -181,7 +184,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                   onClick={isSubmitted ? resetAfterResult : undefined}
                   disabled={form.formState.isSubmitting}
                   className={cn(
-                    'text-white shadow-[0_0_18px_rgba(2_149_229_0.45)]',
+                    'text-white shadow-[0_8px_24px_-8px_rgba(2_149_229_0.5)]',
                     submitState === 'error'
                       ? 'bg-[#c94b55] hover:bg-[#c94b55]/90'
                       : submitState === 'partial'
