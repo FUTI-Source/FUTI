@@ -327,16 +327,13 @@ body [contenteditable=''] {
 }
 
 .futi-cursor::after {
-  animation: cursor-fade-out 0.3s ease infinite alternate-reverse;
+  animation: cursor-blink 1s step-end infinite;
 
   @apply block h-full w-[1.67px] border-[#528bff] bg-[#528bff] content-[''];
 }
 
-@keyframes cursor-fade-out {
-  0% {
-    opacity: 1;
-  }
-  100% {
+@keyframes cursor-blink {
+  50% {
     opacity: 0;
   }
 }
