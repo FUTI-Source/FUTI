@@ -1,9 +1,9 @@
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 const config = {
   plugins: {
     '@tailwindcss/postcss': {},
-    [fileURLToPath(new URL('./postcss-remove-invalid-css-declarations.cjs', import.meta.url))]: {},
+    [path.join(process.cwd(), 'postcss-remove-invalid-css-declarations.cjs')]: {},
   },
 };
 
