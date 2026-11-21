@@ -22,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" translate="no">
       <head>
+        {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
+        <meta name="google" content="notranslate" />
         {/* 首帧前用真实视口高度校正 --app-height：
             1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度；
             2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，
