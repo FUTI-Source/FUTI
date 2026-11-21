@@ -72,10 +72,13 @@ const Home: React.FC = () => {
       domains: `${SITE_HOSTNAME},${SITE_HOSTNAME.replace(/^www\./, '')}`,
       environment: process.env.NODE_ENV,
       doNotTrack: true,
-      excludeSearch: true,
+      // UTM 参数存放在查询串里，开启 excludeSearch 会把 utm_* 一并丢弃，UTM 洞察将无数据
+      excludeSearch: false,
       excludeHash: true,
       // 使用内置 Web Vitals 采集，替代自定义的 web-vitals 事件
       performance: true,
+      // 采集未捕获异常与未处理的 Promise 拒绝，后台「监控 → 错误」查看
+      errors: true,
     });
 
     identifyUmami({
