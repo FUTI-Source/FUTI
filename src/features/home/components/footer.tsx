@@ -62,15 +62,6 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
               <TooltipContent sideOffset={16}>工信部 ICP 备案</TooltipContent>
             </Tooltip>
           )}
-          <p className="max-sm:hidden">/</p>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href="/" target="_blank" rel="noreferrer">
-                Github Open Source
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent sideOffset={16}>AGPL-3.0</TooltipContent>
-          </Tooltip>
         </div>
       </m.div>
     </div>
