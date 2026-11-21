@@ -90,6 +90,8 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
       <DialogContent
         overlayClassName="bg-[#07090c]/65 backdrop-blur-md"
         className="email-dialog-content rounded-2xl border-white/10 bg-[#14171c]/92 p-0 text-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] backdrop-blur-xl"
+        // 打开时不自动聚焦输入框，避免手机键盘立即弹起、把弹窗顶得跳动
+        onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
         <div className="email-dialog-body">
