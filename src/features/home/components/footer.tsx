@@ -25,7 +25,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            Zhang Wentao
+            FUTI
           </m.a>
         </TooltipTrigger>
         <TooltipContent sideOffset={16}>返回首页</TooltipContent>
