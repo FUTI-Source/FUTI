@@ -59,8 +59,8 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
       initial="hidden"
       animate="visible"
     >
-      {LINKS.map(({ Icon, href, label }, i) => {
-        if (label === 'Email') {
+      {LINKS.map(({ id, Icon, href, label }, i) => {
+        if (id === 'email') {
           return (
             <EmailTrigger
               key={i}
@@ -78,7 +78,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
         const icon = (
           <Icon
             className={
-              label === 'Donate'
+              id === 'donate'
                 ? 'size-4 text-[#ecf6ff]/85'
                 : 'size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85'
             }
@@ -110,7 +110,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
             className={className}
             rel="noreferrer"
             data-umami-event="social-link"
-            data-umami-event-platform={label.toLowerCase()}
+            data-umami-event-platform={id}
             variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
           >
             {icon}

@@ -4,6 +4,8 @@ import { IconType, SiGithub, SiGmail, SiSteamdeck } from '@icons-pack/react-simp
 import { CONTACT_EMAIL } from '@/lib/site';
 
 interface ILink {
+  /** 稳定的英文标识，用于埋点与逻辑判断，避免依赖展示文案 */
+  id: string;
   Icon: IconType;
   href: string;
   label: string;
@@ -11,23 +13,27 @@ interface ILink {
 
 export const LINKS: ILink[] = [
   {
+    id: 'github',
     Icon: SiGithub,
     href: '',
-    label: 'Github',
+    label: '开源',
   },
   {
+    id: 'donate',
     Icon: HandHeart,
     href: '',
-    label: 'Donate',
+    label: '打赏',
   },
   {
+    id: 'steam',
     Icon: SiSteamdeck,
     href: '',
-    label: 'Steam',
+    label: '游戏',
   },
   {
+    id: 'email',
     Icon: SiGmail,
     href: `mailto:${CONTACT_EMAIL}`,
-    label: 'Email',
+    label: '邮件',
   },
 ];
