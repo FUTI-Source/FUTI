@@ -17,7 +17,7 @@
     "postcss": "$postcss"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "type:check": "tsc --noEmit"
@@ -34,14 +34,14 @@
     "clsx": "^2.1.1",
     "lucide-react": "0.577.0",
     "motion": "^14.14.0",
-    "next": "^15.1.6",
+    "next": "^16.4.6",
     "nodemailer": "^10.6.0",
     "normalize.css": "^8.0.1",
     "parallax-js": "^3.1.0",
     "pixi-live2d-display": "file:vendor/pixi-live2d-display",
     "pixi.js": "^6.5.10",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-hook-form": "^7.65.0",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
