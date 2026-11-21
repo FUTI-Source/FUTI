@@ -35,7 +35,7 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
         as={m.h2}
         onAnimationComplete={() => typingEvent$.emit(TextDeveloperEvent.START)}
       >
-        A Full Stack
+        全栈开发
       </FUTIDynamicText>
       <TextDeveloper event$={typingEvent$} onAnimationComplete={() => setInAnimation(false)} />
     </div>
