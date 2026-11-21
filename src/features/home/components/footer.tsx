@@ -20,18 +20,15 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+            className={cn('futi-center font-kanit -mr-[0.3em] cursor-pointer text-[13px] tracking-[0.3em] text-white/30 transition-colors select-none hover:text-white/60', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            <span className="max-sm:hidden">Drawn by NAVILAB</span>
-            <span className="font-kanit absolute top-0 left-0 text-[1.5rem] leading-7 font-light tracking-[0.24em] text-white/20 select-none max-sm:static max-sm:block max-sm:text-center">
-              张文涛
-            </span>
+            张文涛
           </m.a>
         </TooltipTrigger>
-        <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
+        <TooltipContent sideOffset={16}>返回首页</TooltipContent>
       </Tooltip>
 
       <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
