@@ -4,9 +4,11 @@ import type Parallax from 'parallax-js';
 
 import { BasicsProps } from '@/components/type';
 
-import backgroundLeftImage from '@/assets/avif/background_left.avif';
-import backgroundRightImage from '@/assets/avif/background_right.avif';
+import backgroundLeftImage from '@/assets/webp/background_left.webp';
+import backgroundRightImage from '@/assets/webp/background_right.webp';
 import useDebounceEffect from '@/hooks/use-debounce-effect.ts';
+import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 type IDetroitBackgroundProps = BasicsProps;
@@ -19,12 +21,24 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   const [isLeftLoaded, setIsLeftLoaded] = useState(false);
   const [isRightLoaded, setIsRightLoaded] = useState(false);
 
+  // 等浏览器真正解码完成再显示，避免 AVIF 大图在解码完成前先绘制一帧空白或半成品，
+  // 配合 opacity 过渡把「凭空出现」变成淡入。
+  const revealImage = useMemoizedFn((image: HTMLImageElement | null, reveal: () => void) => {
+    if (!image) {
+      reveal();
+      return;
+    }
+    void image
+      .decode()
+      .catch(() => undefined)
+      .finally(reveal);
+  });
+
   useEffect(() => {
-    // 缓存图片可能在水合前完成加载，需要补同步加载状态。
-    const left = leftImage.current;
-    const right = rightImage.current;
-    if (left?.complete && left.naturalWidth > 0) setIsLeftLoaded(true);
-    if (right?.complete && right.naturalWidth > 0) setIsRightLoaded(true);
+    // 图片可能在水合前就已完成加载，onLoad 会被错过；
+    // decode() 对已缓存和仍在加载的图片都有效，这里直接补一次，避免一直停在 opacity-0。
+    revealImage(leftImage.current, () => setIsLeftLoaded(true));
+    revealImage(rightImage.current, () => setIsRightLoaded(true));
   }, []);
 
   useDebounceEffect(
@@ -57,25 +71,31 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         ref={leftImage}
         src={backgroundLeftImage}
         alt=""
-        className="absolute !-top-8 !-left-20 h-[calc(100%+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!-left-10 max-sm:object-cover max-sm:object-right"
+        className={cn(
+          'absolute !-top-8 !-left-20 h-[calc(100%+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!-left-10 max-sm:object-cover max-sm:object-right',
+          isLeftLoaded ? 'opacity-100' : 'opacity-0',
+        )}
         data-depth="0.2"
         sizes="35vw"
         quality={80}
         loading="eager"
         decoding="async"
-        onLoad={() => setIsLeftLoaded(true)}
+        onLoad={(event) => revealImage(event.currentTarget, () => setIsLeftLoaded(true))}
       />
       <Image
         ref={rightImage}
         src={backgroundRightImage}
         alt=""
-        className="absolute !-top-[2rem] !left-[26vw] h-[calc(100%+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left"
+        className={cn(
+          'absolute !-top-[2rem] !left-[26vw] h-[calc(100%+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left',
+          isRightLoaded ? 'opacity-100' : 'opacity-0',
+        )}
         data-depth="0.3"
         sizes="80vw"
         quality={80}
         priority
         decoding="async"
-        onLoad={() => setIsRightLoaded(true)}
+        onLoad={(event) => revealImage(event.currentTarget, () => setIsRightLoaded(true))}
       />
     </div>
   );
