@@ -66,6 +66,11 @@ const APPLE_SPLASH_SCREENS = [
   { width: 1024, height: 1366, ratio: 2, orientation: 'portrait' },
   { width: 1032, height: 1376, ratio: 2 },
   { width: 1024, height: 768, ratio: 2, orientation: 'landscape' },
+  // iPhone Duo：内屏 1878×2670（626×890@3），外屏 1398×2034（466×678@3）
+  { width: 626, height: 890, ratio: 3 },
+  { width: 890, height: 626, ratio: 3 },
+  { width: 466, height: 678, ratio: 3 },
+  { width: 678, height: 466, ratio: 3 },
   { width: 744, height: 1133, ratio: 2 },
   { width: 1080, height: 810, ratio: 2 },
   { width: 1112, height: 834, ratio: 2 },
