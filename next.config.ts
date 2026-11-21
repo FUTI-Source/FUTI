@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   allowedDevOrigins,
   images: {
-    // Serve the existing local WebP assets directly; FaaS runtimes cannot
-    // reliably persist Next.js's on-demand image optimization cache.
+    // Serve local AVIF assets directly; FaaS runtimes cannot reliably persist
+    // Next.js's on-demand image optimization cache.
     unoptimized: true,
     // Next.js 16 起必须显式声明用到的 quality。
     qualities: [80],
