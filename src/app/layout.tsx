@@ -22,7 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" translate="no">
+    // 首帧脚本会在 hydration 前给 <html> 写入 --app-height，
+    // React 会把它当成属性差异报警，这里只抑制该元素自身的属性校验。
+    <html lang="zh-CN" translate="no" suppressHydrationWarning>
       <head>
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
         <meta name="google" content="notranslate" />
