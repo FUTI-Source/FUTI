@@ -16,6 +16,24 @@ type IFooterProps = BasicsProps;
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
   return (
     <div className={cn('futi-footer flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <m.a
+            href="/"
+            className={cn('futi-center font-kanit -mr-[0.38em] cursor-pointer text-[10px] tracking-[0.38em] text-white/30 uppercase transition-colors select-none hover:text-white/60', className)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 1 } }}
+            transition={{ duration: 0.2 }}
+          >
+            Zhang Wentao
+          </m.a>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={16}>返回首页</TooltipContent>
+      </Tooltip>
+
+      <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
+        <Separator orientation="vertical" className="!h-8 bg-white/20" />
+      </m.div>
       <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
         <div className="futi-footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--futi-c-footer-link)] [&_p]:text-[color:var(--futi-c-footer)]">
