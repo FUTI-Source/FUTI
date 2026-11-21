@@ -15,7 +15,7 @@ type ITextDeveloperProps = BasicsProps<'h2'> & {
   onAnimationComplete?: () => void;
 };
 
-const WORD = String.raw`<Developer />`;
+const WORD = String.raw`<FullStack />`;
 const TYPING_SPEED = 15;
 const HOLD_AFTER_TYPING = 200;
 
