@@ -6,6 +6,8 @@ interface UmamiClient {
   track: (eventName: string, eventData?: UmamiData) => void;
   identify?: (data: UmamiData | string) => void;
   getSession?: () => { cache: string; website: string };
+  /** 上报已捕获的异常，需开启 data-errors */
+  captureException?: (error: unknown, context?: { tags?: UmamiData }) => void;
 }
 
 declare global {
@@ -39,6 +41,8 @@ interface UmamiOptions {
   performance?: boolean;
   /** 加载会话回放采集器 recorder.js，默认开启；需在 Umami 后台同步启用「回放」 */
   replays?: boolean;
+  /** 自动采集未捕获异常与未处理的 Promise 拒绝，默认开启 */
+  errors?: boolean;
 }
 
 /** 脚本加载前产生的事件先排队，避免首屏交互丢失 */
@@ -106,6 +110,7 @@ export function initUmami(options: UmamiOptions) {
   attr('data-release', options.release);
   attr('data-do-not-track', options.doNotTrack);
   attr('data-performance', options.performance);
+  if (options.errors !== false) attr('data-errors', 'true');
   // 默认开启，只有显式关闭时才写入
   if (options.autoTrack === false) attr('data-auto-track', 'false');
   if (options.autoPageview === false) attr('data-auto-pageview', 'false');
@@ -153,5 +158,14 @@ export function trackEvent(eventName: string, data?: UmamiData) {
       lang: getCurrentLang(),
       ...data,
     });
+  });
+}
+
+/** 上报被 try/catch 拦截的异常；未捕获异常由 data-errors 自动采集 */
+export function captureException(error: unknown, tags?: UmamiData) {
+  if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined') return;
+
+  whenUmamiReady((client) => {
+    client.captureException?.(error, tags ? { tags } : undefined);
   });
 }

@@ -77,6 +77,8 @@ const Home: React.FC = () => {
       excludeHash: true,
       // 使用内置 Web Vitals 采集，替代自定义的 web-vitals 事件
       performance: true,
+      // 采集未捕获异常与未处理的 Promise 拒绝，后台「监控 → 错误」查看
+      errors: true,
     });
 
     identifyUmami({

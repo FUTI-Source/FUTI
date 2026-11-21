@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { sendMail, SendMailError } from './send-mail';
 import { sendMailSchema, type SendMailInput } from '../schema';
 import { cn } from '@/lib/utils';
-import { trackEvent } from '@/utils/umami';
+import { trackEvent, captureException } from '@/utils/umami';
 
 interface IEmailDialogProps {
   href: string;
@@ -61,6 +61,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
       );
     } catch (error) {
       const message = error instanceof SendMailError ? error.message : undefined;
+      captureException(error, { feature: 'contact-form' });
       setSubmitState('error');
       trackEvent('contact-submit', { status: 'error' });
       setFeedbackMessage(
