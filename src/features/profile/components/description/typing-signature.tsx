@@ -6,20 +6,20 @@ import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
 import { cn } from '@/lib/utils';
 
-export enum TextDeveloperEvent {
+export enum TypingSignatureEvent {
   START = 'start',
 }
 
-type ITextDeveloperProps = BasicsProps<'h2'> & {
-  event$?: EventEmitter<TextDeveloperEvent>;
+type ITypingSignatureProps = BasicsProps<'h2'> & {
+  event$?: EventEmitter<TypingSignatureEvent>;
   onAnimationComplete?: () => void;
 };
 
-const WORD = '分享 · 开源 · 实践';
+const SIGNATURE = '分享 · 开源 · 实践';
 const TYPING_SPEED = 15;
 const HOLD_AFTER_TYPING = 200;
 
-export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimationComplete, className, style }) => {
+export const TypingSignature: React.FC<ITypingSignatureProps> = ({ event$, onAnimationComplete, className, style }) => {
   const timer = useRef<number | undefined>(undefined);
   const started = useRef<boolean>(false);
   const text = useRef<string>('');
@@ -28,8 +28,8 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
   const [displayedText, setDisplayedText] = useState<string>('');
 
   const step = useMemoizedFn(() => {
-    if (text.current.length < WORD.length) {
-      text.current += WORD.charAt(text.current.length);
+    if (text.current.length < SIGNATURE.length) {
+      text.current += SIGNATURE.charAt(text.current.length);
       setDisplayedText(text.current);
       timer.current = window.setTimeout(step, TYPING_SPEED);
       return;
@@ -52,8 +52,8 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
     step();
   });
 
-  const handleEvent = useMemoizedFn((trigger: TextDeveloperEvent) => {
-    if (trigger === TextDeveloperEvent.START) {
+  const handleEvent = useMemoizedFn((trigger: TypingSignatureEvent) => {
+    if (trigger === TypingSignatureEvent.START) {
       start();
     }
   });

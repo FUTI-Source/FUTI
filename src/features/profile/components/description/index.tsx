@@ -4,7 +4,7 @@ import * as m from 'motion/react-m';
 
 import { FUTIDynamicText } from '@/components/ui/dynamic-text';
 
-import { TextDeveloper, TextDeveloperEvent } from './text-developer.tsx';
+import { TypingSignature, TypingSignatureEvent } from './typing-signature.tsx';
 import { BasicsProps } from '@/components/type.ts';
 
 import useEventEmitter from '@/hooks/use-event-emitter.ts';
@@ -15,7 +15,7 @@ type IDescriptionProps = BasicsProps;
 export const Description: React.FC<IDescriptionProps> = ({ className, style }) => {
   const [inAnimation, setInAnimation] = useState<boolean>(true);
 
-  const typingEvent$ = useEventEmitter<TextDeveloperEvent>();
+  const typingEvent$ = useEventEmitter<TypingSignatureEvent>();
 
   return (
     <div
@@ -33,11 +33,11 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
       <FUTIDynamicText
         className="font-ubuntu !leading-none"
         as={m.h2}
-        onAnimationComplete={() => typingEvent$.emit(TextDeveloperEvent.START)}
+        onAnimationComplete={() => typingEvent$.emit(TypingSignatureEvent.START)}
       >
         全栈开发
       </FUTIDynamicText>
-      <TextDeveloper event$={typingEvent$} onAnimationComplete={() => setInAnimation(false)} />
+      <TypingSignature event$={typingEvent$} onAnimationComplete={() => setInAnimation(false)} />
     </div>
   );
 };
