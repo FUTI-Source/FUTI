@@ -17,7 +17,7 @@
     "postcss": "$postcss"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "type:check": "tsc --noEmit"

@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = () => ({
   postcssPlugin: 'remove-invalid-css-declarations',
   OnceExit(root) {
     root.walkDecls('-webkit-user-select', (decl) => decl.remove());
@@ -14,4 +14,6 @@ module.exports = {
       }
     });
   },
-};
+});
+
+module.exports.postcss = true;
