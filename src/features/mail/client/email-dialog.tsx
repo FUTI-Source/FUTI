@@ -121,6 +121,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                       <Input
                         type="email"
                         inputMode="email"
+                        autoComplete="email"
                         placeholder="you@example.com"
                         className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
                         {...field}
@@ -141,6 +142,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                     <FormControl>
                       <Textarea
                         rows={5}
+                        autoComplete="off"
                         placeholder="想对我说的话……"
                         className="resize-none border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
                         {...field}
