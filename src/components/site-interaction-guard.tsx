@@ -12,6 +12,11 @@ const BLOCKED_PAGE_EVENTS = [
   'selectstart',
   'dragstart',
   'drop',
+  'auxclick',
+  'dblclick',
+  'gesturestart',
+  'gesturechange',
+  'gestureend',
 ] as const;
 
 const isEditableTarget = (target: EventTarget | null) =>
@@ -77,11 +82,31 @@ export const SiteInteractionGuard = () => {
     });
     document.addEventListener('keydown', handleKeyDown, true);
 
+    // Ctrl/⌘ + 滚轮与触控板捏合会缩放页面，这里一并拦截；普通滚动不受影响。
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+      }
+    };
+
+    // 中键自动滚动属于浏览器自身行为，页面内不需要；链接上的中键新标签页保留。
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.button !== 1) return;
+      if (isEditableTarget(event.target)) return;
+      if (event.target instanceof Element && event.target.closest('a[href]')) return;
+      event.preventDefault();
+    };
+
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    document.addEventListener('mousedown', handleMouseDown, true);
+
     return () => {
       BLOCKED_PAGE_EVENTS.forEach((eventName) => {
         document.removeEventListener(eventName, preventPageInteraction, true);
       });
       document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('mousedown', handleMouseDown, true);
     };
   }, []);
 
