@@ -20,12 +20,12 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('futi-center font-kanit -mr-[0.3em] cursor-pointer text-[13px] tracking-[0.3em] text-white/30 transition-colors select-none hover:text-white/60', className)}
+            className={cn('futi-center font-kanit -mr-[0.38em] cursor-pointer text-[10px] tracking-[0.38em] text-white/30 uppercase transition-colors select-none hover:text-white/60', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            张文涛
+            Zhang Wentao
           </m.a>
         </TooltipTrigger>
         <TooltipContent sideOffset={16}>返回首页</TooltipContent>
