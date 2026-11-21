@@ -2,6 +2,7 @@ import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
+import { SitePreloader } from '@/components/site-preloader';
 import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
 
 import './globals.css';
@@ -100,6 +101,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
       </head>
       <body className={geometos.variable}>
+        <SitePreloader />
         <script
           id="structured-data"
           type="application/ld+json"
