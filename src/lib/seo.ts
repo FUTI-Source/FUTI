@@ -45,6 +45,7 @@ const APPLE_TOUCH_ICONS = [
 // 1024@2 同时对应 12.9" iPad 竖屏与 10.2" iPad 横屏，需用 orientation 区分。
 const APPLE_SPLASH_SCREENS = [
   { width: 320, height: 568, ratio: 2 },
+  { width: 360, height: 780, ratio: 3 },
   { width: 375, height: 667, ratio: 2 },
   { width: 375, height: 812, ratio: 3 },
   { width: 390, height: 844, ratio: 3 },
@@ -52,21 +53,28 @@ const APPLE_SPLASH_SCREENS = [
   { width: 402, height: 874, ratio: 3 },
   { width: 414, height: 896, ratio: 2 },
   { width: 414, height: 896, ratio: 3 },
+  { width: 420, height: 912, ratio: 3 },
   { width: 428, height: 926, ratio: 3 },
   { width: 430, height: 932, ratio: 3 },
   { width: 440, height: 956, ratio: 3 },
   { width: 768, height: 1024, ratio: 1 },
   { width: 768, height: 1024, ratio: 2 },
+  { width: 810, height: 1080, ratio: 2 },
   { width: 820, height: 1180, ratio: 2 },
   { width: 834, height: 1194, ratio: 2 },
+  { width: 834, height: 1210, ratio: 2 },
   { width: 1024, height: 1366, ratio: 2, orientation: 'portrait' },
+  { width: 1032, height: 1376, ratio: 2 },
   { width: 1024, height: 768, ratio: 2, orientation: 'landscape' },
   { width: 744, height: 1133, ratio: 2 },
+  { width: 1080, height: 810, ratio: 2 },
   { width: 1112, height: 834, ratio: 2 },
   { width: 1133, height: 744, ratio: 2 },
   { width: 1180, height: 820, ratio: 2 },
   { width: 1194, height: 834, ratio: 2 },
+  { width: 1210, height: 834, ratio: 2 },
   { width: 1366, height: 1024, ratio: 2 },
+  { width: 1376, height: 1032, ratio: 2 },
 ] as const;
 
 export const structuredData = {
