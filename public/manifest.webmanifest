@@ -1,9 +1,9 @@
 {
-  "name": "FUTI",
-  "short_name": "FUTI",
+  "name": "张文涛",
+  "short_name": "张文涛",
   "id": "/",
   "lang": "zh-CN",
-  "description": "FUTI（张文涛）的个人主页，分享全栈开发、开源项目与技术实践。",
+  "description": "张文涛的个人主页，分享全栈开发、开源项目与技术实践。",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "scope": "/",
@@ -30,13 +30,13 @@
       "sizes": "1280x627",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "FUTI 个人主页桌面端"
+      "label": "张文涛个人主页桌面端"
     },
     {
       "src": "/screenshot-mobile.png",
       "sizes": "390x751",
       "type": "image/png",
-      "label": "FUTI 个人主页移动端"
+      "label": "张文涛个人主页移动端"
     }
   ]
 }

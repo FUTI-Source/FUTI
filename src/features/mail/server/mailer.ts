@@ -60,7 +60,7 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-const SITE_NAME = 'FUTI · 个人主页';
+const SITE_NAME = '张文涛 · 个人主页';
 const MAIL_LOGO = `${SITE_URL}/icon-192x192.png`;
 const ACCENT = '#3A8CE0';
 const ACCENT_TEXT = '#1D6FC7';
@@ -173,14 +173,14 @@ function buildOwnerHtml(dto: SendMailRequest): string {
     cardBody: safeContent,
     ctaText: '回复留言者',
     ctaHref: `mailto:${safeEmail}?subject=${encodeURIComponent('回复：网站留言')}`,
-    footerNote: '此邮件由 FUTI 个人主页自动发出，直接回复将发送给留言者。',
+    footerNote: '此邮件由张文涛个人主页自动发出，直接回复将发送给留言者。',
   });
 }
 
 function buildConfirmationHtml(dto: SendMailRequest): string {
   const safeContent = escapeHtml(dto.content).replace(/\n/g, '<br />');
   return buildMailShell({
-    preheader: '你的留言已成功送达 FUTI，我会尽快查阅并回复。',
+    preheader: '你的留言已成功送达张文涛，我会尽快查阅并回复。',
     title: '留言已送达',
     subtitle: `感谢你的来信，${escapeHtml(dto.email)}，我会尽快回复。`,
     cardLabel: '你的留言',
@@ -232,7 +232,7 @@ export async function sendContactMail(
         dto.content,
         '',
         '——',
-        'FUTI · 个人主页',
+        SITE_NAME,
         SITE_URL,
       ].join('\n'),
       html: buildOwnerHtml(dto),
@@ -263,7 +263,7 @@ export async function sendContactMail(
         dto.content,
         '',
         '——',
-        'FUTI · 个人主页',
+        SITE_NAME,
         SITE_URL,
       ].join('\n'),
       html: buildConfirmationHtml(dto),

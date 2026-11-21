@@ -95,7 +95,7 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
               {
                 type: 'text',
                 text: JSON.stringify({
-                  name: 'FUTI',
+                  name: '张文涛',
                   fullName: '张文涛',
                   role: 'Full Stack Developer',
                   site: SITE_URL,

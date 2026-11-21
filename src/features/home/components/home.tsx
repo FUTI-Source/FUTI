@@ -118,7 +118,7 @@ const Home: React.FC = () => {
                   <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                     <Image
                       src={profileImage}
-                      alt="FUTI 个人头像"
+                      alt="张文涛的个人头像"
                       className="size-full bg-none"
                       sizes="(max-width: 640px) 48vw, 240px"
                       quality={80}
