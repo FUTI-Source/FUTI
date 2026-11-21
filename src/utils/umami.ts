@@ -37,6 +37,8 @@ interface UmamiOptions {
   excludeHash?: boolean;
   /** 使用内置 Web Vitals 采集（TTFB/FCP/LCP/CLS/INP） */
   performance?: boolean;
+  /** 加载会话回放采集器 recorder.js，默认开启；需在 Umami 后台同步启用「回放」 */
+  replays?: boolean;
 }
 
 /** 脚本加载前产生的事件先排队，避免首屏交互丢失 */
@@ -112,6 +114,25 @@ export function initUmami(options: UmamiOptions) {
   if (options.excludeHash !== false) attr('data-exclude-hash', 'true');
 
   document.head.appendChild(script);
+
+  // 会话回放使用独立的 recorder.js：采样率、掩码级别、最大时长由 Umami 后台的网站配置决定，
+  // 脚本本身只接收 website-id 与 host-url。它不校验 domains，这里手动限制只在本站域名录制，
+  // 避免预览、本地环境把会话写进正式数据。
+  const allowedDomains = options.domains
+    ?.split(',')
+    .map((domain) => domain.trim().toLowerCase())
+    .filter(Boolean);
+  const hostAllowed =
+    !allowedDomains?.length || allowedDomains.includes(window.location.hostname.toLowerCase());
+
+  if (options.replays !== false && hostAllowed) {
+    const recorder = document.createElement('script');
+    recorder.defer = true;
+    recorder.src = `${base}/recorder.js`;
+    recorder.setAttribute('data-website-id', websiteId);
+    recorder.setAttribute('data-host-url', base);
+    document.head.appendChild(recorder);
+  }
 }
 
 export function getCurrentLang(): string {
