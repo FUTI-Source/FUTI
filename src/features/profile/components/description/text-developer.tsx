@@ -15,7 +15,7 @@ type ITextDeveloperProps = BasicsProps<'h2'> & {
   onAnimationComplete?: () => void;
 };
 
-const WORD = String.raw`<FullStack />`;
+const WORD = '分享 · 开源 · 实践';
 const TYPING_SPEED = 15;
 const HOLD_AFTER_TYPING = 200;
 
@@ -82,11 +82,7 @@ export const TextDeveloper: React.FC<ITextDeveloperProps> = ({ event$, onAnimati
   return (
     <h2 className={codeClassName} style={style}>
       <pre>
-        <code className="text-[#abb2bf]">
-          <span>{content.slice(0, 1)}</span>
-          <span className="text-[#e06c75]">{content.slice(1, 10)}</span>
-          <span>{content.slice(10)}</span>
-        </code>
+        <code className="text-[#abb2bf]">{content}</code>
       </pre>
     </h2>
   );
