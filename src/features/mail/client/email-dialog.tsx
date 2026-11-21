@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { sendMail, SendMailError } from './send-mail';
 import { sendMailSchema, type SendMailInput } from '../schema';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/utils/umami';
 
 interface IEmailDialogProps {
   href: string;
@@ -52,6 +53,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
     try {
       const result = await sendMail(data);
       setSubmitState(result.confirmationSent ? 'success' : 'partial');
+      trackEvent('contact-submit', { status: result.confirmationSent ? 'success' : 'partial' });
       setFeedbackMessage(
         result.confirmationSent
           ? `留言已发送至 ${recipient}，确认邮件也已发送。再次点击按钮可清空表单。`
@@ -60,6 +62,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
     } catch (error) {
       const message = error instanceof SendMailError ? error.message : undefined;
       setSubmitState('error');
+      trackEvent('contact-submit', { status: 'error' });
       setFeedbackMessage(
         `${message ?? '发送失败，请稍后重试'}；点击“重试提交”可保留内容再次发送。`,
       );

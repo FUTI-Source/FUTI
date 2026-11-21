@@ -22,12 +22,12 @@ import { Header } from './header';
 import profileImage from '@/assets/webp/futiwolf.webp';
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import useEventEmitter from '@/hooks/use-event-emitter';
-import { CONTACT_EMAIL } from '@/lib/site';
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
 import { initCustomCursor } from '../utils/custom-cursor';
-import { initUmami } from '@/utils/umami';
-import { initWebVitals } from '@/utils/webVitals';
+import { identifyUmami, initUmami, trackEvent } from '@/utils/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
+const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 const EmailDialog = lazy(() =>
   import('@/features/mail/client/email-dialog').then(({ EmailDialog: Component }) => ({
     default: Component,
@@ -43,7 +43,10 @@ const Home: React.FC = () => {
     setEmailDialog((current) => (current ? { ...current, open } : current));
   };
 
-  useWebMcpTools(() => setEmailDialog({ href: `mailto:${CONTACT_EMAIL}`, open: true }));
+  useWebMcpTools(() => {
+    trackEvent('contact-open', { source: 'webmcp' });
+    setEmailDialog({ href: `mailto:${CONTACT_EMAIL}`, open: true });
+  });
 
   const live2dEvent$ = useEventEmitter<Live2DEvent>();
   live2dEvent$.useSubscription((target) => {
@@ -51,10 +54,12 @@ const Home: React.FC = () => {
       case Live2DEvent.LOADING:
       case Live2DEvent.FAILED: {
         setProfileImageVisible(true);
+        trackEvent('live2d', { status: target === Live2DEvent.FAILED ? 'failed' : 'loading' });
         break;
       }
       case Live2DEvent.SHOW: {
         setProfileImageVisible(false);
+        trackEvent('live2d', { status: 'shown' });
         break;
       }
     }
@@ -64,9 +69,24 @@ const Home: React.FC = () => {
     initUmami({
       url: 'https://umami.zhang-wentao.tech',
       websiteId: 'c53b1321-886d-4d04-b4a1-4c2010db6735',
-      lang: 'en',
+      domains: `${SITE_HOSTNAME},${SITE_HOSTNAME.replace(/^www\./, '')}`,
+      environment: process.env.NODE_ENV,
+      doNotTrack: true,
+      excludeSearch: true,
+      excludeHash: true,
+      // 使用内置 Web Vitals 采集，替代自定义的 web-vitals 事件
+      performance: true,
     });
-    initWebVitals();
+
+    identifyUmami({
+      locale: navigator.language,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      standalone: window.matchMedia('(display-mode: standalone)').matches ? 'yes' : 'no',
+      displayMode: ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay', 'browser'].find(
+        (mode) => window.matchMedia(`(display-mode: ${mode})`).matches,
+      ) ?? 'browser',
+      screen: `${window.screen.width}x${window.screen.height}`,
+    });
   }, []);
 
   useEffect(() => {
@@ -111,7 +131,12 @@ const Home: React.FC = () => {
             </ProfileWrapper>
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} onAnimationComplete={() => setNameVisible(true)} />
             <div className="h-7">{nameVisible && <Description />}</div>
-            <Links onEmailClick={(href) => setEmailDialog({ href, open: true })} />
+            <Links
+              onEmailClick={(href) => {
+                trackEvent('contact-open', { source: 'profile' });
+                setEmailDialog({ href, open: true });
+              }}
+            />
           </div>
         </main>
         <Footer />
