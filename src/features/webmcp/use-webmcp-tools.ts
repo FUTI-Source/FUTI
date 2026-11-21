@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
+import { trackEvent } from '@/utils/umami';
 
 type ToolTextResult = { content: Array<{ type: 'text'; text: string }> };
 
@@ -87,21 +88,24 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
         description:
           'Return the site owner profile: name, role, site URL and contact email.',
         inputSchema: { type: 'object', properties: {} },
-        execute: async () => ({
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                name: 'FUTI',
-                fullName: '张文涛',
-                role: 'Full Stack Developer',
-                site: SITE_URL,
-                email: CONTACT_EMAIL,
-                language: 'zh-CN',
-              }),
-            },
-          ],
-        }),
+        execute: async () => {
+          trackEvent('webmcp-tool', { tool: 'get_profile' });
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  name: 'FUTI',
+                  fullName: '张文涛',
+                  role: 'Full Stack Developer',
+                  site: SITE_URL,
+                  email: CONTACT_EMAIL,
+                  language: 'zh-CN',
+                }),
+              },
+            ],
+          };
+        },
       },
       {
         name: 'open_contact_form',
@@ -109,6 +113,7 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
           'Open the contact form dialog so the visitor can write a message to the site owner. Only opens the form; nothing is sent until the visitor submits it.',
         inputSchema: { type: 'object', properties: {} },
         execute: async () => {
+          trackEvent('webmcp-tool', { tool: 'open_contact_form' });
           openContactRef.current();
           return {
             content: [

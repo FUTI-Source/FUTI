@@ -109,6 +109,8 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
             target="_blank"
             className={className}
             rel="noreferrer"
+            data-umami-event="social-link"
+            data-umami-event-platform={label.toLowerCase()}
             variants={{ hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 } }}
           >
             {icon}
