@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 import { BasicsProps } from '@/components/type';
 
+import { FutiIcon } from '@/assets/svg/futi.tsx';
 import { cn } from '@/lib/utils.ts';
 import { ICP_LINK, ICP_NUMBER } from '@/lib/site';
 import Link from 'next/link';
@@ -20,15 +21,16 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('futi-center font-kanit -mr-[0.38em] cursor-pointer text-[10px] tracking-[0.38em] text-white/30 uppercase transition-colors select-none hover:text-white/60', className)}
+            className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            FUTI
+            Drawn by NAVILAB
+            <FutiIcon className="absolute h-7 [&>path]:fill-white/20" />
           </m.a>
         </TooltipTrigger>
-        <TooltipContent sideOffset={16}>返回首页</TooltipContent>
+        <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
       </Tooltip>
 
       <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
