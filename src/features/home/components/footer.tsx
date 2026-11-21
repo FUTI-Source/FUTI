@@ -9,6 +9,7 @@ import { BasicsProps } from '@/components/type';
 
 import { FutiIcon } from '@/assets/svg/futi.tsx';
 import { cn } from '@/lib/utils.ts';
+import { ICP_LINK, ICP_NUMBER } from '@/lib/site';
 import Link from 'next/link';
 
 type IFooterProps = BasicsProps;
@@ -50,6 +51,17 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             </Tooltip>
             All rights reserved.
           </p>
+          <p className="max-sm:hidden">/</p>
+          {ICP_NUMBER && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a href={ICP_LINK} target="_blank" rel="noreferrer">
+                  {ICP_NUMBER}
+                </a>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={16}>工信部 ICP 备案</TooltipContent>
+            </Tooltip>
+          )}
           <p className="max-sm:hidden">/</p>
           <Tooltip>
             <TooltipTrigger asChild>
