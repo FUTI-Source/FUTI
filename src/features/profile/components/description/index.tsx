@@ -36,7 +36,7 @@ const TypingSignature: React.FC<ITypingSignatureProps> = ({ onAnimationComplete 
     <h2 className="font-mono text-lg font-normal text-[#ecf6ff]/85">
       {text.split('·').map((part, index) => (
         <React.Fragment key={index}>
-          {index > 0 && <span className="text-[#ecf6ff]/35">·</span>}
+          {index > 0 && <span className="text-[#0295e5]">·</span>}
           {part}
         </React.Fragment>
       ))}
