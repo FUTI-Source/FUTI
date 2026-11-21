@@ -197,12 +197,12 @@ body [contenteditable=''] {
 
 /* 邮件弹窗：宽度按视口留边，高度随 dvh 收缩，内容区自适应滚动。 */
 .email-dialog-content {
-  --email-dialog-gutter: clamp(0.75rem, 5vw, 2rem);
+  --email-dialog-gutter: clamp(1rem, 5vw, 1.75rem);
   display: flex;
   flex-direction: column;
   gap: 0;
-  width: min(28rem, calc(100dvw - var(--email-dialog-gutter)));
-  max-width: min(28rem, calc(100dvw - var(--email-dialog-gutter)));
+  width: min(28rem, calc(100dvw - var(--email-dialog-gutter) * 2));
+  max-width: min(28rem, calc(100dvw - var(--email-dialog-gutter) * 2));
   max-height: calc(
     var(--app-height) - max(var(--email-dialog-gutter), var(--safe-top)) -
       max(var(--email-dialog-gutter), var(--safe-bottom))
@@ -218,9 +218,28 @@ body [contenteditable=''] {
 .email-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
-  padding: clamp(0.875rem, 4vw, 1.5rem);
+  padding: clamp(1rem, 5vw, 1.5rem);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* 手机端改为从下方轻微上浮，避免弹窗在屏幕中央「啪」地出现 */
+@media (width < 40rem) and (prefers-reduced-motion: no-preference) {
+  .email-dialog-content[data-state='open'] {
+    animation: email-dialog-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes email-dialog-enter {
+    from {
+      opacity: 0;
+      /* 居中用的是 translate 属性，这里用 transform 叠加位移，避免覆盖居中 */
+      transform: translateY(1.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 .email-dialog-body [data-slot='dialog-title'] {
