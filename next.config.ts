@@ -74,6 +74,8 @@ const nextConfig: NextConfig = {
     // Serve the existing local WebP assets directly; FaaS runtimes cannot
     // reliably persist Next.js's on-demand image optimization cache.
     unoptimized: true,
+    // Next.js 16 起必须显式声明用到的 quality。
+    qualities: [80],
     deviceSizes: [448, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     remotePatterns: [],
   },
