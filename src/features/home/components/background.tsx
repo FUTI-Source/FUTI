@@ -73,7 +73,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         data-depth="0.3"
         sizes="80vw"
         quality={80}
-        loading="eager"
+        priority
         decoding="async"
         onLoad={() => setIsRightLoaded(true)}
       />
