@@ -97,8 +97,9 @@ export const SitePreloader = () => {
           phase === 'leaving' && 'pointer-events-none opacity-0',
         )}
       >
+        {/* 加载圈是功能性的进度反馈，不随 reduced-motion 停转；冻结的圈会让人以为卡住了 */}
         <svg
-          className="size-12 animate-spin motion-reduce:animate-none"
+          className="size-12 animate-spin"
           viewBox="0 0 50 50"
           aria-hidden="true"
         >
