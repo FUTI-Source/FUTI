@@ -190,7 +190,8 @@ export async function createDonation(
   } catch (error) {
     console.error('[donate] 下单失败', error);
     if (error instanceof WechatPayError || error instanceof AlipayError) {
-      throw new DonationGatewayError('GATEWAY_FAILED', '下单失败，请稍后重试');
+      // 透传网关返回的具体原因（不含敏感信息），便于定位配置/权限问题
+      throw new DonationGatewayError('GATEWAY_FAILED', error.message || '下单失败，请稍后重试');
     }
     throw error;
   }
