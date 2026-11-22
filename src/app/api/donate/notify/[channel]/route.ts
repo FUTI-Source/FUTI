@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { donateChannelSchema } from '@/features/donate/schema';
+import { pushDonationBark } from '@/features/donate/server/bark';
 import { AlipayNotifyError } from '@/features/donate/server/alipay';
 import { handleAlipayNotify } from '@/features/donate/server/alipay/notify';
 import { WechatNotifyError } from '@/features/donate/server/wechat';
@@ -41,7 +42,14 @@ export async function POST(
 
     try {
       // 验签与校验应用信息；支付状态由前端查单确认
-      await handleAlipayNotify(notifyParams);
+      const event = await handleAlipayNotify(notifyParams);
+      if (event.tradeStatus === 'TRADE_SUCCESS' || event.tradeStatus === 'TRADE_FINISHED') {
+        await pushDonationBark({
+          channel: 'alipay',
+          amountYuan: event.totalAmount,
+          orderId: event.outTradeNo,
+        });
+      }
       return new Response('success', {
         status: 200,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
@@ -59,7 +67,15 @@ export async function POST(
 
   try {
     // 验签与解密，失败即返回非 2xx 让微信重试；支付状态由前端查单确认
-    await handleWechatNotify(request.headers, rawBody);
+    const event = await handleWechatNotify(request.headers, rawBody);
+    if (event.tradeState === 'SUCCESS') {
+      await pushDonationBark({
+        channel: 'wechat',
+        amountYuan:
+          typeof event.amountTotal === 'number' ? (event.amountTotal / 100).toFixed(2) : undefined,
+        orderId: event.outTradeNo,
+      });
+    }
     return NextResponse.json({ code: 'SUCCESS', message: '成功' });
   } catch (error) {
     if (error instanceof WechatNotifyError) {

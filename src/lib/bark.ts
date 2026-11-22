@@ -1,11 +1,19 @@
-import { SITE_MAIL_OWNER_SUBJECT_PREFIX, SITE_URL } from '@/lib/site';
-
-import type { SendMailRequest } from '../types';
+import { SITE_URL } from './site';
 
 const DEFAULT_SERVER_URL = 'https://api.day.app';
 const REQUEST_TIMEOUT_MS = 5_000;
-/** 通知正文最大长度，避免长留言把推送撑爆 */
-const MAX_BODY_LENGTH = 300;
+const DEFAULT_ICON = `${SITE_URL}/icon-192x192.png`;
+
+export type BarkLevel = 'active' | 'timeSensitive' | 'passive' | 'critical';
+
+export interface BarkMessage {
+  title: string;
+  subtitle?: string;
+  body: string;
+  group?: string;
+  url?: string;
+  level?: BarkLevel;
+}
 
 interface BarkConfig {
   serverUrl: string;
@@ -23,13 +31,14 @@ function getConfig(): BarkConfig | null {
   return { serverUrl, deviceKey };
 }
 
-function truncate(value: string, max: number): string {
+/** 压平换行并截断，避免长内容把推送通知撑爆 */
+export function truncateBarkBody(value: string, max = 300): string {
   const flat = value.replace(/\s+/g, ' ').trim();
   return flat.length > max ? `${flat.slice(0, max)}…` : flat;
 }
 
-/** 收到新留言时向站长 iPhone 推送 Bark 通知；未配置或失败时静默跳过，不影响表单提交 */
-export async function pushBarkMessage(dto: SendMailRequest): Promise<void> {
+/** 通过 Bark 推送通知到站长 iPhone；未配置或失败时只记录日志，不向上抛出 */
+export async function sendBark(message: BarkMessage): Promise<void> {
   const config = getConfig();
   if (!config) return;
 
@@ -39,13 +48,13 @@ export async function pushBarkMessage(dto: SendMailRequest): Promise<void> {
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({
         device_key: config.deviceKey,
-        title: `${SITE_MAIL_OWNER_SUBJECT_PREFIX} · ${dto.email}`,
-        subtitle: '来自网站联系表单',
-        body: truncate(dto.content, MAX_BODY_LENGTH) || '（无内容）',
-        group: '网站留言',
-        icon: `${SITE_URL}/icon-192x192.png`,
-        url: SITE_URL,
-        level: 'timeSensitive',
+        title: message.title,
+        subtitle: message.subtitle,
+        body: message.body,
+        group: message.group,
+        icon: DEFAULT_ICON,
+        url: message.url,
+        level: message.level,
       }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -59,6 +68,6 @@ export async function pushBarkMessage(dto: SendMailRequest): Promise<void> {
       throw new Error(result.message ?? `返回 code ${result.code}`);
     }
   } catch (error) {
-    console.error('[mail] Bark 推送失败', error);
+    console.error('[bark] 推送失败', error);
   }
 }

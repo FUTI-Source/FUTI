@@ -1,5 +1,6 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
+import { sendBark, truncateBarkBody } from '@/lib/bark';
 import {
   SITE_AUTHOR_NAME,
   SITE_DOMAIN,
@@ -15,7 +16,6 @@ import {
 } from '@/lib/site';
 
 import type { SendMailRequest, SendMailResponse } from '../types';
-import { pushBarkMessage } from './bark';
 
 interface SmtpConfig {
   host: string;
@@ -260,7 +260,14 @@ export async function sendContactMail(
   }
 
   // 与确认邮件并行推送 Bark，Bark 失败不会影响表单结果
-  const barkPush = pushBarkMessage(dto);
+  const barkPush = sendBark({
+    title: `${SITE_MAIL_OWNER_SUBJECT_PREFIX} · ${dto.email}`,
+    subtitle: '来自网站联系表单',
+    body: truncateBarkBody(dto.content) || '（无内容）',
+    group: '网站留言',
+    url: SITE_URL,
+    level: 'timeSensitive',
+  });
 
   let confirmationSent = false;
   let confirmationMessageId: string | undefined;
