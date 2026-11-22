@@ -1,16 +1,30 @@
 @theme {
   --color-futi: oklch(0.63 0.15 252.19);
 
-  /* 品牌字体只有拉丁字形，中文必须显式补苹方，否则 Safari 会回退到宋体 */
-  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
-  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
-  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-sans: ui-sans-serif, system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+
+  /* 品牌字体只有拉丁字形，中文必须显式补苹方，否则 Safari 会回退到宋体；
+     末尾的 FUTI CJK 是内置中文子集，兜底无系统中文字体的环境（如部署截图服务） */
+  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+}
+
+/* 中文子集（仅含站点实际用到的汉字与标点）：系统有中文字体时不会被下载，
+   只有无系统中文字体的运行环境才会回退到这里，避免出现方框字。 */
+@font-face {
+  font-family: 'FUTI CJK';
+  font-style: normal;
+  font-weight: 300 500;
+  font-display: swap;
+  src: url('/fonts/cjk-subset.woff2') format('woff2');
+  unicode-range: U+00A9, U+00B7, U+2018-201D, U+2026, U+2122, U+2E80-2FFF, U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
 }
 
 /* next/font 在 body 上注入的 --font-geometos 只含 geometos 与其度量回退字体，
    不含中文字形，这里在工具类后追加中文字体，保证中文仍使用苹方。 */
 .font-geometos {
-  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
 }
 
 /* 首帧前的兜底值；真实的像素高度由 layout 中的内联脚本按 visualViewport 写入 */
