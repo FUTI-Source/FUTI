@@ -24,13 +24,14 @@ const isEditableTarget = (target: EventTarget | null) =>
 
 /** F11 或 Ctrl/Cmd+Shift+F 切换全屏 */
 const isFullscreenShortcut = (event: KeyboardEvent) => {
-  const key = event.key.toLowerCase();
+  // 部分扩展/输入法派发的 keydown 没有 key 字段，直接调用 toLowerCase 会抛错
+  const key = event.key?.toLowerCase();
   return key === 'f11' || ((event.ctrlKey || event.metaKey) && event.shiftKey && key === 'f');
 };
 
 /** 刷新快捷键：Ctrl/Cmd+R、Ctrl/Cmd+Shift+R、F5、Shift+F5、Ctrl+F5 均放行 */
 const isRefreshShortcut = (event: KeyboardEvent) => {
-  const key = event.key.toLowerCase();
+  const key = event.key?.toLowerCase();
   if (key === 'f5') return true;
   return (event.ctrlKey || event.metaKey) && !event.altKey && key === 'r';
 };
