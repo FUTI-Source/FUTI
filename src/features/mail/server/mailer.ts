@@ -15,6 +15,7 @@ import {
 } from '@/lib/site';
 
 import type { SendMailRequest, SendMailResponse } from '../types';
+import { pushBarkMessage } from './bark';
 
 interface SmtpConfig {
   host: string;
@@ -258,6 +259,9 @@ export async function sendContactMail(
     throw new Error(mapMailError(error));
   }
 
+  // 与确认邮件并行推送 Bark，Bark 失败不会影响表单结果
+  const barkPush = pushBarkMessage(dto);
+
   let confirmationSent = false;
   let confirmationMessageId: string | undefined;
   try {
@@ -288,6 +292,8 @@ export async function sendContactMail(
       err.stack,
     );
   }
+
+  await barkPush;
 
   return {
     success: true,
