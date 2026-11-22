@@ -12,7 +12,7 @@ export type DonationMode = 'native' | 'jsapi';
 
 export interface CreateDonationRequest {
   channel: DonateChannel;
-  /** 金额，单位为元，1–10000 的整数 */
+  /** 金额，单位为元，范围由 site.ts 的 DONATION_MIN_AMOUNT / DONATION_MAX_AMOUNT 决定 */
   amount: number;
   /** 仅微信支付有效：微信内用 jsapi，其他环境用 native 扫码 */
   mode?: DonationMode;

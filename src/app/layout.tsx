@@ -4,6 +4,7 @@ import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registr
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
 import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
+import { SITE_ANALYTICS_URL, SITE_LANG } from '@/lib/site';
 
 import './globals.css';
 
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     // 首帧脚本会在 hydration 前给 <html> 写入 --app-height，
     // React 会把它当成属性差异报警，这里只抑制该元素自身的属性校验。
-    <html lang="zh-CN" translate="no" suppressHydrationWarning>
+    <html lang={SITE_LANG} translate="no" suppressHydrationWarning>
       <head>
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
         <meta name="google" content="notranslate" />
@@ -72,7 +73,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
         />
         <link
           rel="preconnect"
-          href="https://umami.zhang-wentao.tech"
+          href={SITE_ANALYTICS_URL}
         />
         {/* Kanit/Ubuntu 只用于首屏外或延迟淡入的文字，预加载反而会触发
             “preloaded but not used” 警告；交给 @font-face 按需加载即可 */}

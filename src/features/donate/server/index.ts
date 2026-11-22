@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-import { SITE_URL } from '../../../lib/site';
+import { DONATION_SUBJECT, SITE_URL } from '../../../lib/site';
 import type {
   CreateDonationRequest,
   CreateDonationResponse,
@@ -121,7 +121,7 @@ export async function createDonation(
         const redirectUrl = createAlipayWapUrl({
           orderId: order.orderId,
           amountFen: order.amountFen,
-          description: '打赏支持',
+          description: DONATION_SUBJECT,
           notifyUrl,
           returnUrl: `${SITE_URL}/?donate=success&orderId=${order.orderId}`,
           quitUrl: `${SITE_URL}/`,
@@ -132,7 +132,7 @@ export async function createDonation(
       const codeUrl = await createAlipayPrecreateOrder({
         orderId: order.orderId,
         amountFen: order.amountFen,
-        description: '打赏支持',
+        description: DONATION_SUBJECT,
         notifyUrl,
       });
       return { orderId: order.orderId, channel: 'alipay', codeUrl };
@@ -145,7 +145,7 @@ export async function createDonation(
       const payment = await createWechatJsapiOrder({
         orderId: order.orderId,
         amountFen: order.amountFen,
-        description: '打赏支持',
+        description: DONATION_SUBJECT,
         notifyUrl,
         openid: options.openid as string,
       });
@@ -157,7 +157,7 @@ export async function createDonation(
       const h5Url = await createWechatH5Order({
         orderId: order.orderId,
         amountFen: order.amountFen,
-        description: '打赏支持',
+        description: DONATION_SUBJECT,
         notifyUrl,
         payerIp: options.payerIp || '127.0.0.1',
       });
@@ -173,7 +173,7 @@ export async function createDonation(
     const codeUrl = await createWechatNativeOrder({
       orderId: order.orderId,
       amountFen: order.amountFen,
-      description: '打赏支持',
+      description: DONATION_SUBJECT,
       notifyUrl,
     });
 

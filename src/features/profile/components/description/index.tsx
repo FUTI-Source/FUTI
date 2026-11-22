@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import { BasicsProps } from '@/components/type.ts';
 
+import { SITE_SIGNATURE } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
-const SIGNATURE = '分享 · 开源 · 实践';
+const SIGNATURE = SITE_SIGNATURE;
 const TYPING_SPEED = 15;
 const HOLD_AFTER_TYPING = 200;
 

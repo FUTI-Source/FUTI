@@ -22,12 +22,17 @@ import { Header } from './header';
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import type { DonateResult } from '@/features/donate/types';
 import useEventEmitter from '@/hooks/use-event-emitter';
-import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
+import {
+  CONTACT_EMAIL,
+  SITE_ANALYTICS_DOMAINS,
+  SITE_ANALYTICS_URL,
+  SITE_ANALYTICS_WEBSITE_ID,
+  SITE_URL,
+} from '@/lib/site';
 import { initCustomCursor } from '../utils/custom-cursor';
 import { identifyUmami, initUmami, trackEvent } from '@/utils/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
-const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 const EmailDialog = lazy(() =>
   import('@/features/mail/client/email-dialog').then(({ EmailDialog: Component }) => ({
     default: Component,
@@ -94,9 +99,9 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     initUmami({
-      url: 'https://umami.zhang-wentao.tech',
-      websiteId: 'c53b1321-886d-4d04-b4a1-4c2010db6735',
-      domains: `${SITE_HOSTNAME},${SITE_HOSTNAME.replace(/^www\./, '')}`,
+      url: SITE_ANALYTICS_URL,
+      websiteId: SITE_ANALYTICS_WEBSITE_ID,
+      domains: SITE_ANALYTICS_DOMAINS,
       environment: process.env.NODE_ENV,
       doNotTrack: true,
       // UTM 参数存放在查询串里，开启 excludeSearch 会把 utm_* 一并丢弃，UTM 洞察将无数据

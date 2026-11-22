@@ -2,7 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 
-import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
+import {
+  CONTACT_EMAIL,
+  SITE_AUTHOR_NAME,
+  SITE_JOB_TITLE_EN,
+  SITE_LANG,
+  SITE_URL,
+} from '@/lib/site';
 import { trackEvent } from '@/utils/umami';
 
 type ToolTextResult = { content: Array<{ type: 'text'; text: string }> };
@@ -95,12 +101,12 @@ export function useWebMcpTools(onOpenContactForm: () => void) {
               {
                 type: 'text',
                 text: JSON.stringify({
-                  name: '张文涛',
-                  fullName: '张文涛',
-                  role: 'Full Stack Developer',
+                  name: SITE_AUTHOR_NAME,
+                  fullName: SITE_AUTHOR_NAME,
+                  role: SITE_JOB_TITLE_EN,
                   site: SITE_URL,
                   email: CONTACT_EMAIL,
-                  language: 'zh-CN',
+                  language: SITE_LANG,
                 }),
               },
             ],

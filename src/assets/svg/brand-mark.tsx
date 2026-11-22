@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { BasicsProps } from '@/components/type.ts';
+import { SITE_BRAND } from '@/lib/site';
 
 type IBrandMarkProps = BasicsProps<'svg'>;
 export const BrandMark: React.FC<IBrandMarkProps> = (props) => (
@@ -15,7 +16,7 @@ export const BrandMark: React.FC<IBrandMarkProps> = (props) => (
       letterSpacing="2"
       textAnchor="middle"
     >
-      MINE
+      {SITE_BRAND}
     </text>
   </svg>
 );

@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator.tsx';
 
 import { BasicsProps } from '@/components/type.ts';
 
+import { SITE_AUTHOR_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 type INameProps = BasicsProps & MotionProps;
@@ -14,7 +15,7 @@ type INameProps = BasicsProps & MotionProps;
 export const Name: React.FC<INameProps> = ({ className, style, ...rest }) => (
   <m.div className={cn('flex h-[clamp(2.75rem,7vh,3rem)] flex-col justify-center gap-2', className)} style={style} {...rest}>
     <h1 className="profile-title font-kanit !m-0 my-0 px-4 font-light text-white/90">
-      <span className="inline-block -mr-[0.3em] tracking-[0.3em]">张文涛</span>
+      <span className="inline-block -mr-[0.3em] tracking-[0.3em]">{SITE_AUTHOR_NAME}</span>
     </h1>
     <Separator className="profile-line !h-[3px] w-full rounded shadow" />
   </m.div>

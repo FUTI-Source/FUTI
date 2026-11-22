@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
+import { SITE_USER_AGENT } from '../../../../lib/site';
 import type { DonationStatus, WechatJsapiPaymentParams } from '../../types';
 import {
   buildAuthorization,
@@ -10,7 +11,6 @@ import {
 } from './crypto';
 
 const WECHAT_API_BASE = 'https://api.mch.weixin.qq.com';
-const USER_AGENT = 'zhang-wentao-site/1.0';
 
 export class WechatPayError extends Error {
   constructor(
@@ -94,7 +94,7 @@ async function wechatRequest<T>(
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'User-Agent': USER_AGENT,
+      'User-Agent': SITE_USER_AGENT,
       Authorization: buildAuthorization({
         mchId: config.mchId,
         serialNo: config.serialNo,

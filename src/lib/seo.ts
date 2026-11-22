@@ -1,20 +1,29 @@
 import type { Metadata, Viewport } from 'next';
 
-import { SITE_URL } from '@/lib/site';
+import {
+  SITE_AUTHOR_NAME,
+  SITE_DESCRIPTION,
+  SITE_ICON_PATH,
+  SITE_IMAGE_PATH,
+  SITE_JOB_TITLE,
+  SITE_KEYWORDS,
+  SITE_KNOWS_ABOUT,
+  SITE_LANG,
+  SITE_LOCALE,
+  SITE_NAME,
+  SITE_SOCIAL_IMAGE,
+  SITE_SOCIAL_LINKS,
+  SITE_TWITTER_HANDLE,
+  SITE_URL,
+} from '@/lib/site';
 
-export const SITE_NAME = '张文涛 · 个人主页';
-export const SITE_DESCRIPTION = '张文涛的个人主页，分享全栈开发、开源项目与技术实践。';
-
-const SITE_ICON_PATH = '/favicon.ico';
-const SITE_IMAGE_PATH = '/icon-192x192.png';
+/** Safari 顶部工具栏着色固定，不随站点配置变化 */
+const BROWSER_THEME_COLOR = '#1d1e20';
 
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 const SOCIAL_IMAGE = {
-  path: '/og-image.png',
-  width: 1200,
-  height: 630,
+  ...SITE_SOCIAL_IMAGE,
   alt: `${SITE_NAME} 封面图`,
-  type: 'image/png',
 } as const;
 
 export const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
@@ -90,20 +99,20 @@ export const structuredData = {
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
       name: SITE_NAME,
-      inLanguage: 'zh-CN',
+      inLanguage: SITE_LANG,
       about: { '@id': `${SITE_URL}/#person` },
       publisher: { '@id': `${SITE_URL}/#person` },
     },
     {
       '@type': 'Person',
       '@id': `${SITE_URL}/#person`,
-      name: '张文涛',
+      name: SITE_AUTHOR_NAME,
       url: SITE_URL,
       image: SITE_IMAGE_URL,
       description: SITE_DESCRIPTION,
-      jobTitle: '全栈开发者',
-      knowsAbout: ['全栈开发', '开源项目', 'Web 开发'],
-      sameAs: [],
+      jobTitle: SITE_JOB_TITLE,
+      knowsAbout: [...SITE_KNOWS_ABOUT],
+      sameAs: Object.values(SITE_SOCIAL_LINKS).filter(Boolean),
     },
   ],
 };
@@ -116,17 +125,20 @@ const socialImage = {
   type: SOCIAL_IMAGE.type,
 };
 
+const twitterHandle = SITE_TWITTER_HANDLE ? `@${SITE_TWITTER_HANDLE}` : undefined;
+
 export const siteMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: '张文涛',
+  applicationName: SITE_AUTHOR_NAME,
   title: {
     default: SITE_NAME,
-    template: '%s | 张文涛',
+    template: `%s | ${SITE_AUTHOR_NAME}`,
   },
   description: SITE_DESCRIPTION,
-  authors: [{ name: '张文涛', url: SITE_URL }],
-  creator: '张文涛',
-  publisher: '张文涛',
+  keywords: [...SITE_KEYWORDS],
+  authors: [{ name: SITE_AUTHOR_NAME, url: SITE_URL }],
+  creator: SITE_AUTHOR_NAME,
+  publisher: SITE_AUTHOR_NAME,
   alternates: {
     canonical: '/',
   },
@@ -148,7 +160,7 @@ export const siteMetadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'zh_CN',
+    locale: SITE_LOCALE,
     url: SITE_URL,
     siteName: SITE_NAME,
     title: SITE_NAME,
@@ -160,10 +172,11 @@ export const siteMetadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: [socialImage.url],
+    ...(twitterHandle ? { site: twitterHandle, creator: twitterHandle } : {}),
   },
   appleWebApp: {
     capable: true,
-    title: '张文涛',
+    title: SITE_AUTHOR_NAME,
     statusBarStyle: 'black-translucent',
     startupImage: APPLE_SPLASH_SCREENS.map(({ width, height, ratio, ...screen }) => ({
       url: `/launch/splash-${width * ratio}x${height * ratio}.png`,
@@ -192,5 +205,5 @@ export const siteViewport: Viewport = {
   viewportFit: 'cover',
   colorScheme: 'dark',
   // 与壁纸顶部实测色调一致，让 Safari 顶部工具栏着色融入页面背景
-  themeColor: '#1d1e20',
+  themeColor: BROWSER_THEME_COLOR,
 };

@@ -25,6 +25,7 @@ import type {
   WechatJsapiPaymentParams,
 } from '../types';
 import { cn } from '@/lib/utils';
+import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '@/lib/site';
 import { captureException, trackEvent } from '@/utils/umami';
 
 const CHANNELS = [
@@ -136,7 +137,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   const requestSeq = useRef(0);
 
   const amount = Number(customAmount);
-  const amountValid = Number.isInteger(amount) && amount >= 1 && amount <= 10000;
+  const amountValid =
+    Number.isInteger(amount) && amount >= DONATION_MIN_AMOUNT && amount <= DONATION_MAX_AMOUNT;
   const configured = configState === 'ready' && (config?.channels[channel] ?? false);
   const wechatJsapi = configState === 'ready' && (config?.wechatJsapi ?? false);
   /** 微信内置浏览器且已配置 AppSecret 时走 JSAPI，否则用扫码 */
@@ -221,8 +223,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       }
       if (
         typeof draft.amount === 'number' &&
-        draft.amount >= 1 &&
-        draft.amount <= 10000
+        draft.amount >= DONATION_MIN_AMOUNT &&
+        draft.amount <= DONATION_MAX_AMOUNT
       ) {
         setCustomAmount(String(draft.amount));
       }
@@ -545,12 +547,12 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               <Input
                 type="number"
                 inputMode="numeric"
-                min={1}
-                max={10000}
+                min={DONATION_MIN_AMOUNT}
+                max={DONATION_MAX_AMOUNT}
                 step={1}
                 value={customAmount}
                 onChange={(event) => setCustomAmount(event.target.value)}
-                placeholder="输入金额（1–10000）"
+                placeholder={`输入金额（${DONATION_MIN_AMOUNT}–${DONATION_MAX_AMOUNT}）`}
                 className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
               />
             </div>

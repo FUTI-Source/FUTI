@@ -1,6 +1,18 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
-import { SITE_URL } from '@/lib/site';
+import {
+  SITE_AUTHOR_NAME,
+  SITE_DOMAIN,
+  SITE_LANG,
+  SITE_MAIL_CONFIRM_SUBJECT,
+  SITE_MAIL_HOME_CTA,
+  SITE_MAIL_OWNER_SUBJECT_PREFIX,
+  SITE_MAIL_PROVIDER,
+  SITE_MAIL_SMTP_HOST,
+  SITE_MAIL_SMTP_PORT,
+  SITE_NAME,
+  SITE_URL,
+} from '@/lib/site';
 
 import type { SendMailRequest, SendMailResponse } from '../types';
 
@@ -20,11 +32,11 @@ function getConfig(): SmtpConfig {
   const user = process.env.MAIL_USER;
   const pass = process.env.MAIL_PASS;
   if (!user || !pass) {
-    throw new Error('邮件服务尚未配置，请先设置 139 邮箱地址与 SMTP 授权码');
+    throw new Error(`邮件服务尚未配置，请先设置${SITE_MAIL_PROVIDER}地址与 SMTP 授权码`);
   }
   return {
-    host: process.env.MAIL_SMTP_HOST || 'smtp.139.com',
-    port: Number(process.env.MAIL_SMTP_PORT || 465),
+    host: process.env.MAIL_SMTP_HOST || SITE_MAIL_SMTP_HOST,
+    port: Number(process.env.MAIL_SMTP_PORT || SITE_MAIL_SMTP_PORT),
     secure: process.env.MAIL_SMTP_SECURE !== 'false',
     user,
     pass,
@@ -60,7 +72,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-const SITE_NAME = '张文涛 · 个人主页';
 const MAIL_LOGO = `${SITE_URL}/icon-192x192.png`;
 const ACCENT = '#3A8CE0';
 const ACCENT_TEXT = '#1D6FC7';
@@ -103,7 +114,7 @@ function buildMailShell({
   footerNote,
 }: MailShellOptions): string {
   return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${SITE_LANG}">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -152,7 +163,7 @@ function buildMailShell({
       <td align="center" style="padding:26px 28px 30px;">
         <div style="border-top:1px dashed #E3E9F2;font-size:0;line-height:0;">&nbsp;</div>
         <p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:${FAINT_COLOR};">${footerNote}</p>
-        <p style="margin:6px 0 0;font-size:12px;line-height:1.7;"><a href="${SITE_URL}" style="color:${ACCENT_TEXT};text-decoration:none;">www.zhang-wentao.tech</a></p>
+        <p style="margin:6px 0 0;font-size:12px;line-height:1.7;"><a href="${SITE_URL}" style="color:${ACCENT_TEXT};text-decoration:none;">${SITE_DOMAIN}</a></p>
       </td>
     </tr>
   </table>
@@ -173,19 +184,19 @@ function buildOwnerHtml(dto: SendMailRequest): string {
     cardBody: safeContent,
     ctaText: '回复留言者',
     ctaHref: `mailto:${safeEmail}?subject=${encodeURIComponent('回复：网站留言')}`,
-    footerNote: '此邮件由张文涛个人主页自动发出，直接回复将发送给留言者。',
+    footerNote: `此邮件由${SITE_AUTHOR_NAME}个人主页自动发出，直接回复将发送给留言者。`,
   });
 }
 
 function buildConfirmationHtml(dto: SendMailRequest): string {
   const safeContent = escapeHtml(dto.content).replace(/\n/g, '<br />');
   return buildMailShell({
-    preheader: '你的留言已成功送达张文涛，我会尽快查阅并回复。',
+    preheader: `你的留言已成功送达${SITE_AUTHOR_NAME}，我会尽快查阅并回复。`,
     title: '留言已送达',
     subtitle: `感谢你的来信，${escapeHtml(dto.email)}，我会尽快回复。`,
     cardLabel: '你的留言',
     cardBody: safeContent,
-    ctaText: '返回个人主页',
+    ctaText: SITE_MAIL_HOME_CTA,
     ctaHref: SITE_URL,
     footerNote: '此邮件由系统自动发送，请勿直接回复。',
   });
@@ -194,7 +205,7 @@ function buildConfirmationHtml(dto: SendMailRequest): string {
 function mapMailError(error: unknown): string {
   const code = (error as { code?: string }).code;
   if (code === 'EAUTH' || code === 'EAUTHENTICATION') {
-    return '邮箱认证失败，请检查 139 邮箱地址与 SMTP 授权码';
+    return `邮箱认证失败，请检查${SITE_MAIL_PROVIDER}地址与 SMTP 授权码`;
   }
   if (
     code === 'ECONNECTION' ||
@@ -206,7 +217,7 @@ function mapMailError(error: unknown): string {
     code === 'EHOSTUNREACH' ||
     code === 'EAI_AGAIN'
   ) {
-    return '无法连接 139 邮箱服务器，请稍后重试';
+    return `无法连接${SITE_MAIL_PROVIDER}服务器，请稍后重试`;
   }
   return '邮件发送失败，请稍后重试';
 }
@@ -223,7 +234,7 @@ export async function sendContactMail(
       from: config.user,
       to: config.to,
       replyTo: dto.email,
-      subject: `网站留言 · 来自 ${dto.email}`,
+      subject: `${SITE_MAIL_OWNER_SUBJECT_PREFIX} · 来自 ${dto.email}`,
       text: [
         '你收到一条来自网站联系表单的新留言。',
         '',
@@ -253,7 +264,7 @@ export async function sendContactMail(
     const confirm = await transporter.sendMail({
       from: config.user,
       to: dto.email,
-      subject: '留言提交成功 · 我们已收到你的消息',
+      subject: SITE_MAIL_CONFIRM_SUBJECT,
       text: [
         '你好，',
         '',

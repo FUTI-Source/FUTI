@@ -9,7 +9,15 @@ import { BasicsProps } from '@/components/type';
 
 import { BrandMark } from '@/assets/svg/brand-mark.tsx';
 import { cn } from '@/lib/utils.ts';
-import { ICP_LINK, ICP_NUMBER } from '@/lib/site';
+import {
+  ICP_LINK,
+  ICP_NUMBER,
+  SITE_AUTHOR_NAME,
+  SITE_COPYRIGHT_START,
+  SITE_JOB_TITLE_EN,
+  SITE_THEME_CREDIT,
+  SITE_THEME_CREDIT_HOVER,
+} from '@/lib/site';
 import Link from 'next/link';
 
 type IFooterProps = BasicsProps;
@@ -26,11 +34,11 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            Drawn by NAVILAB
+            {SITE_THEME_CREDIT}
             <BrandMark className="absolute h-7 [&>text]:fill-white/20" />
           </m.a>
         </TooltipTrigger>
-        <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
+        <TooltipContent sideOffset={16}>{SITE_THEME_CREDIT_HOVER}</TooltipContent>
       </Tooltip>
 
       <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
@@ -40,14 +48,14 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
         <div className="footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_p]:text-[color:var(--text-footer-color)]">
           <p className="max-sm:max-w-full max-sm:text-center">
-            Copyright &copy; 2017 - {new Date().getFullYear()}
+            Copyright &copy; {SITE_COPYRIGHT_START} - {new Date().getFullYear()}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link href="/" className="mx-1">
-                  张文涛
+                   {SITE_AUTHOR_NAME}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent sideOffset={16}>🙃 Independent Websites Developer</TooltipContent>
+              <TooltipContent sideOffset={16}>🙃 {SITE_JOB_TITLE_EN}</TooltipContent>
             </Tooltip>
             All rights reserved.
           </p>

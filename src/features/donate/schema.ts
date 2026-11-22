@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '@/lib/site';
+
 export const donateChannelSchema = z.enum(['alipay', 'wechat']);
 
 export const createDonationSchema = z.object({
@@ -7,8 +9,8 @@ export const createDonationSchema = z.object({
   amount: z
     .number()
     .int('金额必须为整数')
-    .min(1, '最低 1 元')
-    .max(10000, '最高 10000 元'),
+    .min(DONATION_MIN_AMOUNT, `最低 ${DONATION_MIN_AMOUNT} 元`)
+    .max(DONATION_MAX_AMOUNT, `最高 ${DONATION_MAX_AMOUNT} 元`),
   mode: z.enum(['native', 'jsapi']).optional(),
 });
 
