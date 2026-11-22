@@ -74,27 +74,8 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)upda
           rel="preconnect"
           href="https://umami.zhang-wentao.tech"
         />
-        <link
-          rel="preload"
-          href="/fonts/Kanit-300.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/Kanit-400.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/Ubuntu.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+        {/* Kanit/Ubuntu 只用于首屏外或延迟淡入的文字，预加载反而会触发
+            “preloaded but not used” 警告；交给 @font-face 按需加载即可 */}
         {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
         <meta itemProp="name" content={qqSharingMeta.name} />
         <meta itemProp="image" content={qqSharingMeta.image} />
