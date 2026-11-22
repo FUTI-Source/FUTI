@@ -90,9 +90,12 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (live2dVisible) return;
-    // 自动化环境（部署截图）不挂载 Live2D：无头浏览器里模型渲染不出来，
-    // 保持加载进度圈即可，避免预览图出现空白画布。
-    if (document.documentElement.classList.contains('preload-skip')) return;
+    // 自动化环境（部署截图）立即挂载，让截图尽量拿到模型最终效果；
+    // 未就绪时仍由进度圈占位。
+    if (document.documentElement.classList.contains('preload-skip')) {
+      setLive2dVisible(true);
+      return;
+    }
     const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
     return () => window.clearTimeout(timer);
   }, [live2dVisible]);
