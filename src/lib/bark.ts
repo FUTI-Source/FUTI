@@ -1,8 +1,7 @@
-import { SITE_URL } from './site';
+import { SITE_NOTIFICATION_ICON, SITE_URL } from './site';
 
 const DEFAULT_SERVER_URL = 'https://api.day.app';
 const REQUEST_TIMEOUT_MS = 5_000;
-const DEFAULT_ICON = `${SITE_URL}/icon-192x192.png`;
 
 export type BarkLevel = 'active' | 'timeSensitive' | 'passive' | 'critical';
 
@@ -55,7 +54,7 @@ export async function sendBark(message: BarkMessage): Promise<void> {
         subtitle: message.subtitle,
         body: message.body,
         group: message.group,
-        icon: DEFAULT_ICON,
+        icon: SITE_NOTIFICATION_ICON,
         url: message.url,
         level: message.level,
       }),

@@ -38,6 +38,8 @@ export const ICP_LINK = 'https://beian.miit.gov.cn/';
 /** SEO 与分享图资源 */
 export const SITE_ICON_PATH = '/favicon.ico';
 export const SITE_IMAGE_PATH = '/icon-192x192.png';
+/** Bark 等推送通知使用的图标，必须是可公网访问的地址 */
+export const SITE_NOTIFICATION_ICON = `${SITE_URL}${SITE_IMAGE_PATH}`;
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 export const SITE_SOCIAL_IMAGE = {
   path: '/og-image.png',
