@@ -40,6 +40,13 @@ export const SITE_ICON_PATH = '/favicon.ico';
 export const SITE_IMAGE_PATH = '/icon-192x192.png';
 /** Bark 等推送通知使用的图标，必须是可公网访问的地址 */
 export const SITE_NOTIFICATION_ICON = `${SITE_URL}${SITE_IMAGE_PATH}`;
+/** 通知点击后的邮箱入口：iOS 通过通用链接唤起 App，桌面端打开网页版 */
+export const SITE_MAILBOX = {
+  /** y.10086.cn 配置了 139 邮箱的通用链接，未安装 App 时打开移动版网页 */
+  ios: 'https://y.10086.cn/',
+  /** 电脑端网页版 */
+  desktop: 'https://mail.10086.cn/',
+};
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 export const SITE_SOCIAL_IMAGE = {
   path: '/og-image.png',

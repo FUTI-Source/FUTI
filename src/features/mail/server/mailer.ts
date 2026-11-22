@@ -265,7 +265,7 @@ export async function sendContactMail(
     subtitle: '来自网站联系表单',
     body: truncateBarkBody(dto.content) || '（无内容）',
     group: '网站留言',
-    url: SITE_URL,
+    url: `${SITE_URL}/api/mail/open`,
     level: 'timeSensitive',
   });
 
