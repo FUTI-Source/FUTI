@@ -5,6 +5,7 @@ import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 
 import { buttonVariants } from '@/components/ui/button.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
 
 import { LINKS } from './consts.tsx';
 import { BasicsProps } from '@/components/type';
@@ -92,18 +93,21 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick, o
 
         if (!href) {
           return (
-            <span
-              key={i}
-              aria-disabled="true"
-              title="链接尚未配置"
-              className={cn(
-                className,
-                'cursor-not-allowed opacity-45 hover:!bg-transparent',
-              )}
-            >
-              {icon}
-              {label}
-            </span>
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <span
+                  aria-disabled="true"
+                  className={cn(
+                    className,
+                    'cursor-not-allowed opacity-45 hover:!bg-transparent',
+                  )}
+                >
+                  {icon}
+                  {label}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={16}>链接尚未配置</TooltipContent>
+            </Tooltip>
           );
         }
 
