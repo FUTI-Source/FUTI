@@ -3,12 +3,15 @@ import type {
   CreateDonationResponse,
   DonateChannel,
   DonateChannelConfig,
+  DonationStatusResponse,
 } from '../types';
+import { createMockOrder, getMockOrder, isMockEnabled } from './mock';
 
 export type DonationErrorCode =
   | 'GATEWAY_NOT_CONFIGURED'
   | 'GATEWAY_NOT_IMPLEMENTED'
-  | 'GATEWAY_FAILED';
+  | 'GATEWAY_FAILED'
+  | 'INVALID_ORDER';
 
 export class DonationGatewayError extends Error {
   constructor(
@@ -31,6 +34,7 @@ const REQUIRED_ENV: Record<DonateChannel, string[]> = {
 };
 
 export const isDonateChannelConfigured = (channel: DonateChannel): boolean =>
+  isMockEnabled() ||
   REQUIRED_ENV[channel].every((key) => Boolean(process.env[key]));
 
 export const getDonateChannelConfig = (): DonateChannelConfig => ({
@@ -39,9 +43,23 @@ export const getDonateChannelConfig = (): DonateChannelConfig => ({
   unionpay: isDonateChannelConfigured('unionpay'),
 });
 
+export interface CreateDonationOptions {
+  /** 站点来源，用于拼接模拟收银台地址 */
+  origin: string;
+}
+
 export async function createDonation(
   input: CreateDonationRequest,
+  options: CreateDonationOptions,
 ): Promise<CreateDonationResponse> {
+  if (isMockEnabled()) {
+    const order = createMockOrder(input);
+    return {
+      channel: input.channel,
+      redirectUrl: `${options.origin}/api/donate/mock/cashier?orderId=${encodeURIComponent(order.orderId)}`,
+    };
+  }
+
   if (!isDonateChannelConfigured(input.channel)) {
     throw new DonationGatewayError('GATEWAY_NOT_CONFIGURED', '该支付渠道尚未配置');
   }
@@ -52,4 +70,10 @@ export async function createDonation(
     'GATEWAY_NOT_IMPLEMENTED',
     '星驿付接口尚未接入，请先提供对接文档',
   );
+}
+
+export function queryDonation(orderId: string): DonationStatusResponse {
+  const order = getMockOrder(orderId);
+  if (!order) throw new DonationGatewayError('INVALID_ORDER', '订单不存在');
+  return { orderId: order.orderId, status: order.status };
 }

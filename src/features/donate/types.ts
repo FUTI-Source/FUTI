@@ -14,6 +14,19 @@ export interface CreateDonationResponse {
   redirectUrl: string;
 }
 
+export type DonationStatus = 'pending' | 'paid' | 'closed';
+
+export interface DonationStatusResponse {
+  orderId: string;
+  status: DonationStatus;
+}
+
+/** 支付完成后返回站点时携带的结果 */
+export interface DonateResult {
+  status: 'success' | 'cancel';
+  orderId?: string;
+}
+
 export interface DonateErrorBody {
   error: {
     code: string;

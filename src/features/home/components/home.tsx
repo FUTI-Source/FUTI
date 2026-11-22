@@ -20,6 +20,7 @@ import { Footer } from './footer';
 import { Header } from './header';
 
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
+import type { DonateResult } from '@/features/donate/types';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
 import { initCustomCursor } from '../utils/custom-cursor';
@@ -42,10 +43,33 @@ const Home: React.FC = () => {
   const [avatarVisible, setAvatarVisible] = useState(false);
   const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
+  const [donateResult, setDonateResult] = useState<DonateResult | null>(null);
 
   const handleEmailOpenChange = (open: boolean) => {
     setEmailDialog((current) => (current ? { ...current, open } : current));
   };
+
+  // 支付完成后带 donate 参数回到站点，打开结果并清理地址栏
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const donate = params.get('donate');
+    if (donate !== 'success' && donate !== 'cancel') return;
+
+    setDonateResult({
+      status: donate,
+      orderId: params.get('orderId') ?? undefined,
+    });
+    setDonateOpen(true);
+
+    params.delete('donate');
+    params.delete('orderId');
+    const search = params.toString();
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`,
+    );
+  }, []);
 
   useWebMcpTools(() => {
     trackEvent('contact-open', { source: 'webmcp' });
@@ -161,7 +185,14 @@ const Home: React.FC = () => {
       )}
       {donateOpen && (
         <Suspense fallback={null}>
-          <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} />
+          <DonateDialog
+            open={donateOpen}
+            result={donateResult}
+            onOpenChange={(open) => {
+              setDonateOpen(open);
+              if (!open) setDonateResult(null);
+            }}
+          />
         </Suspense>
       )}
     </LazyMotion>

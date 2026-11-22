@@ -30,8 +30,10 @@ export async function POST(request: Request) {
     );
   }
 
+  const origin = new URL(request.url).origin;
+
   try {
-    const result = await createDonation(parsed.data);
+    const result = await createDonation(parsed.data, { origin });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof DonationGatewayError) {

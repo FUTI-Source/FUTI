@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { CircleAlert, Loader2, Wallet } from 'lucide-react';
+import { CircleAlert, CircleCheck, Loader2, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-import { createDonation, DonateError, fetchDonateConfig } from './donate-api';
-import type { DonateChannel, DonateChannelConfig } from '../types';
+import { createDonation, DonateError, fetchDonateConfig, queryDonation } from './donate-api';
+import type { DonateChannel, DonateChannelConfig, DonateResult } from '../types';
 import { cn } from '@/lib/utils';
 import { captureException, trackEvent } from '@/utils/umami';
 
@@ -30,14 +30,26 @@ const CHANNELS = [
   hint: string;
 }>;
 
-type Phase = 'idle' | 'creating' | 'error';
+type Phase =
+  | 'idle'
+  | 'creating'
+  | 'error'
+  | 'verifying'
+  | 'success'
+  | 'cancelled';
 
 interface IDonateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** 从支付渠道返回站点时携带的结果 */
+  result?: DonateResult | null;
 }
 
-export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange }) => {
+export const DonateDialog: React.FC<IDonateDialogProps> = ({
+  open,
+  onOpenChange,
+  result = null,
+}) => {
   const [config, setConfig] = useState<DonateChannelConfig | null>(null);
   const [configState, setConfigState] = useState<'loading' | 'ready' | 'error'>(
     'loading',
@@ -55,7 +67,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   const configured = configState === 'ready' && (config?.[channel] ?? false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || result) return;
 
     let active = true;
     setConfigState('loading');
@@ -74,7 +86,48 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     return () => {
       active = false;
     };
-  }, [open, configRetry]);
+  }, [open, configRetry, result]);
+
+  useEffect(() => {
+    if (!open || !result) return;
+
+    if (result.status === 'cancel') {
+      setPhase('cancelled');
+      setMessage('');
+      return;
+    }
+
+    if (!result.orderId) {
+      setPhase('success');
+      return;
+    }
+
+    let active = true;
+    setPhase('verifying');
+    setMessage('');
+
+    queryDonation(result.orderId)
+      .then((status) => {
+        if (!active) return;
+        if (status.status === 'paid') {
+          setPhase('success');
+          trackEvent('donate-result', { status: 'paid' });
+        } else {
+          setPhase('error');
+          setMessage('未确认到支付结果，请稍后重试');
+          trackEvent('donate-result', { status: status.status });
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setPhase('error');
+        setMessage('支付结果查询失败，请稍后重试');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [open, result]);
 
   const reset = () => {
     requestSeq.current += 1;
@@ -109,6 +162,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   };
 
   const activeChannel = CHANNELS.find((item) => item.id === channel) ?? CHANNELS[0];
+  const resultPhase: Phase = result
+    ? phase === 'idle'
+      ? 'verifying'
+      : phase
+    : phase;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -133,6 +191,33 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
             </DialogDescription>
           </DialogHeader>
 
+          {result ? (
+            <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-8 text-center">
+              {resultPhase === 'success' ? (
+                <>
+                  <CircleCheck className="size-10 text-[#64c6f4]" />
+                  <p className="text-base text-[#64c6f4]">支付成功，感谢你的支持！</p>
+                </>
+              ) : resultPhase === 'cancelled' ? (
+                <>
+                  <CircleAlert className="size-9 text-[#ffd166]" />
+                  <p className="text-sm text-white/70">已取消支付</p>
+                </>
+              ) : resultPhase === 'error' ? (
+                <>
+                  <CircleAlert className="size-9 text-[#ff8a8a]" />
+                  <p className="text-sm text-[#ff8a8a]">
+                    {message || '支付结果查询失败，请稍后重试'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="size-8 animate-spin text-[#64c6f4]" />
+                  <p className="text-sm text-white/60">正在确认支付结果…</p>
+                </>
+              )}
+            </div>
+          ) : (
           <div className="mt-4 space-y-4">
             <div>
               <p className="mb-2 text-sm text-white/70">支付方式</p>
@@ -223,7 +308,26 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               )}
             </div>
           </div>
+          )}
 
+          {result ? (
+            <DialogFooter className="mt-4">
+              <Button
+                type="button"
+                onClick={() => handleOpenChange(false)}
+                className="bg-[#0295e5] text-white hover:bg-[#0295e5]/90"
+              >
+                {resultPhase === 'verifying' ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    确认中…
+                  </>
+                ) : (
+                  '完成'
+                )}
+              </Button>
+            </DialogFooter>
+          ) : (
           <DialogFooter className="mt-4">
             <Button
               type="button"
@@ -257,6 +361,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               )}
             </Button>
           </DialogFooter>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -3,6 +3,7 @@ import type {
   CreateDonationResponse,
   DonateChannelConfig,
   DonateErrorBody,
+  DonationStatusResponse,
 } from '../types';
 
 export class DonateError extends Error {
@@ -49,4 +50,10 @@ export function createDonation(input: CreateDonationRequest): Promise<CreateDona
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
+}
+
+export function queryDonation(orderId: string): Promise<DonationStatusResponse> {
+  return requestJson<DonationStatusResponse>(
+    `/api/donate/status?orderId=${encodeURIComponent(orderId)}`,
+  );
 }
