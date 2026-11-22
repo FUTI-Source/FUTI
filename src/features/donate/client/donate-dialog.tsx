@@ -21,8 +21,9 @@ import { cn } from '@/lib/utils';
 import { captureException, trackEvent } from '@/utils/umami';
 
 const CHANNELS = [
-  { id: 'applepay', label: 'Apple Pay', hint: '在 Safari 中通过 Apple Pay 支付' },
-  { id: 'googlepay', label: 'Google Pay', hint: '在 Chrome 中通过 Google Pay 支付' },
+  { id: 'wechat', label: '微信支付', hint: '使用微信扫码支付' },
+  { id: 'alipay', label: '支付宝', hint: '使用支付宝扫码支付' },
+  { id: 'unionpay', label: '云闪付', hint: '使用云闪付扫码支付' },
 ] as const satisfies ReadonlyArray<{
   id: DonateChannel;
   label: string;
@@ -42,7 +43,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     'loading',
   );
   const [configRetry, setConfigRetry] = useState(0);
-  const [channel, setChannel] = useState<DonateChannel>('applepay');
+  const [channel, setChannel] = useState<DonateChannel>('wechat');
   const [customAmount, setCustomAmount] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
@@ -97,7 +98,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     try {
       const result = await createDonation({ channel, amount });
       if (seq !== requestSeq.current) return;
-      // 跳转到 Stripe 收银台，Apple Pay / Google Pay 在其中完成
+      // 跳转到星驿付收银台完成支付
       window.location.assign(result.redirectUrl);
     } catch (error) {
       if (seq !== requestSeq.current) return;
@@ -135,7 +136,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
           <div className="mt-4 space-y-4">
             <div>
               <p className="mb-2 text-sm text-white/70">支付方式</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {CHANNELS.map(({ id, label, hint }) => {
                   const available = configState === 'ready' && (config?.[id] ?? false);
                   const selected = id === channel;
@@ -212,12 +213,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               {configState === 'ready' && !configured && (
                 <p className="flex items-start gap-2 rounded-lg border border-[#ffd166]/20 bg-[#ffd166]/5 p-3 text-sm text-[#ffd166]">
                   <CircleAlert className="mt-0.5 size-4 shrink-0" />
-                  {activeChannel.label} 渠道暂未开通，站长完成收款配置后即可使用。
-                </p>
-              )}
-              {configured && amountValid && !message && (
-                <p className="text-xs text-white/40">
-                  将跳转到 Stripe 收银台完成支付，支持 {activeChannel.label}。
+                  {activeChannel.label} 渠道暂未开通，站长完成星驿付配置后即可使用。
                 </p>
               )}
               {message && (

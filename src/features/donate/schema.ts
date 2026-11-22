@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const donateChannelSchema = z.enum(['applepay', 'googlepay']);
+export const donateChannelSchema = z.enum(['wechat', 'alipay', 'unionpay']);
 
 export const createDonationSchema = z.object({
   channel: donateChannelSchema,

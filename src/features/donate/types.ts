@@ -1,4 +1,4 @@
-export type DonateChannel = 'applepay' | 'googlepay';
+export type DonateChannel = 'wechat' | 'alipay' | 'unionpay';
 
 export type DonateChannelConfig = Record<DonateChannel, boolean>;
 
@@ -10,7 +10,7 @@ export interface CreateDonationRequest {
 
 export interface CreateDonationResponse {
   channel: DonateChannel;
-  /** Stripe 收银台地址，前端直接跳转，Apple Pay / Google Pay 在其中完成 */
+  /** 星驿付收银台地址，前端直接跳转 */
   redirectUrl: string;
 }
 

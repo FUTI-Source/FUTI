@@ -30,17 +30,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const origin = new URL(request.url).origin;
-
   try {
-    const result = await createDonation(parsed.data, {
-      successUrl: `${origin}/?donate=success`,
-      cancelUrl: `${origin}/?donate=cancel`,
-    });
+    const result = await createDonation(parsed.data);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof DonationGatewayError) {
-      const status = error.code === 'GATEWAY_NOT_CONFIGURED' ? 503 : 502;
+      const status =
+        error.code === 'GATEWAY_NOT_CONFIGURED'
+          ? 503
+          : error.code === 'GATEWAY_NOT_IMPLEMENTED'
+            ? 501
+            : 502;
       return NextResponse.json(
         { error: { code: error.code, message: error.message } },
         { status },
