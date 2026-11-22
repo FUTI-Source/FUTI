@@ -101,6 +101,8 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
       case Live2DEvent.INIT: {
         setInit(true);
         event$?.emit(Live2DEvent.INIT);
+        // 模型已就绪：先让头像退出，模型延迟 0.2s 再淡入，避免两者叠加出现重影
+        event$?.emit(Live2DEvent.SHOW);
         break;
       }
       case Live2DEvent.FAILED: {
@@ -132,9 +134,8 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
               key={`futi-live2d-${instanceKey}`}
               className="size-full"
               initial={{ opacity: 0 }}
-              animate={{ opacity: init ? 1 : 0, transition: { delay: 0.2 } }}
+              animate={{ opacity: init ? 1 : 0 }}
               transition={{ duration: 0.2 }}
-              onAnimationComplete={() => init && event$?.emit(Live2DEvent.SHOW)}
               event$={live2dEvent$}
             />
           )}
