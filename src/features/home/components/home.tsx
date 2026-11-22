@@ -32,10 +32,16 @@ const EmailDialog = lazy(() =>
     default: Component,
   })),
 );
+const DonateDialog = lazy(() =>
+  import('@/features/donate/client/donate-dialog').then(({ DonateDialog: Component }) => ({
+    default: Component,
+  })),
+);
 
 const Home: React.FC = () => {
   const [avatarVisible, setAvatarVisible] = useState(false);
   const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
+  const [donateOpen, setDonateOpen] = useState(false);
 
   const handleEmailOpenChange = (open: boolean) => {
     setEmailDialog((current) => (current ? { ...current, open } : current));
@@ -135,6 +141,10 @@ const Home: React.FC = () => {
                 trackEvent('contact-open', { source: 'profile' });
                 setEmailDialog({ href, open: true });
               }}
+              onDonateClick={() => {
+                trackEvent('donate-open', { source: 'profile' });
+                setDonateOpen(true);
+              }}
             />
           </div>
         </main>
@@ -147,6 +157,11 @@ const Home: React.FC = () => {
             open={emailDialog.open}
             onOpenChange={handleEmailOpenChange}
           />
+        </Suspense>
+      )}
+      {donateOpen && (
+        <Suspense fallback={null}>
+          <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} />
         </Suspense>
       )}
     </LazyMotion>

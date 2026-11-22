@@ -232,27 +232,27 @@ body [contenteditable=''] {
   user-select: text !important;
 }
 
-/* 邮件弹窗：宽度按视口留边，高度随 dvh 收缩，内容区自适应滚动。 */
-.email-dialog-content {
-  --email-dialog-gutter: clamp(1rem, 5vw, 1.75rem);
+/* 站内弹窗：宽度按视口留边，高度随 dvh 收缩，内容区自适应滚动。 */
+.site-dialog-content {
+  --site-dialog-gutter: clamp(1rem, 5vw, 1.75rem);
   display: flex;
   flex-direction: column;
   gap: 0;
-  width: min(28rem, calc(100dvw - var(--email-dialog-gutter) * 2));
-  max-width: min(28rem, calc(100dvw - var(--email-dialog-gutter) * 2));
+  width: min(28rem, calc(100dvw - var(--site-dialog-gutter) * 2));
+  max-width: min(28rem, calc(100dvw - var(--site-dialog-gutter) * 2));
   max-height: calc(
-    var(--app-height) - max(var(--email-dialog-gutter), var(--safe-top)) -
-      max(var(--email-dialog-gutter), var(--safe-bottom))
+    var(--app-height) - max(var(--site-dialog-gutter), var(--safe-top)) -
+      max(var(--site-dialog-gutter), var(--safe-bottom))
   );
   overflow: hidden;
 }
 
-.email-dialog-content [data-slot='dialog-close'] {
+.site-dialog-content [data-slot='dialog-close'] {
   top: clamp(0.5rem, 3vw, 1rem);
   right: clamp(0.5rem, 3vw, 1rem);
 }
 
-.email-dialog-body {
+.site-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
   padding: clamp(1rem, 5vw, 1.5rem);
@@ -262,11 +262,11 @@ body [contenteditable=''] {
 
 /* 手机端改为从下方轻微上浮，避免弹窗在屏幕中央「啪」地出现 */
 @media (width < 40rem) and (prefers-reduced-motion: no-preference) {
-  .email-dialog-content[data-state='open'] {
-    animation: email-dialog-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  .site-dialog-content[data-state='open'] {
+    animation: site-dialog-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  @keyframes email-dialog-enter {
+  @keyframes site-dialog-enter {
     from {
       opacity: 0;
       /* 居中用的是 translate 属性，这里用 transform 叠加位移，避免覆盖居中 */
@@ -279,11 +279,11 @@ body [contenteditable=''] {
   }
 }
 
-.email-dialog-body [data-slot='dialog-title'] {
+.site-dialog-body [data-slot='dialog-title'] {
   font-size: clamp(1.0625rem, 4.5vw, 1.25rem);
 }
 
-.email-dialog-body [data-slot='dialog-description'] {
+.site-dialog-body [data-slot='dialog-description'] {
   font-size: clamp(0.8125rem, 3.5vw, 0.875rem);
   line-height: 1.5;
 }
@@ -303,7 +303,7 @@ body [contenteditable=''] {
 
 /* 横屏手机 / 很矮的窗口：进一步压缩留白与输入区高度 */
 @media (max-height: 30rem) {
-  .email-dialog-body {
+  .site-dialog-body {
     padding: clamp(0.625rem, 3vw, 1rem);
   }
 

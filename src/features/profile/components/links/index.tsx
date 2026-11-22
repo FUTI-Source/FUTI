@@ -13,11 +13,14 @@ import { cn } from '@/lib/utils';
 
 type ILinksProps = BasicsProps & {
   onEmailClick: (href: string) => void;
+  onDonateClick: () => void;
 };
 
-type IEmailTriggerProps = {
+type ITriggerProps = {
   Icon: IconType;
   label: string;
+  iconClassName?: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 };
 
 const itemVariants = {
@@ -25,9 +28,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const EmailTrigger: React.FC<
-  IEmailTriggerProps & { onClick?: React.MouseEventHandler<HTMLButtonElement> }
-> = ({ Icon, label, onClick }) => (
+const ActionTrigger: React.FC<ITriggerProps> = ({ Icon, label, iconClassName, onClick }) => (
   <m.button
     type="button"
     variants={itemVariants}
@@ -39,12 +40,12 @@ const EmailTrigger: React.FC<
     )}
     onClick={onClick}
   >
-    <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />
+    <Icon className={iconClassName ?? 'size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85'} />
     {label}
   </m.button>
 );
 
-export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick }) => (
+export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick, onDonateClick }) => (
   <AnimatePresence>
     <m.div
       className={cn(
@@ -62,7 +63,7 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
       {LINKS.map(({ id, Icon, href, label }, i) => {
         if (id === 'email') {
           return (
-            <EmailTrigger
+            <ActionTrigger
               key={i}
               Icon={Icon}
               label={label}
@@ -71,19 +72,23 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick })
           );
         }
 
+        if (id === 'donate') {
+          return (
+            <ActionTrigger
+              key={i}
+              Icon={Icon}
+              label={label}
+              iconClassName="size-4 text-[#ecf6ff]/85"
+              onClick={onDonateClick}
+            />
+          );
+        }
+
         const className = cn(
           buttonVariants({ variant: 'ghost' }),
           'group cursor-pointer text-base font-bold text-[#ecf6ff]/85 hover:!bg-accent/20 hover:text-white max-sm:px-2',
         );
-        const icon = (
-          <Icon
-            className={
-              id === 'donate'
-                ? 'size-4 text-[#ecf6ff]/85'
-                : 'size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85'
-            }
-          />
-        );
+        const icon = <Icon className="size-4 fill-[#ecf6ff] stroke-[#ecf6ff]/85" />;
 
         if (!href) {
           return (

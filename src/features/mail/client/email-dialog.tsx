@@ -89,7 +89,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         overlayClassName="bg-[#07090c]/65 backdrop-blur-md"
-        className="email-dialog-content rounded-2xl border-white/10 bg-[#14171c]/92 p-0 text-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] outline-none backdrop-blur-xl"
+        className="site-dialog-content rounded-2xl border-white/10 bg-[#14171c]/92 p-0 text-white shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] outline-none backdrop-blur-xl"
         tabIndex={-1}
         // 打开时不自动聚焦输入框，避免手机键盘立即弹起、把弹窗顶得跳动；
         // 但仍要把焦点移进弹窗，否则焦点留在被 aria-hidden 的触发按钮上，
@@ -101,7 +101,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
         }}
       >
         <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
-        <div className="email-dialog-body">
+        <div className="site-dialog-body">
           <DialogHeader>
             <DialogTitle className="font-geometos text-xl tracking-wide text-white/90">
               发送邮件
