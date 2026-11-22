@@ -118,7 +118,8 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                 type="text"
                 tabIndex={-1}
                 autoComplete="off"
-                aria-hidden="true"
+                // 用 inert 同时移出无障碍树并禁止聚焦；aria-hidden 遇自动填充聚焦会被浏览器拦截并告警
+                inert
                 className="absolute -left-[10000px] size-px overflow-hidden"
               />
               <FormField
