@@ -40,7 +40,10 @@ export function truncateBarkBody(value: string, max = 300): string {
 /** 通过 Bark 推送通知到站长 iPhone；未配置或失败时只记录日志，不向上抛出 */
 export async function sendBark(message: BarkMessage): Promise<void> {
   const config = getConfig();
-  if (!config) return;
+  if (!config) {
+    console.warn('[bark] 未配置 BARK_DEVICE_KEY，跳过推送');
+    return;
+  }
 
   try {
     const response = await fetch(`${config.serverUrl}/push`, {
@@ -59,14 +62,21 @@ export async function sendBark(message: BarkMessage): Promise<void> {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+    let result: { code?: number; message?: string } = {};
+    try {
+      result = JSON.parse(text) as typeof result;
+    } catch {
+      // 非 JSON 响应时保留原文用于排查
     }
 
-    const result = (await response.json()) as { code?: number; message?: string };
-    if (result.code !== 200) {
-      throw new Error(result.message ?? `返回 code ${result.code}`);
+    if (!response.ok || result.code !== 200) {
+      throw new Error(
+        `HTTP ${response.status} ${result.message ?? text.slice(0, 200)}`.trim(),
+      );
     }
+
+    console.info('[bark] 推送成功', message.title);
   } catch (error) {
     console.error('[bark] 推送失败', error);
   }
