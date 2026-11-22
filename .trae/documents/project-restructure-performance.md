@@ -17,7 +17,7 @@
 - 从 `package.json` 与锁文件移除已交叉确认无引用的 `@radix-ui/react-scroll-area`、`swr`、`underscore`、`@types/underscore`、`@shikijs/transformers`。
 - 将 `text-developer.tsx` 的固定 `<Developer />` 改为保留现有配色的静态 token 渲染，保留打字机时序；删除 `components/ui/highlighter/` 及 `@shikijs/core`、`@shikijs/types`、`shiki`，消除高亮运行时代码、语法、主题和 Oniguruma WASM 的构建与网络开销。
 - 三个静态图片调用直接使用 `next/image`，保留尺寸、priority/lazy、渐变背景和解码行为；删除 `components/ui/image.tsx` 中平台图片服务、WebP canvas 探测和无用 srcSet 逻辑。
-- 删除仅被 Service Worker 预缓存的 `public/fonts/MonaspaceNeon.woff` 及缓存项；清理已确认无外部引用的 `FutiClipPath`、`DialogClose`、`FormDescription` 等死导出。
+- 删除仅被 Service Worker 预缓存的 `public/fonts/MonaspaceNeon.woff` 及缓存项；清理已确认无外部引用的字标裁剪路径组件、`DialogClose`、`FormDescription` 等死导出。
 - 利用 Tailwind v4 内置导入和前缀能力，将 PostCSS 收敛为 `@tailwindcss/postcss`，移除 `postcss-import`、`autoprefixer`；通过构建和视觉回归确认无样式差异。
 - 保留 `pixi.js`、Tooltip、表单、Motion 等实际使用依赖，不按“未直接 import”误判间接运行时依赖。
 
