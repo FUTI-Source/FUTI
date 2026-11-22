@@ -85,7 +85,7 @@ npm run start
 | `MAIL_SMTP_PORT` | 否 | 默认 `465` |
 | `MAIL_SMTP_SECURE` | 否 | 默认 `true`（465 implicit TLS） |
 
-真实授权码切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
+真实授权码切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。打赏支付的微信、支付宝与订单签名变量见下文「打赏支付接入」。
 
 ## 邮件工作原理与 Vercel 约束
 
@@ -115,6 +115,98 @@ Vercel Serverless 的关键约束（已在代码中落实）：
 5. 如需自定义域名，在 Vercel 项目 Domains 中绑定。
 
 > 若上线后出现冷启动超时或连接不稳，可将 `lib/mailer.ts` 内部替换为 Resend / SendGrid 等 HTTP 邮件 API（走 443，无 SMTP 连接生命周期问题），路由与前端无需改动。
+
+## 打赏支付接入（微信支付 / 支付宝）
+
+站点内置微信支付与支付宝打赏，均为**无状态订单**：服务端不保存订单，下单时把订单号、渠道、金额签成 `statusToken`（HMAC-SHA256，1 小时有效），查单时验签后直接向支付平台查询。支付平台回调只做验签，不落库、不改变订单状态。
+
+### 接口一览
+
+| 接口 | 方法 | 说明 |
+| --- | --- | --- |
+| `/api/donate/config` | GET | 返回 `channels.alipay`、`channels.wechat` 是否已配置，以及微信内能否走 JSAPI |
+| `/api/donate/create` | POST | 创建支付，Body：`{ channel, amount, mode? }` |
+| `/api/donate/status?token=...` | GET | 用 `statusToken` 查单，返回订单号、渠道、金额与状态 |
+| `/api/donate/notify/wechat` | POST | 微信支付回调（验签 + 解密，仅确认收到） |
+| `/api/donate/notify/alipay` | POST | 支付宝回调（验签并校验应用信息，仅确认收到） |
+| `/api/donate/wechat/oauth` | GET | 微信内 JSAPI 支付的网页授权入口 |
+| `/api/donate/wechat/oauth/callback` | GET | 微信网页授权回调，换取 openid 后写 Cookie |
+
+`create` 返回：
+
+- `codeUrl`：扫码支付链接，前端渲染二维码；
+- `redirectUrl`：跳转式支付地址（支付宝手机网站、微信 H5）；
+- `payment`：微信 JSAPI 收银台参数，前端直接拉起微信支付；
+- `statusToken`：查单令牌，前端轮询与回跳确认时使用。
+
+### 支付方式选择
+
+| 渠道 | 环境 | 使用能力 |
+| --- | --- | --- |
+| 微信 | 桌面浏览器 | Native 扫码支付 |
+| 微信 | 微信外手机浏览器 | H5 支付，支付完成回跳 `/?donate=success&token=...` |
+| 微信 | 微信内置浏览器 | JSAPI 支付（需要 `WECHAT_APP_SECRET` 完成网页授权） |
+| 支付宝 | 桌面浏览器 | 当面付预下单，返回二维码 |
+| 支付宝 | 手机浏览器 | 手机网站支付，同步回跳站点 |
+
+金额范围由 `src/lib/site.ts` 的 `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 控制，默认 1–10000 元；订单标题取 `DONATION_SUBJECT`。
+
+### 环境变量
+
+在 `.env.local` 或 Vercel → Settings → Environment Variables 配置，修改后需重新部署。
+
+| 变量 | 必填 | 说明 |
+| --- | --- | --- |
+| `DONATION_ORDER_SECRET` | 是 | 订单令牌签名密钥，随机 32 位以上字符串；缺失时所有支付渠道显示为未配置 |
+| `WECHAT_MCH_ID` | 微信必填 | 微信支付商户号 |
+| `WECHAT_APP_ID` | 微信必填 | 与商户号绑定的 AppID（公众号或开放平台应用） |
+| `WECHAT_API_V3_KEY` | 微信必填 | 32 位 APIv3 密钥，用于回调报文解密 |
+| `WECHAT_CERT_SERIAL_NO` | 微信必填 | 商户 API 证书序列号 |
+| `WECHAT_PRIVATE_KEY` | 微信必填 | `apiclient_key.pem` 内容，换行可写成 `\n` |
+| `WECHAT_PUBLIC_KEY_ID` | 微信必填 | 微信支付公钥 ID（公钥模式） |
+| `WECHAT_PUBLIC_KEY` | 微信必填 | 微信支付公钥内容，用于回调验签 |
+| `WECHAT_APP_SECRET` | 可选 | 公众号 AppSecret，仅微信内 JSAPI 支付需要 |
+| `WECHAT_NOTIFY_URL` | 可选 | 回调地址，默认 `${SITE_URL}/api/donate/notify/wechat` |
+| `ALIPAY_APP_ID` | 支付宝必填 | 开放平台应用 AppID |
+| `ALIPAY_PRIVATE_KEY` | 支付宝必填 | 应用私钥（RSA2），换行可写成 `\n` |
+| `ALIPAY_PUBLIC_KEY` | 支付宝必填 | 支付宝公钥，用于回调验签 |
+| `ALIPAY_GATEWAY` | 可选 | 默认 `https://openapi.alipay.com/gateway.do` |
+| `ALIPAY_NOTIFY_URL` | 可选 | 回调地址，默认 `${SITE_URL}/api/donate/notify/alipay` |
+
+`SITE_URL` 在 `src/lib/site.ts` 中配置；两个回调地址必须是公网可访问的 HTTPS 地址。
+
+### 微信支付开通步骤
+
+1. 在微信支付商户平台开通 Native 支付、H5 支付、JSAPI 支付。
+2. H5 支付需在「产品中心 → 开发配置 → H5 支付域名」添加站点域名。
+3. 在「账户中心 → API 安全」设置 APIv3 密钥，下载商户 API 证书，记录证书序列号并保存 `apiclient_key.pem`。
+4. 使用公钥模式：在商户平台获取「微信支付公钥 ID」与公钥内容，分别填入 `WECHAT_PUBLIC_KEY_ID`、`WECHAT_PUBLIC_KEY`（本项目按公钥模式验签，不使用平台证书）。
+5. 微信内 JSAPI：公众号后台把「网页授权域名」与「JS 接口安全域名」设为站点域名，配置好支付授权目录，并填入 `WECHAT_APP_SECRET`。
+6. 确保 `WECHAT_NOTIFY_URL`（或默认地址）可公网访问，微信会向该地址推送支付结果。
+
+### 支付宝开通步骤
+
+1. 在支付宝开放平台创建应用，签约「当面付」与「手机网站支付」。
+2. 使用 RSA2 生成应用私钥，上传应用公钥，保存平台返回的支付宝公钥。
+3. 分别填入 `ALIPAY_APP_ID`、`ALIPAY_PRIVATE_KEY`、`ALIPAY_PUBLIC_KEY`。
+4. 异步通知地址由下单时传入，默认 `${SITE_URL}/api/donate/notify/alipay`，无需在开放平台单独配置；若使用自定义地址，填入 `ALIPAY_NOTIFY_URL`。
+5. 确认应用已上线且签约能力生效，否则下单会返回网关错误。
+
+### 验证与排查
+
+1. 配置完成后访问 `/api/donate/config`，确认目标渠道为 `true`。
+2. 打开打赏弹窗，用最小金额（1 元）走一遍支付，确认二维码或跳转正常。
+3. 支付成功后前端会轮询 `/api/donate/status`，状态变为 `paid` 后上报收入事件。
+4. 若下单失败，查看服务端日志中的 `[donate]` 输出；常见原因是密钥格式、证书序列号、AppID 与商户号不匹配，或回调域名不可达。
+5. 修改 `DONATION_ORDER_SECRET` 会使已签发但未支付的令牌立即失效，只影响进行中的订单。
+
+### 注意事项
+
+- 所有密钥只放在服务端环境变量中，切勿写入 `site.ts`、客户端组件或提交到 Git。
+- 回调只负责验签；即使回调丢失，前端查单仍能确认支付结果。
+- `statusToken` 有效期 1 小时，超时后无法再查单，但支付平台侧订单不受影响。
+- 打赏成功后会向站长发送 Bark 推送与通知邮件（配置见 `.env.local.example`），未配置时自动跳过，不影响支付流程。
+- 收入统计由前端在确认支付后上报 Umami，并使用 `sessionStorage` 去重；用户支付后直接关闭页面则不会产生该次统计。
 
 ## 验证边界说明
 
