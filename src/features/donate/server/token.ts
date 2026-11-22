@@ -5,6 +5,8 @@ import type { DonateChannel } from '../types';
 /** 令牌有效期，覆盖前端 5 分钟轮询与 H5 回跳 */
 const TOKEN_TTL_SECONDS = 60 * 60;
 const TOKEN_VERSION = 1;
+/** 派生信息串：未显式配置时据此从支付私钥派生订单签名密钥，实现用途隔离 */
+const DERIVE_INFO = 'zyf-homepage/donation-order-secret';
 
 export interface OrderTokenPayload {
   orderId: string;
@@ -21,9 +23,22 @@ interface SignedPayload {
   a: number;
 }
 
+/**
+ * 显式配置 DONATION_ORDER_SECRET 优先；否则从支付私钥派生。
+ * 派生源（微信/支付宝私钥）是稳定的环境变量，跨 serverless 实例一致，
+ * 下单签名与查单验签因此使用同一密钥，无需手动配置。
+ */
 function getSecret(): string | null {
-  const secret = process.env.DONATION_ORDER_SECRET?.trim();
-  return secret || null;
+  const explicit = process.env.DONATION_ORDER_SECRET?.trim();
+  if (explicit) return explicit;
+
+  // 固定优先级，保证下单与查单使用同一派生源（不随订单渠道变化）
+  const source =
+    process.env.WECHAT_PRIVATE_KEY?.trim() ||
+    process.env.ALIPAY_PRIVATE_KEY?.trim();
+  if (!source) return null;
+
+  return createHmac('sha256', source).update(DERIVE_INFO).digest('hex');
 }
 
 export const isOrderTokenConfigured = (): boolean => Boolean(getSecret());

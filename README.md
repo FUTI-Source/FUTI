@@ -169,7 +169,7 @@ Vercel Serverless 关键约束（已在代码中落实）：
 
 实现见 [`server/token.ts`](src/features/donate/server/token.ts)。
 
-- 算法：HMAC-SHA256，密钥为 `DONATION_ORDER_SECRET`。
+- 算法：HMAC-SHA256。密钥优先取 `DONATION_ORDER_SECRET`；未配置时从支付私钥（微信 `WECHAT_PRIVATE_KEY` 或支付宝 `ALIPAY_PRIVATE_KEY`）派生，派生源为稳定环境变量，跨实例一致，无需手动配置。
 - 结构：`<base64url(payload)>.<base64url(signature)>`。
 - 载荷短字段：`v`（版本=1）、`e`（过期 Unix 秒，签发 +3600）、`o`（订单号）、`c`（渠道）、`a`（金额分）。
 - 校验：`timingSafeEqual` 防时序攻击，并校验版本、过期、渠道枚举、订单号非空、金额为正整数。
@@ -207,7 +207,7 @@ Vercel Serverless 关键约束（已在代码中落实）：
 
 | 变量 | 必填 | 说明 / 获取位置 |
 | --- | --- | --- |
-| `DONATION_ORDER_SECRET` | 是 | 订单令牌签名密钥，随机 32 位以上 |
+| `DONATION_ORDER_SECRET` | 可选 | 订单令牌签名密钥；留空自动从支付私钥派生，无需手动配置 |
 | `WECHAT_MCH_ID` | 微信必填 | 微信支付商户号 |
 | `WECHAT_APP_ID` | 微信必填 | 与商户号绑定的 AppID |
 | `WECHAT_API_V3_KEY` | 微信必填 | 32 位 APIv3 密钥，用于回调解密 |
@@ -233,7 +233,7 @@ Vercel Serverless 关键约束（已在代码中落实）：
 
 ![进入 API 安全](public/docs/wechat-pay/nav-account-center-api-security.png)
 
-**`DONATION_ORDER_SECRET`** —— 自行生成，无需申请：
+**`DONATION_ORDER_SECRET`**（可选）—— 留空即自动从支付私钥派生，通常无需配置；如需显式指定可自行生成：
 
 ```bash
 openssl rand -hex 32
@@ -330,6 +330,7 @@ openssl rand -hex 32
 - `statusToken` 有效期 1 小时，超时无法查单，但支付平台侧订单不受影响。
 - 收入统计由前端在确认支付后上报；用户支付后直接关闭页面则不会产生该次统计。
 - 更换 `DONATION_ORDER_SECRET`、微信/支付宝密钥后必须重新部署。
+- 未显式配置 `DONATION_ORDER_SECRET` 时密钥派生自支付私钥，更换支付私钥会使进行中的旧令牌失效（已完成的支付不受影响）。
 
 ## PWA 与 iOS 主屏幕
 

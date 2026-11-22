@@ -40,14 +40,9 @@ export class DonationGatewayError extends Error {
   }
 }
 
-/** 各渠道启用所需的商户配置 */
+/** 各渠道启用所需的商户配置（订单签名密钥可自动派生，不再列入必填） */
 const REQUIRED_ENV: Record<DonateChannel, string[]> = {
-  alipay: [
-    'ALIPAY_APP_ID',
-    'ALIPAY_PRIVATE_KEY',
-    'ALIPAY_PUBLIC_KEY',
-    'DONATION_ORDER_SECRET',
-  ],
+  alipay: ['ALIPAY_APP_ID', 'ALIPAY_PRIVATE_KEY', 'ALIPAY_PUBLIC_KEY'],
   wechat: [
     'WECHAT_MCH_ID',
     'WECHAT_APP_ID',
@@ -56,7 +51,6 @@ const REQUIRED_ENV: Record<DonateChannel, string[]> = {
     'WECHAT_PRIVATE_KEY',
     'WECHAT_PUBLIC_KEY_ID',
     'WECHAT_PUBLIC_KEY',
-    'DONATION_ORDER_SECRET',
   ],
 };
 
