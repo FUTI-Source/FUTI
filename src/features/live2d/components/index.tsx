@@ -134,7 +134,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: init ? 1 : 0, transition: { delay: 0.2 } }}
               transition={{ duration: 0.2 }}
-              onAnimationComplete={() => event$?.emit(Live2DEvent.SHOW)}
+              onAnimationComplete={() => init && event$?.emit(Live2DEvent.SHOW)}
               event$={live2dEvent$}
             />
           )}

@@ -93,6 +93,9 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (live2dVisible) return;
+    // 自动化环境（部署截图）不挂载 Live2D：无头浏览器里模型渲染不出来，
+    // 反而会把已经就绪的头像顶掉，导致预览图头像框空白。
+    if (document.documentElement.classList.contains('preload-skip')) return;
     const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
     return () => window.clearTimeout(timer);
   }, [live2dVisible]);
