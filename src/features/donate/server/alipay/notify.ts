@@ -1,4 +1,5 @@
 import { claimPaid, getOrder, saveOrder } from '../orders';
+import { trackDonationRevenue } from '../umami';
 
 import { AlipayNotifyError, parseAlipayNotify } from '.';
 
@@ -27,11 +28,13 @@ export async function handleAlipayNotify(params: Record<string, string>): Promis
   if (order.status === 'paid') return;
 
   if (await claimPaid(order.orderId)) {
-    await saveOrder({
+    const paidOrder = {
       ...order,
-      status: 'paid',
+      status: 'paid' as const,
       paidAt: Date.now(),
       transactionId: notify.tradeNo,
-    });
+    };
+    await saveOrder(paidOrder);
+    await trackDonationRevenue(paidOrder);
   }
 }

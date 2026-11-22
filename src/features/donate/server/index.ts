@@ -15,6 +15,7 @@ import {
   queryAlipayOrder,
 } from './alipay';
 import { claimPaid, getOrder, saveOrder, type StoredDonationOrder } from './orders';
+import { trackDonationRevenue } from './umami';
 import {
   createWechatH5Order,
   createWechatJsapiOrder,
@@ -214,12 +215,14 @@ export async function queryDonation(orderId: string): Promise<DonationStatusResp
   if (status === 'paid') {
     // 回调与轮询可能同时到达，claimPaid 保证只写入一次
     if (await claimPaid(order.orderId)) {
-      await saveOrder({
+      const paidOrder: StoredDonationOrder = {
         ...order,
         status: 'paid',
         paidAt: Date.now(),
         transactionId,
-      });
+      };
+      await saveOrder(paidOrder);
+      await trackDonationRevenue(paidOrder);
     }
   } else if (status === 'closed') {
     await saveOrder({ ...order, status: 'closed' });

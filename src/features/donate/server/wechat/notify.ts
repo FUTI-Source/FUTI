@@ -1,4 +1,5 @@
 import { claimPaid, getOrder, saveOrder } from '../orders';
+import { trackDonationRevenue } from '../umami';
 import { parseWechatNotify, WechatNotifyError } from './index';
 
 /**
@@ -23,10 +24,12 @@ export async function handleWechatNotify(headers: Headers, rawBody: string): Pro
   if (order.status === 'paid') return;
   if (!(await claimPaid(order.orderId))) return;
 
-  await saveOrder({
+  const paidOrder = {
     ...order,
-    status: 'paid',
+    status: 'paid' as const,
     paidAt: Date.now(),
     transactionId: event.transactionId,
-  });
+  };
+  await saveOrder(paidOrder);
+  await trackDonationRevenue(paidOrder);
 }
