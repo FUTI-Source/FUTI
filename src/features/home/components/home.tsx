@@ -115,7 +115,7 @@ const Home: React.FC = () => {
             <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
               <AnimatePresence>
                 {profileImageVisible && (
-                  <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <m.div key="futi-profile-image" className="absolute top-0 left-0 z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0 } }} transition={{ duration: 0.2 }}>
                     <img
                       src={PROFILE_AVATAR_DATA_URI}
                       alt="张文涛的个人头像"
