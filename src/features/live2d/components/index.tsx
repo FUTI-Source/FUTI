@@ -3,6 +3,7 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 
 import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 
 import { Loading } from './loading';
 
@@ -119,14 +120,16 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
     <div className="relative size-full">
       <AnimatePresence>
         {!init && (
-          <Loading
+          <m.div
             key="futi-live2d-loading"
-            className="absolute top-4 right-4 size-8"
+            className="absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 0.2 } }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-          />
+          >
+            <Loading className="size-20 border-4" insideClassName="border-[3px]" />
+          </m.div>
         )}
         <Suspense fallback={null}>
           {cubismSdkInit && (
@@ -135,7 +138,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
               className="size-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: init ? 1 : 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               event$={live2dEvent$}
             />
           )}

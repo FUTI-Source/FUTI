@@ -6,6 +6,7 @@ import { AnimatePresence, LazyMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 
 import { Live2D } from '@/features/live2d/components';
+import { Loading } from '@/features/live2d/components/loading';
 import { Live2DEvent } from '@/features/live2d/events';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -18,7 +19,6 @@ import { DetroitBackground } from './background';
 import { Footer } from './footer';
 import { Header } from './header';
 
-import { PROFILE_AVATAR_DATA_URI } from '@/assets/webp/profile-avatar-data';
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
@@ -35,7 +35,6 @@ const EmailDialog = lazy(() =>
 
 const Home: React.FC = () => {
   const [live2dVisible, setLive2dVisible] = useState(false);
-  const [profileImageVisible, setProfileImageVisible] = useState(true);
   const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
 
   const handleEmailOpenChange = (open: boolean) => {
@@ -52,12 +51,10 @@ const Home: React.FC = () => {
     switch (target) {
       case Live2DEvent.LOADING:
       case Live2DEvent.FAILED: {
-        setProfileImageVisible(true);
         trackEvent('live2d', { status: target === Live2DEvent.FAILED ? 'failed' : 'loading' });
         break;
       }
       case Live2DEvent.SHOW: {
-        setProfileImageVisible(false);
         trackEvent('live2d', { status: 'shown' });
         break;
       }
@@ -94,7 +91,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (live2dVisible) return;
     // 自动化环境（部署截图）不挂载 Live2D：无头浏览器里模型渲染不出来，
-    // 反而会把已经就绪的头像顶掉，导致预览图头像框空白。
+    // 保持加载进度圈即可，避免预览图出现空白画布。
     if (document.documentElement.classList.contains('preload-skip')) return;
     const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
     return () => window.clearTimeout(timer);
@@ -114,14 +111,15 @@ const Home: React.FC = () => {
           <div className="futi-home-stack my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
             <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
               <AnimatePresence>
-                {profileImageVisible && (
-                  <m.div key="futi-profile-image" className="absolute top-0 left-0 z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0 } }} transition={{ duration: 0.2 }}>
-                    <img
-                      src={PROFILE_AVATAR_DATA_URI}
-                      alt="张文涛的个人头像"
-                      className="size-full bg-none"
-                      decoding="async"
-                    />
+                {!live2dVisible && (
+                  <m.div
+                    key="futi-profile-loading"
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, transition: { delay: 0.2 } }}
+                    exit={{ opacity: 0, transition: { duration: 0.2 } }}
+                  >
+                    <Loading className="size-20 border-4" insideClassName="border-[3px]" />
                   </m.div>
                 )}
               </AnimatePresence>
