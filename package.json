@@ -38,7 +38,6 @@
     "nodemailer": "^10.6.0",
     "normalize.css": "^8.0.1",
     "parallax-js": "^3.1.0",
-    "pixi-live2d-display": "file:vendor/pixi-live2d-display",
     "pixi.js": "^6.5.10",
     "qrcode": "^1.5.4",
     "react": "^19.3.1",

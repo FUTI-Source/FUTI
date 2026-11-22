@@ -7,7 +7,7 @@ import * as m from 'motion/react-m';
 import { Application } from '@pixi/app';
 import { BatchRenderer, extensions } from '@pixi/core';
 import { Ticker, TickerPlugin } from '@pixi/ticker';
-import { Live2DModel } from 'pixi-live2d-display/cubism4';
+import { Live2DModel } from '@/features/avatar/live2d';
 
 import { AvatarEvent } from '../events';
 
