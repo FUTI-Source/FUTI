@@ -37,19 +37,25 @@ export interface CreateDonationResponse {
   redirectUrl?: string;
   /** 微信 JSAPI 支付参数，存在时前端直接拉起微信收银台 */
   payment?: WechatJsapiPaymentParams;
+  /** 无状态查单令牌，前端轮询与回跳确认时回传 */
+  statusToken: string;
 }
 
 export type DonationStatus = 'pending' | 'paid' | 'closed';
 
 export interface DonationStatusResponse {
   orderId: string;
+  channel: DonateChannel;
+  /** 金额，单位为元 */
+  amount: number;
   status: DonationStatus;
 }
 
 /** 跳转式支付回到站点时携带的结果 */
 export interface DonateResult {
   status: 'success' | 'cancel';
-  orderId?: string;
+  /** 无状态查单令牌，由回跳地址携带 */
+  token?: string;
 }
 
 export interface DonateErrorBody {

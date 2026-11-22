@@ -6,16 +6,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const orderId = new URL(request.url).searchParams.get('orderId')?.trim();
-  if (!orderId) {
+  const token = new URL(request.url).searchParams.get('token')?.trim();
+  if (!token) {
     return NextResponse.json(
-      { error: { code: 'BAD_REQUEST', message: '缺少订单号' } },
+      { error: { code: 'BAD_REQUEST', message: '缺少订单令牌' } },
       { status: 400 },
     );
   }
 
   try {
-    const result = await queryDonation(orderId);
+    const result = await queryDonation(token);
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof DonationGatewayError) {

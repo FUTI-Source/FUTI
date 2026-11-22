@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { createDonation, DonateError, fetchDonateConfig, queryDonation } from './donate-api';
+import { trackDonationRevenue } from './revenue';
 import type {
   CreateDonationResponse,
   DonateChannel,
@@ -160,8 +161,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       return;
     }
 
-    const orderId = result.orderId;
-    if (!orderId) {
+    const token = result.token;
+    if (!token) {
       setReturnState('paid');
       return;
     }
@@ -172,10 +173,15 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
     setReturnState('verifying');
 
     const check = () => {
-      queryDonation(orderId)
+      queryDonation(token)
         .then((next) => {
           if (!active) return;
           if (next.status === 'paid') {
+            trackDonationRevenue({
+              orderId: next.orderId,
+              amount: next.amount,
+              channel: next.channel,
+            });
             setReturnState('paid');
             return;
           }
@@ -299,11 +305,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
         return;
       }
 
-      queryDonation(order.orderId)
+      queryDonation(order.statusToken)
         .then((result) => {
           if (!active) return;
           if (result.status === 'paid') {
             window.clearInterval(timer);
+            trackDonationRevenue({
+              orderId: result.orderId,
+              amount: result.amount,
+              channel: result.channel,
+            });
             setPhase('paid');
             trackEvent('donate-result', { status: 'paid' });
           } else if (result.status === 'closed') {

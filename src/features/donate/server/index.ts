@@ -14,8 +14,7 @@ import {
   createAlipayWapUrl,
   queryAlipayOrder,
 } from './alipay';
-import { claimPaid, getOrder, saveOrder, type StoredDonationOrder } from './orders';
-import { trackDonationRevenue } from './umami';
+import { createOrderToken, isOrderTokenConfigured, verifyOrderToken } from './token';
 import {
   createWechatH5Order,
   createWechatJsapiOrder,
@@ -43,7 +42,12 @@ export class DonationGatewayError extends Error {
 
 /** 各渠道启用所需的商户配置 */
 const REQUIRED_ENV: Record<DonateChannel, string[]> = {
-  alipay: ['ALIPAY_APP_ID', 'ALIPAY_PRIVATE_KEY', 'ALIPAY_PUBLIC_KEY'],
+  alipay: [
+    'ALIPAY_APP_ID',
+    'ALIPAY_PRIVATE_KEY',
+    'ALIPAY_PUBLIC_KEY',
+    'DONATION_ORDER_SECRET',
+  ],
   wechat: [
     'WECHAT_MCH_ID',
     'WECHAT_APP_ID',
@@ -52,6 +56,7 @@ const REQUIRED_ENV: Record<DonateChannel, string[]> = {
     'WECHAT_PRIVATE_KEY',
     'WECHAT_PUBLIC_KEY_ID',
     'WECHAT_PUBLIC_KEY',
+    'DONATION_ORDER_SECRET',
   ],
 };
 
@@ -87,6 +92,10 @@ export async function createDonation(
   input: CreateDonationRequest,
   options: CreateDonationOptions,
 ): Promise<CreateDonationResponse> {
+  if (!isOrderTokenConfigured()) {
+    throw new DonationGatewayError('GATEWAY_NOT_CONFIGURED', '打赏服务尚未配置');
+  }
+
   if (!isDonateChannelConfigured(input.channel)) {
     throw new DonationGatewayError('GATEWAY_NOT_CONFIGURED', '该支付渠道尚未配置');
   }
@@ -100,20 +109,20 @@ export async function createDonation(
     }
   }
 
-  const order: StoredDonationOrder = {
+  // 订单信息由签名令牌携带，不再落库
+  const order = {
     orderId: createOrderId(),
     channel: input.channel,
-    amount: input.amount,
     // 金额以「分」提交给微信，支付宝按元换算
     amountFen: input.amount * 100,
-    status: 'pending',
-    createdAt: Date.now(),
   };
+  const statusToken = createOrderToken({
+    orderId: order.orderId,
+    channel: order.channel,
+    amountFen: order.amountFen,
+  });
 
   try {
-    // 先落订单，确保回调到达时能查到金额与渠道
-    await saveOrder(order);
-
     if (input.channel === 'alipay') {
       const notifyUrl =
         process.env.ALIPAY_NOTIFY_URL?.trim() || `${SITE_URL}/api/donate/notify/alipay`;
@@ -124,10 +133,10 @@ export async function createDonation(
           amountFen: order.amountFen,
           description: DONATION_SUBJECT,
           notifyUrl,
-          returnUrl: `${SITE_URL}/?donate=success&orderId=${order.orderId}`,
+          returnUrl: `${SITE_URL}/?donate=success&token=${encodeURIComponent(statusToken)}`,
           quitUrl: `${SITE_URL}/`,
         });
-        return { orderId: order.orderId, channel: 'alipay', redirectUrl };
+        return { orderId: order.orderId, channel: 'alipay', redirectUrl, statusToken };
       }
 
       const codeUrl = await createAlipayPrecreateOrder({
@@ -136,7 +145,7 @@ export async function createDonation(
         description: DONATION_SUBJECT,
         notifyUrl,
       });
-      return { orderId: order.orderId, channel: 'alipay', codeUrl };
+      return { orderId: order.orderId, channel: 'alipay', codeUrl, statusToken };
     }
 
     const notifyUrl =
@@ -150,7 +159,7 @@ export async function createDonation(
         notifyUrl,
         openid: options.openid as string,
       });
-      return { orderId: order.orderId, channel: 'wechat', payment };
+      return { orderId: order.orderId, channel: 'wechat', payment, statusToken };
     }
 
     // 微信外手机浏览器用 H5，桌面端用扫码
@@ -162,13 +171,18 @@ export async function createDonation(
         notifyUrl,
         payerIp: options.payerIp || '127.0.0.1',
       });
-      // 支付完成后跳回站点，由前端查询订单并展示结果
+      // 支付完成后跳回站点，由前端携带令牌查询订单
       const redirect = new URL(h5Url);
       redirect.searchParams.set(
         'redirect_url',
-        `${SITE_URL}/?donate=success&orderId=${order.orderId}`,
+        `${SITE_URL}/?donate=success&token=${encodeURIComponent(statusToken)}`,
       );
-      return { orderId: order.orderId, channel: 'wechat', redirectUrl: redirect.toString() };
+      return {
+        orderId: order.orderId,
+        channel: 'wechat',
+        redirectUrl: redirect.toString(),
+        statusToken,
+      };
     }
 
     const codeUrl = await createWechatNativeOrder({
@@ -178,7 +192,7 @@ export async function createDonation(
       notifyUrl,
     });
 
-    return { orderId: order.orderId, channel: 'wechat', codeUrl };
+    return { orderId: order.orderId, channel: 'wechat', codeUrl, statusToken };
   } catch (error) {
     console.error('[donate] 下单失败', error);
     if (error instanceof WechatPayError || error instanceof AlipayError) {
@@ -188,45 +202,27 @@ export async function createDonation(
   }
 }
 
-export async function queryDonation(orderId: string): Promise<DonationStatusResponse> {
-  const order = await getOrder(orderId);
-  if (!order) throw new DonationGatewayError('INVALID_ORDER', '订单不存在');
-
-  if (order.status !== 'pending') return { orderId: order.orderId, status: order.status };
+export async function queryDonation(token: string): Promise<DonationStatusResponse> {
+  const payload = verifyOrderToken(token);
+  if (!payload) throw new DonationGatewayError('INVALID_ORDER', '订单不存在或已过期');
 
   let status: 'pending' | 'paid' | 'closed';
-  let transactionId: string | undefined;
 
   try {
-    if (order.channel === 'alipay') {
-      const remote = await queryAlipayOrder(order.orderId);
-      status = remote.status;
-      transactionId = remote.transactionId;
+    if (payload.channel === 'alipay') {
+      status = (await queryAlipayOrder(payload.orderId)).status;
     } else {
-      const remote = await queryWechatOrder(order.orderId);
-      status = remote.status;
-      transactionId = remote.transactionId;
+      status = (await queryWechatOrder(payload.orderId)).status;
     }
   } catch (error) {
     console.error('[donate] 查单失败', error);
     throw new DonationGatewayError('GATEWAY_FAILED', '查询订单失败，请稍后重试');
   }
 
-  if (status === 'paid') {
-    // 回调与轮询可能同时到达，claimPaid 保证只写入一次
-    if (await claimPaid(order.orderId)) {
-      const paidOrder: StoredDonationOrder = {
-        ...order,
-        status: 'paid',
-        paidAt: Date.now(),
-        transactionId,
-      };
-      await saveOrder(paidOrder);
-      await trackDonationRevenue(paidOrder);
-    }
-  } else if (status === 'closed') {
-    await saveOrder({ ...order, status: 'closed' });
-  }
-
-  return { orderId: order.orderId, status };
+  return {
+    orderId: payload.orderId,
+    channel: payload.channel,
+    amount: payload.amountFen / 100,
+    status,
+  };
 }

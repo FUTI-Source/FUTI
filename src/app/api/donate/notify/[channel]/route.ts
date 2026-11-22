@@ -40,7 +40,7 @@ export async function POST(
     });
 
     try {
-      // 验签、核对应用与金额、幂等更新订单都在这里完成
+      // 验签与校验应用信息；支付状态由前端查单确认
       await handleAlipayNotify(notifyParams);
       return new Response('success', {
         status: 200,
@@ -58,7 +58,7 @@ export async function POST(
   }
 
   try {
-    // 验签、解密、金额校验与幂等更新都在这里完成，失败即返回非 2xx 让微信重试
+    // 验签与解密，失败即返回非 2xx 让微信重试；支付状态由前端查单确认
     await handleWechatNotify(request.headers, rawBody);
     return NextResponse.json({ code: 'SUCCESS', message: '成功' });
   } catch (error) {

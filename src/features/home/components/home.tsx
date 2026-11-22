@@ -50,7 +50,7 @@ const Home: React.FC = () => {
   const [donateOpen, setDonateOpen] = useState(false);
   const [donateResult, setDonateResult] = useState<DonateResult | null>(null);
 
-  // 支付宝手机网站支付完成后带参数回到站点，打开结果并清理地址栏
+  // 支付宝/微信 H5 支付完成后带令牌回到站点，打开结果并清理地址栏
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const donate = params.get('donate');
@@ -58,11 +58,12 @@ const Home: React.FC = () => {
 
     setDonateResult({
       status: donate,
-      orderId: params.get('orderId') ?? params.get('out_trade_no') ?? undefined,
+      token: params.get('token') ?? undefined,
     });
     setDonateOpen(true);
 
     params.delete('donate');
+    params.delete('token');
     params.delete('orderId');
     params.delete('out_trade_no');
     const search = params.toString();

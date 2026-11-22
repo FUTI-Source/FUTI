@@ -51,8 +51,8 @@ export function createDonation(input: CreateDonationRequest): Promise<CreateDona
   });
 }
 
-export function queryDonation(orderId: string): Promise<DonationStatusResponse> {
+export function queryDonation(token: string): Promise<DonationStatusResponse> {
   return requestJson<DonationStatusResponse>(
-    `/api/donate/status?orderId=${encodeURIComponent(orderId)}`,
+    `/api/donate/status?token=${encodeURIComponent(token)}`,
   );
 }
