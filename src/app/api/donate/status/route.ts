@@ -19,9 +19,11 @@ export async function GET(request: Request) {
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof DonationGatewayError) {
+      const status =
+        error.code === 'INVALID_ORDER' ? 404 : error.code === 'GATEWAY_FAILED' ? 502 : 501;
       return NextResponse.json(
         { error: { code: error.code, message: error.message } },
-        { status: 501 },
+        { status },
       );
     }
 

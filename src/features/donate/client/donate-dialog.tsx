@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { CircleAlert, CircleCheck, Loader2, QrCode } from 'lucide-react';
+import { CircleAlert, CircleCheck, Loader2, QrCode, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +19,9 @@ import { createDonation, DonateError, fetchDonateConfig, queryDonation } from '.
 import type {
   CreateDonationResponse,
   DonateChannel,
-  DonateChannelConfig,
+  DonateConfig,
+  DonationMode,
+  WechatJsapiPaymentParams,
 } from '../types';
 import { cn } from '@/lib/utils';
 import { captureException, trackEvent } from '@/utils/umami';
@@ -35,6 +37,68 @@ const CHANNELS = [
 }>;
 
 const PAYMENT_TIMEOUT_MS = 5 * 60_000;
+const DONATE_DRAFT_KEY = 'donate-draft';
+
+interface WeixinJsBridge {
+  invoke(
+    api: string,
+    params: Record<string, string>,
+    callback: (result: { err_msg?: string }) => void,
+  ): void;
+}
+
+function getWeixinBridge(): WeixinJsBridge | null {
+  return (window as unknown as { WeixinJSBridge?: WeixinJsBridge }).WeixinJSBridge ?? null;
+}
+
+/** 拉起微信内置浏览器收银台；bridge 尚未注入时等待 WeixinJSBridgeReady */
+function invokeWechatPay(params: WechatJsapiPaymentParams): Promise<'ok' | 'cancel'> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timeout: number | undefined;
+
+    function finish(action: () => void) {
+      if (settled) return;
+      settled = true;
+      if (timeout !== undefined) window.clearTimeout(timeout);
+      document.removeEventListener('WeixinJSBridgeReady', onReady);
+      action();
+    }
+
+    function run(bridge: WeixinJsBridge) {
+      bridge.invoke('getBrandWCPayRequest', { ...params }, (result) => {
+        if (result.err_msg === 'get_brand_wcpay_request:ok') {
+          finish(() => resolve('ok'));
+        } else if (result.err_msg === 'get_brand_wcpay_request:cancel') {
+          finish(() => resolve('cancel'));
+        } else {
+          finish(() => reject(new Error('微信支付未完成')));
+        }
+      });
+    }
+
+    function onReady() {
+      const bridge = getWeixinBridge();
+      if (bridge) {
+        run(bridge);
+      } else {
+        finish(() => reject(new Error('微信支付环境不可用')));
+      }
+    }
+
+    const bridge = getWeixinBridge();
+    if (bridge) {
+      run(bridge);
+      return;
+    }
+
+    timeout = window.setTimeout(
+      () => finish(() => reject(new Error('微信支付环境加载超时'))),
+      8_000,
+    );
+    document.addEventListener('WeixinJSBridgeReady', onReady, { once: true });
+  });
+}
 
 type Phase = 'idle' | 'creating' | 'waiting' | 'paid' | 'error';
 
@@ -44,7 +108,7 @@ interface IDonateDialogProps {
 }
 
 export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange }) => {
-  const [config, setConfig] = useState<DonateChannelConfig | null>(null);
+  const [config, setConfig] = useState<DonateConfig | null>(null);
   const [configState, setConfigState] = useState<'loading' | 'ready' | 'error'>(
     'loading',
   );
@@ -53,6 +117,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   const [customAmount, setCustomAmount] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<CreateDonationResponse | null>(null);
+  const [orderMode, setOrderMode] = useState<DonationMode | null>(null);
+  const [isWechat, setIsWechat] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [qrFailed, setQrFailed] = useState(false);
   const [message, setMessage] = useState('');
@@ -61,7 +127,38 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
 
   const amount = Number(customAmount);
   const amountValid = Number.isInteger(amount) && amount >= 1 && amount <= 10000;
-  const configured = configState === 'ready' && (config?.[channel] ?? false);
+  const configured = configState === 'ready' && (config?.channels[channel] ?? false);
+  const wechatJsapi = configState === 'ready' && (config?.wechatJsapi ?? false);
+  /** 微信内置浏览器且已配置 AppSecret 时走 JSAPI，否则用扫码 */
+  const useJsapi = channel === 'wechat' && isWechat && wechatJsapi;
+
+  useEffect(() => {
+    setIsWechat(/MicroMessenger/i.test(window.navigator.userAgent));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    // 授权跳转前保存的填写内容，回到页面后自动恢复
+    try {
+      const raw = sessionStorage.getItem(DONATE_DRAFT_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(DONATE_DRAFT_KEY);
+      const draft = JSON.parse(raw) as { channel?: DonateChannel; amount?: number };
+      if (draft.channel && CHANNELS.some((item) => item.id === draft.channel)) {
+        setChannel(draft.channel);
+      }
+      if (
+        typeof draft.amount === 'number' &&
+        draft.amount >= 1 &&
+        draft.amount <= 10000
+      ) {
+        setCustomAmount(String(draft.amount));
+      }
+    } catch {
+      // 隐私模式下存储不可用，忽略即可
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -158,6 +255,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     requestSeq.current += 1;
     setPhase('idle');
     setOrder(null);
+    setOrderMode(null);
     setQrDataUrl('');
     setQrFailed(false);
     setMessage('');
@@ -174,12 +272,39 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     const seq = ++requestSeq.current;
     setPhase('creating');
     setMessage('');
-    trackEvent('donate-create', { channel });
+    trackEvent('donate-create', { channel, mode: useJsapi ? 'jsapi' : 'native' });
 
     try {
-      const result = await createDonation({ channel, amount });
+      const result = await createDonation({
+        channel,
+        amount,
+        mode: useJsapi ? 'jsapi' : undefined,
+      });
       // 期间切换了渠道或关闭了弹窗，丢弃旧结果
       if (seq !== requestSeq.current) return;
+
+      if (result.payment) {
+        // 微信内：直接拉起收银台，支付结果仍以服务端轮询为准
+        setOrder(result);
+        setOrderMode('jsapi');
+        try {
+          const outcome = await invokeWechatPay(result.payment);
+          if (seq !== requestSeq.current) return;
+          if (outcome === 'cancel') {
+            setMessage('已取消支付，可重新发起');
+            setPhase('error');
+            trackEvent('donate-result', { status: 'cancel' });
+            return;
+          }
+          setPhase('waiting');
+        } catch (paymentError) {
+          if (seq !== requestSeq.current) return;
+          captureException(paymentError, { feature: 'donate-wechat-jsapi' });
+          setMessage('微信支付未能拉起，请重试');
+          setPhase('error');
+        }
+        return;
+      }
 
       if (result.redirectUrl) {
         window.location.assign(result.redirectUrl);
@@ -193,9 +318,25 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
       }
 
       setOrder(result);
+      setOrderMode('native');
       setPhase('waiting');
     } catch (error) {
       if (seq !== requestSeq.current) return;
+
+      if (error instanceof DonateError && error.code === 'WECHAT_OAUTH_REQUIRED') {
+        // 保存填写内容，授权跳回后自动恢复并重新打开弹窗
+        try {
+          sessionStorage.setItem(DONATE_DRAFT_KEY, JSON.stringify({ channel, amount }));
+        } catch {
+          // 存储不可用时仍继续授权，返回后需重新填写
+        }
+        const redirect = `${window.location.pathname}${window.location.search}`;
+        window.location.assign(
+          `/api/donate/wechat/oauth?redirect=${encodeURIComponent(redirect)}`,
+        );
+        return;
+      }
+
       captureException(error, { feature: 'donate-create' });
       setMessage(error instanceof DonateError ? error.message : '下单失败，请稍后重试');
       setPhase('error');
@@ -233,14 +374,18 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               <p className="mb-2 text-sm text-white/70">支付方式</p>
               <div className="grid grid-cols-3 gap-2">
                 {CHANNELS.map(({ id, label, hint }) => {
-                  const available = configState === 'ready' && (config?.[id] ?? false);
+                  const available = configState === 'ready' && (config?.channels[id] ?? false);
                   const selected = id === channel;
+                  const hintText =
+                    id === 'wechat' && isWechat && wechatJsapi
+                      ? '在微信内直接完成支付'
+                      : hint;
                   return (
                     <button
                       key={id}
                       type="button"
                       aria-pressed={selected}
-                      title={hint}
+                      title={hintText}
                       disabled={phase === 'creating'}
                       data-umami-event="donate-channel"
                       data-umami-event-channel={id}
@@ -310,6 +455,13 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                   <>
                     <CircleCheck className="size-10 text-[#64c6f4]" />
                     <p className="text-sm text-[#64c6f4]">支付成功，感谢你的支持！</p>
+                  </>
+                ) : orderMode === 'jsapi' ? (
+                  <>
+                    <Loader2 className="size-8 animate-spin text-[#64c6f4]" />
+                    <p className="text-sm text-white/60">
+                      支付完成后将自动确认，请稍候…
+                    </p>
                   </>
                 ) : (
                   <>
@@ -396,7 +548,12 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                 ) : phase === 'error' ? (
                   <>
                     <CircleAlert className="size-4" />
-                    重新生成
+                    重新发起
+                  </>
+                ) : useJsapi ? (
+                  <>
+                    <Wallet className="size-4" />
+                    立即支付
                   </>
                 ) : (
                   <>

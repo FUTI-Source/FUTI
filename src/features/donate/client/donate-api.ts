@@ -1,7 +1,7 @@
 import type {
   CreateDonationRequest,
   CreateDonationResponse,
-  DonateChannelConfig,
+  DonateConfig,
   DonateErrorBody,
   DonationStatusResponse,
 } from '../types';
@@ -39,9 +39,8 @@ async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export async function fetchDonateConfig(): Promise<DonateChannelConfig> {
-  const data = await requestJson<{ channels: DonateChannelConfig }>('/api/donate/config');
-  return data.channels;
+export async function fetchDonateConfig(): Promise<DonateConfig> {
+  return requestJson<DonateConfig>('/api/donate/config');
 }
 
 export function createDonation(input: CreateDonationRequest): Promise<CreateDonationResponse> {
