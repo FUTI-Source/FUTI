@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { SITE_AUTHOR_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 /** 加载圈至少停留的时间，避免秒开时只闪一下反而显得突兀 */
@@ -116,9 +115,6 @@ export const SitePreloader = () => {
             className="stroke-brand"
           />
         </svg>
-        <span className="font-geometos -mr-[0.3em] text-[11px] tracking-[0.3em] text-white/25 select-none">
-          {SITE_AUTHOR_NAME}
-        </span>
         <span className="sr-only">正在加载</span>
       </div>
     </>
