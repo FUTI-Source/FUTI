@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { CircleAlert, CircleCheck, Loader2, QrCode, Wallet } from 'lucide-react';
+import { CircleAlert, CircleCheck, ExternalLink, Loader2, QrCode, Wallet } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -144,6 +144,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   const wechatJsapi = configState === 'ready' && (config?.wechatJsapi ?? false);
   /** 微信内置浏览器且已配置 AppSecret 时走 JSAPI，否则用扫码 */
   const useJsapi = channel === 'wechat' && isWechat && wechatJsapi;
+  /** 微信内未配置 JSAPI：微信会拦截 H5 支付，提示改用浏览器打开 */
+  const wechatBlocked = channel === 'wechat' && isWechat && configured && !wechatJsapi;
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
@@ -351,7 +353,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   };
 
   const handleCreate = async () => {
-    if (!configured || !amountValid) return;
+    if (wechatBlocked || !configured || !amountValid) return;
 
     const seq = ++requestSeq.current;
     setPhase('creating');
@@ -495,9 +497,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                     id === 'wechat'
                       ? isWechat && wechatJsapi
                         ? '在微信内直接完成支付'
-                        : isMobile
-                          ? '跳转微信完成支付'
-                          : hint
+                        : isWechat
+                          ? '需在浏览器中打开后支付'
+                          : isMobile
+                            ? '跳转微信完成支付'
+                            : hint
                       : isMobile
                         ? '跳转支付宝完成支付'
                         : hint;
@@ -554,6 +558,18 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                 </p>
               )}
             </div>
+
+            {wechatBlocked && (
+              <div className="flex items-start gap-3 rounded-xl border border-[#64c6f4]/25 bg-[#64c6f4]/10 p-4">
+                <ExternalLink className="mt-0.5 size-4 shrink-0 text-[#64c6f4]" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-white/85">请在浏览器中打开后支付</p>
+                  <p className="text-xs leading-relaxed text-white/50">
+                    微信内置浏览器暂不支持直接支付。点击右上角「···」，选择「在浏览器打开」，再回到本页完成打赏。
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div>
               <p className="mb-2 text-sm text-white/70">打赏金额（元）</p>
@@ -656,7 +672,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               <Button
                 type="button"
                 onClick={handleCreate}
-                disabled={!configured || !amountValid || submitting}
+                disabled={!configured || !amountValid || submitting || wechatBlocked}
                 className="bg-[#0295e5] text-white shadow-[0_8px_24px_-8px_rgba(2_149_229_0.5)] hover:bg-[#0295e5]/90"
               >
                 {phase === 'creating' ? (
@@ -673,6 +689,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                   <>
                     <CircleAlert className="size-4" />
                     重新发起
+                  </>
+                ) : wechatBlocked ? (
+                  <>
+                    <ExternalLink className="size-4" />
+                    请用浏览器打开
                   </>
                 ) : useJsapi ? (
                   <>
