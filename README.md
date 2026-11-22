@@ -285,6 +285,64 @@ Vercel Serverless 的关键约束（已在代码中落实）：
 
 `SITE_URL` 在 [src/lib/site.ts](file:///workspace/src/lib/site.ts) 中配置；两个回调地址必须是公网可达的 HTTPS 地址。订单标题取 `DONATION_SUBJECT`（默认「打赏支持」），金额范围取 `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT`（默认 1–10000 元）。
 
+#### 微信支付各变量获取方式（附图）
+
+以下路径取自微信支付官方文档 [开发必要参数说明](https://pay.weixin.qq.com/doc/v3/merchant/4013070756)（2026.10 更新）。密钥类变量多数**设置后不可再次查看**，请当场复制保存。截图来自官方文档，实际页面以商户平台为准。
+
+配置总入口：登录 [微信商户平台](https://pay.weixin.qq.com/) → 顶部「账户中心」→ 左侧「API 安全」。
+
+![进入 API 安全](public/docs/wechat-pay/nav-account-center-api-security.png)
+
+**`DONATION_ORDER_SECRET`** —— 自行生成，无需申请：
+
+```bash
+openssl rand -hex 32
+```
+
+取输出的 64 位字符串填入；无 openssl 时可用 `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`。
+
+**`WECHAT_MCH_ID`** —— 商户号：登录商户平台 → 「账户中心 → 商户信息」查看（登录后页面顶部也会显示）。
+
+**`WECHAT_APP_ID` 与 `WECHAT_APP_SECRET`** —— 公众号 / 服务号：前往 [微信开发者平台](https://developers.weixin.qq.com/platform/) 扫码登录 → 「我的业务 → 公众号/服务号」→ 进入详情页 → 「基础信息」中查看开发者 ID（AppID）与开发密钥（AppSecret）。
+
+![开发者平台 - 我的业务](public/docs/wechat-pay/appid-01-devplatform-mybiz.png)
+
+![公众号详情页 - AppID / AppSecret](public/docs/wechat-pay/appid-02-detail-appid-appsecret.png)
+
+> AppSecret 平台不储存明文，忘记需点「重置」重新生成（旧密钥立即失效），重置弹窗中可复制明文：
+
+![重置 AppSecret 弹窗](public/docs/wechat-pay/appsecret-reset-dialog.png)
+
+> 旧入口仍可在 [微信公众平台](https://mp.weixin.qq.com/) → 「设置与开发 → 开发接口管理 → 基本配置」找到；小程序 AppID 在「开发与服务 → 开发管理 → 开发设置」。AppID 必须与商户号完成 [绑定](https://pay.weixin.qq.com/doc/v3/merchant/4013287010) 才能下单。
+
+**`WECHAT_API_V3_KEY`** —— 32 位 APIv3 密钥：商户平台「API 安全」页底部「APIv3 密钥」→ 点「设置」（需操作密码 / 管理员扫码验证）。**设置后无法查看**，请妥善保管；遗失或泄露须重新设置。
+
+![API 安全 - 设置 APIv3 密钥](public/docs/wechat-pay/apiv3-key-api-security.png)
+
+**`WECHAT_CERT_SERIAL_NO` 与 `WECHAT_PRIVATE_KEY`** —— 商户 API 证书（二者配套，用于请求签名与 JSAPI 二次签名）：
+
+1. 「API 安全」→「商户 API 证书」→ 点「申请证书」。
+
+   ![申请商户 API 证书](public/docs/wechat-pay/cert-01-apply-entry.png)
+
+2. 按提示下载「微信支付证书工具」，填写商户号后在本地生成证书文件：`apiclient_key.pem` 为私钥、`apiclient_cert.pem` 为证书。证书**只能下载一次**，遗失须重新申请。
+
+   ![证书工具生成本地文件](public/docs/wechat-pay/cert-02-tool-generated.png)
+
+3. 将工具生成的证书串粘贴回商户平台提交后，在「API 证书管理」列表的「证书序列号」列查看序列号 → 填入 `WECHAT_CERT_SERIAL_NO`；把 `apiclient_key.pem` 全文（含 `-----BEGIN PRIVATE KEY-----` 头尾，换行写成 `\n`）填入 `WECHAT_PRIVATE_KEY`。
+
+   ![API 证书管理 - 证书序列号](public/docs/wechat-pay/cert-03-serial-number.png)
+
+**`WECHAT_PUBLIC_KEY_ID` 与 `WECHAT_PUBLIC_KEY`** —— 微信支付公钥（公钥模式，本项目使用，长期有效无需定期更换）：
+
+1. 「API 安全」→「微信支付公钥」→ 点「管理公钥」。
+
+   ![微信支付公钥入口](public/docs/wechat-pay/pubkey-01-entry.png)
+
+2. 列表中查看「公钥 ID」→ 填入 `WECHAT_PUBLIC_KEY_ID`；点「下载公钥」得到 `.pem` 文件，其全文（换行写成 `\n`）填入 `WECHAT_PUBLIC_KEY`。回调请求头 `Wechatpay-Serial` 即对应此公钥 ID。
+
+   ![下载微信支付公钥](public/docs/wechat-pay/pubkey-02-download.png)
+
 ### 6. 微信支付接入详解
 
 实现见 [server/wechat/](file:///workspace/src/features/donate/server/wechat)。所有请求发往 `https://api.mch.weixin.qq.com`，使用 APIv3 接口。
