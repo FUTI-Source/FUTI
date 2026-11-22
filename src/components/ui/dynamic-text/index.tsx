@@ -17,7 +17,7 @@ import {
   wait,
 } from './utils';
 
-type IFUTIDynamicTextProps = BasicsProps<'h1', 'children'> &
+type IDynamicTextProps = BasicsProps<'h1', 'children'> &
   Omit<MotionProps, 'onAnimationComplete'> & {
     text?: string;
     insertPlaceholderDuration?: number; // 插入占位符持续时间（毫秒）
@@ -31,7 +31,7 @@ type IFUTIDynamicTextProps = BasicsProps<'h1', 'children'> &
     as?: AsComp;
   };
 
-export const FUTIDynamicText: React.FC<IFUTIDynamicTextProps> = memo(
+export const DynamicText: React.FC<IDynamicTextProps> = memo(
   ({
     text,
     children,
@@ -160,4 +160,4 @@ export const FUTIDynamicText: React.FC<IFUTIDynamicTextProps> = memo(
     );
   },
 );
-FUTIDynamicText.displayName = 'FUTI-DynamicText';
+DynamicText.displayName = 'DynamicText';

@@ -1,5 +1,5 @@
-const CACHE_VERSION = 'v7';
-const CACHE_NAME = `futi-site-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v8';
+const CACHE_NAME = `site-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
@@ -41,7 +41,7 @@ self.addEventListener('activate', (event) => {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames
-          .filter((name) => name.startsWith('futi-site-') && name !== CACHE_NAME)
+          .filter((name) => name.startsWith('site-') && name !== CACHE_NAME)
           .map((name) => caches.delete(name)),
       );
       await self.clients.claim();

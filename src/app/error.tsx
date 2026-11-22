@@ -14,7 +14,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="futi-center min-h-dvh flex-col gap-4 bg-[#15161a] px-6 text-center text-white">
+    <div className="flex-center min-h-dvh flex-col gap-4 bg-[#15161a] px-6 text-center text-white">
       <h1 className="font-geometos text-3xl tracking-wide">页面出了点问题</h1>
       <p className="text-sm text-white/60">请稍后重试，或刷新页面。</p>
       <button

@@ -9,7 +9,7 @@ import { BatchRenderer, extensions } from '@pixi/core';
 import { Ticker, TickerPlugin } from '@pixi/ticker';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
-import { Live2DEvent } from '../events';
+import { AvatarEvent } from '../events';
 
 import { BasicsProps } from '@/components/type.ts';
 
@@ -18,15 +18,15 @@ import { EventEmitter } from '@/hooks/use-event-emitter.ts';
 extensions.add(BatchRenderer, TickerPlugin);
 Live2DModel.registerTicker(Ticker);
 
-type ILive2DCoreProps = BasicsProps<'canvas'> &
+type IAvatarCoreProps = BasicsProps<'canvas'> &
   MotionProps & {
-    event$?: EventEmitter<Live2DEvent>;
+    event$?: EventEmitter<AvatarEvent>;
   };
 
 // 与原始 256px 画布设计保持一致的构图比例，随画布等比缩放。
 const BASE_SIZE = 256;
 
-const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
+const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -50,10 +50,10 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
     const handleContextLost = (contextEvent: Event) => {
       contextEvent.preventDefault();
-      event$?.emit(Live2DEvent.CONTEXT_LOST);
+      event$?.emit(AvatarEvent.CONTEXT_LOST);
     };
     const handleContextRestored = () => {
-      event$?.emit(Live2DEvent.CONTEXT_RESTORED);
+      event$?.emit(AvatarEvent.CONTEXT_RESTORED);
     };
 
     canvas.addEventListener('webglcontextlost', handleContextLost);
@@ -92,7 +92,7 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
         }
 
         model = await Live2DModel.from(
-          '/live2d/futiwolf/futi.model3.json',
+          '/live2d/character/character.model3.json',
           { autoInteract: false },
         );
 
@@ -105,13 +105,13 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
 
         pixiApp.stage.addChild(model);
         applyModelLayout(pixiApp.screen.width, pixiApp.screen.height);
-        event$?.emit(Live2DEvent.INIT);
+        event$?.emit(AvatarEvent.INIT);
       } catch (error) {
         destroy();
         if (disposed) return;
 
-        logger.warn('Live2D 初始化失败，保留静态形象', error);
-        event$?.emit(Live2DEvent.FAILED);
+        logger.warn('虚拟形象初始化失败，保留静态形象', error);
+        event$?.emit(AvatarEvent.FAILED);
       }
     };
 
@@ -144,4 +144,4 @@ const Live2DCore: React.FC<ILive2DCoreProps> = ({ event$, ...rest }) => {
   return <m.canvas ref={canvasRef} {...rest} />;
 };
 
-export default Live2DCore;
+export default AvatarCore;

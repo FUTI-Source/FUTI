@@ -12,12 +12,12 @@ import { BasicsProps } from '@/components/type.ts';
 import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter.ts';
 import useExternal from '@/hooks/use-external.ts';
 
-import { Live2DEvent } from '../events';
+import { AvatarEvent } from '../events';
 
-const Live2DCore = lazy(() => import('./core.tsx'));
+const AvatarCore = lazy(() => import('./avatar-core.tsx'));
 
-type ILive2DProps = BasicsProps & {
-  event$?: EventEmitter<Live2DEvent>;
+type IAvatarProps = BasicsProps & {
+  event$?: EventEmitter<AvatarEvent>;
 };
 
 const detectWebGL = (): boolean => {
@@ -33,7 +33,7 @@ const detectWebGL = (): boolean => {
   }
 };
 
-export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
+export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
   const [webglSupported] = useState<boolean>(detectWebGL);
   const [failed, setFailed] = useState(false);
 
@@ -59,7 +59,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
     setInit(false);
     setFailed(false);
     setInstanceKey((current) => current + 1);
-    event$?.emit(Live2DEvent.LOADING);
+    event$?.emit(AvatarEvent.LOADING);
   }, [event$]);
 
   useEffect(() => {
@@ -87,28 +87,28 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
     };
   }, [restart]);
 
-  const live2dEvent$ = useEventEmitter<Live2DEvent>();
-  live2dEvent$.useSubscription((target) => {
+  const avatarEvent$ = useEventEmitter<AvatarEvent>();
+  avatarEvent$.useSubscription((target) => {
     switch (target) {
-      case Live2DEvent.CONTEXT_LOST: {
+      case AvatarEvent.CONTEXT_LOST: {
         setInit(false);
-        event$?.emit(Live2DEvent.LOADING);
+        event$?.emit(AvatarEvent.LOADING);
         break;
       }
-      case Live2DEvent.CONTEXT_RESTORED: {
+      case AvatarEvent.CONTEXT_RESTORED: {
         restart();
         break;
       }
-      case Live2DEvent.INIT: {
+      case AvatarEvent.INIT: {
         setInit(true);
-        event$?.emit(Live2DEvent.INIT);
+        event$?.emit(AvatarEvent.INIT);
         // 模型已就绪：先让头像退出，模型延迟 0.2s 再淡入，避免两者叠加出现重影
-        event$?.emit(Live2DEvent.SHOW);
+        event$?.emit(AvatarEvent.SHOW);
         break;
       }
-      case Live2DEvent.FAILED: {
+      case AvatarEvent.FAILED: {
         setFailed(true);
-        event$?.emit(Live2DEvent.FAILED);
+        event$?.emit(AvatarEvent.FAILED);
         break;
       }
     }
@@ -121,7 +121,7 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
       <AnimatePresence>
         {!init && (
           <m.div
-            key="futi-live2d-loading"
+            key="avatar-loading"
             className="absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 0.2 } }}
@@ -133,13 +133,13 @@ export const Live2D: React.FC<ILive2DProps> = ({ event$ }) => {
         )}
         <Suspense fallback={null}>
           {cubismSdkInit && (
-            <Live2DCore
-              key={`futi-live2d-${instanceKey}`}
+            <AvatarCore
+              key={`avatar-${instanceKey}`}
               className="size-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: init ? 1 : 0 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
-              event$={live2dEvent$}
+              event$={avatarEvent$}
             />
           )}
         </Suspense>

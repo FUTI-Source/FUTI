@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as m from 'motion/react-m';
 
-import { FUTIDynamicText } from '@/components/ui/dynamic-text';
+import { DynamicText } from '@/components/ui/dynamic-text';
 import type { BasicsProps } from '@/components/type';
 import { cn } from '@/lib/utils.ts';
 
@@ -46,14 +46,14 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
     >
       <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-[#37eff9]/60 via-[#0091e4]/60 to-[#64c6f4]/60" />
 
-      <FUTIDynamicText
+      <DynamicText
         as={m.p}
         instant={ready}
         text={ready ? time : PLACEHOLDER}
         onAnimationComplete={() => setReady(true)}
         className={cn(
           // 基础排版
-          'header-no-drag futi-header-time futi-text-lyrics font-geometos my-0 select-none text-[color:var(--futi-c-time)]',
+          'header-no-drag header-time text-shadow-soft font-geometos my-0 select-none text-[color:var(--text-time-color)]',
           'tabular-nums inline-block whitespace-nowrap',
           // 桌面：左内边距、最小宽度、左对齐
           'pl-10 min-w-[19ch] text-left',

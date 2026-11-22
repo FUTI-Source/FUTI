@@ -74,7 +74,7 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
         // 父级（App 里的 flex-col items-center）已负责水平居中；
         // min-width 由 .profile-description 统一控制，避免逐字出现时整行左右抖动。
         'profile-description relative flex h-7 w-fit items-center justify-center gap-1',
-        inAnimation && 'futi-cursor',
+        inAnimation && 'typing-cursor',
         className,
       )}
       style={style}

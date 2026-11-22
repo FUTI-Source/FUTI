@@ -1,4 +1,4 @@
-export enum Live2DEvent {
+export enum AvatarEvent {
   LOADING = 'loading',
   INIT = 'init',
   SHOW = 'show',

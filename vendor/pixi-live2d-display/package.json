@@ -1,6 +1,6 @@
 {
   "name": "pixi-live2d-display",
-  "version": "0.4.0-futi.1",
+  "version": "0.4.0-brand.1",
   "description": "PixiJS 6 compatible Live2D plugin fork",
   "main": "dist/index.js",
   "types": "types/index.d.ts",

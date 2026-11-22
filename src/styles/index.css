@@ -1,19 +1,19 @@
 @theme {
-  --color-futi: oklch(0.63 0.15 252.19);
+  --color-brand: oklch(0.63 0.15 252.19);
 
-  --font-sans: ui-sans-serif, system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+  --font-sans: ui-sans-serif, system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
 
   /* 品牌字体只有拉丁字形，中文必须显式补苹方，否则 Safari 会回退到宋体；
-     末尾的 FUTI CJK 是内置中文子集，兜底无系统中文字体的环境（如部署截图服务） */
-  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
-  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
-  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+     末尾的 CJK Subset 是内置中文子集，兜底无系统中文字体的环境（如部署截图服务） */
+  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
+  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
+  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
 }
 
 /* 中文子集（仅含站点实际用到的汉字与标点）：系统有中文字体时不会被下载，
    只有无系统中文字体的运行环境才会回退到这里，避免出现方框字。 */
 @font-face {
-  font-family: 'FUTI CJK';
+  font-family: 'CJK Subset';
   font-style: normal;
   font-weight: 300 500;
   font-display: swap;
@@ -24,7 +24,7 @@
 /* next/font 在 body 上注入的 --font-geometos 只含 geometos 与其度量回退字体，
    不含中文字形，这里在工具类后追加中文字体，保证中文仍使用苹方。 */
 .font-geometos {
-  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'FUTI CJK', sans-serif;
+  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
 }
 
 /* 首帧前的兜底值；真实的像素高度由 layout 中的内联脚本按 visualViewport 写入 */
@@ -33,11 +33,11 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   /* 主体头像尺寸：随视口收缩，短屏笔记本与手机都不再占满首屏 */
-  --futi-profile-size: clamp(9.5rem, min(48vw, 30vh), 15rem);
+  --profile-size: clamp(9.5rem, min(48vw, 30vh), 15rem);
   /* 文字色统一收敛为令牌，移动端只改令牌值，保证各终端观感一致 */
-  --futi-c-time: rgba(255, 255, 255, 0.55);
-  --futi-c-footer: rgba(255, 255, 255, 0.2);
-  --futi-c-footer-link: rgba(255, 255, 255, 0.3);
+  --text-time-color: rgba(255, 255, 255, 0.55);
+  --text-footer-color: rgba(255, 255, 255, 0.2);
+  --text-footer-link-color: rgba(255, 255, 255, 0.3);
   color-scheme: dark;
 }
 
@@ -147,7 +147,7 @@ main {
     background-repeat: no-repeat;
   }
 
-  .futi-ui * {
+  .ui-transition * {
     @apply transition-colors;
   }
 
@@ -159,11 +159,11 @@ main {
   }
 }
 
-.futi-footer-line {
+.footer-line {
   background-image: linear-gradient(90deg, rgba(119, 119, 119, 0.2), rgba(72, 72, 72, 0.2), rgba(103, 103, 103, 0.2), rgba(60, 60, 60, 0.2));
 }
 
-.futi-profile-line {
+.profile-line {
   background-image: linear-gradient(to right, rgb(55, 239, 249), rgb(0, 145, 228), rgb(100, 198, 244), rgb(100, 192, 236));
 }
 
@@ -173,27 +173,27 @@ main {
   white-space: nowrap;
 }
 
-.futi-profile-reveal {
-  width: var(--futi-profile-size);
-  height: var(--futi-profile-size);
-  animation: futi-profile-reveal 0.22s ease-out both;
+.profile-reveal {
+  width: var(--profile-size);
+  height: var(--profile-size);
+  animation: profile-reveal 0.22s ease-out both;
 }
 
-@keyframes futi-profile-reveal {
+@keyframes profile-reveal {
   from {
     width: 0;
     height: 0;
     opacity: 0;
   }
   to {
-    width: var(--futi-profile-size);
-    height: var(--futi-profile-size);
+    width: var(--profile-size);
+    height: var(--profile-size);
     opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .futi-profile-reveal {
+  .profile-reveal {
     animation: none;
   }
 }
@@ -325,9 +325,9 @@ body [contenteditable=''] {
 @media (width < 40rem) {
   :root {
     /* iOS 屏幕亮度高、字号偏大，统一下调透明度以贴近电脑端的观感 */
-    --futi-c-time: rgba(255, 255, 255, 0.45);
-    --futi-c-footer: rgba(255, 255, 255, 0.16);
-    --futi-c-footer-link: rgba(255, 255, 255, 0.24);
+    --text-time-color: rgba(255, 255, 255, 0.45);
+    --text-footer-color: rgba(255, 255, 255, 0.16);
+    --text-footer-link-color: rgba(255, 255, 255, 0.24);
   }
 
   .header-no-drag {
@@ -352,37 +352,37 @@ body [contenteditable=''] {
 /* 横屏手机 / 很矮的窗口：压缩页头、头像与页脚，让主内容一屏可见 */
 @media (orientation: landscape) and (max-height: 32rem) {
   :root {
-    --futi-profile-size: clamp(6rem, 28vh, 8rem);
+    --profile-size: clamp(6rem, 28vh, 8rem);
   }
 
   .header-drag {
     height: 2.75rem;
   }
 
-  .futi-home-stack {
+  .home-stack {
     gap: 0.5rem;
     padding-block: 0.25rem;
   }
 
-  .futi-footer {
+  .footer {
     height: 3.25rem;
   }
 }
 
 /* 页头时间：字号随视口自适应，避免大屏显小、小屏显挤 */
-.futi-header-time {
+.header-time {
   font-size: clamp(1.125rem, 1rem + 0.55vw, 1.375rem);
 }
 
-.futi-center {
+.flex-center {
   @apply flex items-center justify-center;
 }
 
-.futi-text-lyrics {
+.text-shadow-soft {
   text-shadow: rgba(6, 7, 25, 0.32) 0.05em 0.05em 0;
 }
 
-.futi-cursor::after {
+.typing-cursor::after {
   animation: cursor-fade-out 0.3s ease infinite alternate-reverse;
 
   @apply block h-full w-[1.67px] border-[#528bff] bg-[#528bff] content-[''];

@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 import { BasicsProps } from '@/components/type';
 
-import { FutiIcon } from '@/assets/svg/futi.tsx';
+import { BrandMark } from '@/assets/svg/brand-mark.tsx';
 import { cn } from '@/lib/utils.ts';
 import { ICP_LINK, ICP_NUMBER } from '@/lib/site';
 import Link from 'next/link';
@@ -16,18 +16,18 @@ type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
   return (
-    <div className={cn('futi-footer flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
+    <div className={cn('footer flex h-16 shrink-0 items-center gap-4 pl-6 max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('futi-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+            className={cn('flex-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
             Drawn by NAVILAB
-            <FutiIcon className="absolute h-7 [&>path]:fill-white/20" />
+            <BrandMark className="absolute h-7 [&>path]:fill-white/20" />
           </m.a>
         </TooltipTrigger>
         <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
@@ -37,8 +37,8 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <Separator orientation="vertical" className="!h-8 bg-white/20" />
       </m.div>
       <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
-        <Separator className="futi-footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
-        <div className="futi-footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--futi-c-footer-link)] [&_p]:text-[color:var(--futi-c-footer)]">
+        <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
+        <div className="footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_p]:text-[color:var(--text-footer-color)]">
           <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; 2017 - {new Date().getFullYear()}
             <Tooltip>

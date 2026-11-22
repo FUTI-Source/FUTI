@@ -5,9 +5,9 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, LazyMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 
-import { Live2D } from '@/features/live2d/components';
-import { Loading } from '@/features/live2d/components/loading';
-import { Live2DEvent } from '@/features/live2d/events';
+import { Avatar } from '@/features/avatar/components/avatar';
+import { Loading } from '@/features/avatar/components/loading';
+import { AvatarEvent } from '@/features/avatar/events';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { Description } from '@/features/profile/components/description';
@@ -34,7 +34,7 @@ const EmailDialog = lazy(() =>
 );
 
 const Home: React.FC = () => {
-  const [live2dVisible, setLive2dVisible] = useState(false);
+  const [avatarVisible, setAvatarVisible] = useState(false);
   const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
 
   const handleEmailOpenChange = (open: boolean) => {
@@ -46,16 +46,16 @@ const Home: React.FC = () => {
     setEmailDialog({ href: `mailto:${CONTACT_EMAIL}`, open: true });
   });
 
-  const live2dEvent$ = useEventEmitter<Live2DEvent>();
-  live2dEvent$.useSubscription((target) => {
+  const avatarEvent$ = useEventEmitter<AvatarEvent>();
+  avatarEvent$.useSubscription((target) => {
     switch (target) {
-      case Live2DEvent.LOADING:
-      case Live2DEvent.FAILED: {
-        trackEvent('live2d', { status: target === Live2DEvent.FAILED ? 'failed' : 'loading' });
+      case AvatarEvent.LOADING:
+      case AvatarEvent.FAILED: {
+        trackEvent('avatar', { status: target === AvatarEvent.FAILED ? 'failed' : 'loading' });
         break;
       }
-      case Live2DEvent.SHOW: {
-        trackEvent('live2d', { status: 'shown' });
+      case AvatarEvent.SHOW: {
+        trackEvent('avatar', { status: 'shown' });
         break;
       }
     }
@@ -89,16 +89,16 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (live2dVisible) return;
+    if (avatarVisible) return;
     // 自动化环境（部署截图）立即挂载，让截图尽量拿到模型最终效果；
     // 未就绪时仍由进度圈占位。
     if (document.documentElement.classList.contains('preload-skip')) {
-      setLive2dVisible(true);
+      setAvatarVisible(true);
       return;
     }
-    const timer = window.setTimeout(() => setLive2dVisible(true), 1500);
+    const timer = window.setTimeout(() => setAvatarVisible(true), 1500);
     return () => window.clearTimeout(timer);
-  }, [live2dVisible]);
+  }, [avatarVisible]);
 
   useEffect(() => {
     const destroyCursor = initCustomCursor();
@@ -107,16 +107,16 @@ const Home: React.FC = () => {
 
   return (
     <LazyMotion features={loadMotionFeatures} strict>
-      <ScrollArea className="futi-ui relative flex h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border">
+      <ScrollArea className="ui-transition relative flex h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border">
         <Header />
         <main className="flex flex-1 flex-col">
           <DetroitBackground />
-          <div className="futi-home-stack my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
-            <ProfileWrapper className="futi-center futi-profile-reveal relative overflow-hidden">
+          <div className="home-stack my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
+            <ProfileWrapper className="flex-center profile-reveal relative overflow-hidden">
               <AnimatePresence>
-                {!live2dVisible && (
+                {!avatarVisible && (
                   <m.div
-                    key="futi-profile-loading"
+                    key="profile-loading"
                     className="absolute inset-0 flex items-center justify-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1, transition: { delay: 0.2 } }}
@@ -126,7 +126,7 @@ const Home: React.FC = () => {
                   </m.div>
                 )}
               </AnimatePresence>
-              {live2dVisible && <Live2D event$={live2dEvent$} />}
+              {avatarVisible && <Avatar event$={avatarEvent$} />}
             </ProfileWrapper>
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} />
             <div className="h-7"><Description /></div>

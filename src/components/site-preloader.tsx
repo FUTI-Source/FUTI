@@ -112,7 +112,7 @@ export const SitePreloader = () => {
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeDasharray="30 96"
-            className="stroke-futi"
+            className="stroke-brand"
           />
         </svg>
         <span className="font-geometos -mr-[0.3em] text-[11px] tracking-[0.3em] text-white/25 select-none">
