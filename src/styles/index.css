@@ -194,6 +194,19 @@ main {
   white-space: nowrap;
 }
 
+/* 自动化环境（部署截图）显示静态完整文案，隐藏打字机版本 */
+.profile-description-static {
+  display: none;
+}
+
+html.preload-skip .profile-description-static {
+  display: flex;
+}
+
+html.preload-skip .profile-description > h2 {
+  display: none;
+}
+
 body,
 body * {
   -webkit-touch-callout: none;

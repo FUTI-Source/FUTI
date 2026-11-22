@@ -8,7 +8,6 @@ import * as m from 'motion/react-m';
 import { Live2D } from '@/features/live2d/components';
 import { Live2DEvent } from '@/features/live2d/events';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Image from 'next/image';
 
 import { Description } from '@/features/profile/components/description';
 import { Links } from '@/features/profile/components/links';
@@ -19,7 +18,7 @@ import { DetroitBackground } from './background';
 import { Footer } from './footer';
 import { Header } from './header';
 
-import profileImage from '@/assets/webp/futiwolf.webp';
+import { PROFILE_AVATAR_DATA_URI } from '@/assets/webp/profile-avatar-data';
 import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
@@ -114,16 +113,11 @@ const Home: React.FC = () => {
               <AnimatePresence>
                 {profileImageVisible && (
                   <m.div key="futi-profile-image" className="absolute top-0 left-0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <Image
-                      src={profileImage}
+                    <img
+                      src={PROFILE_AVATAR_DATA_URI}
                       alt="张文涛的个人头像"
                       className="size-full bg-none"
-                      sizes="(max-width: 640px) 48vw, 240px"
-                      quality={80}
                       decoding="async"
-                      loading="eager"
-                      fetchPriority="high"
-                      priority
                     />
                   </m.div>
                 )}
