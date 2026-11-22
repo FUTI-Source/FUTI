@@ -103,8 +103,6 @@ const Home: React.FC = () => {
     return () => destroyCursor();
   }, []);
 
-  const [nameVisible, setNameVisible] = useState(false);
-
   return (
     <LazyMotion features={loadMotionFeatures} strict>
       <ScrollArea className="futi-ui relative flex h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto pt-[var(--safe-top)] pb-[var(--safe-bottom)] box-border">
@@ -132,8 +130,8 @@ const Home: React.FC = () => {
               </AnimatePresence>
               {live2dVisible && <Live2D event$={live2dEvent$} />}
             </ProfileWrapper>
-            <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} onAnimationComplete={() => setNameVisible(true)} />
-            <div className="h-7">{nameVisible && <Description />}</div>
+            <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} />
+            <div className="h-7"><Description /></div>
             <Links
               onEmailClick={(href) => {
                 trackEvent('contact-open', { source: 'profile' });
