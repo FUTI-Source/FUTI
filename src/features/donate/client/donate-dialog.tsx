@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { CircleAlert, CircleCheck, Loader2, QrCode } from 'lucide-react';
 
@@ -36,6 +36,9 @@ const CHANNELS = [
 
 const PRESET_AMOUNTS = [5, 10, 20, 50] as const;
 
+/** 等待支付的最长时间，超时后允许用户重新发起 */
+const PAYMENT_TIMEOUT_MS = 5 * 60_000;
+
 type Phase = 'idle' | 'creating' | 'waiting' | 'paid' | 'error';
 
 interface IDonateDialogProps {
@@ -45,35 +48,47 @@ interface IDonateDialogProps {
 
 export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange }) => {
   const [config, setConfig] = useState<DonateChannelConfig | null>(null);
+  const [configState, setConfigState] = useState<'loading' | 'ready' | 'error'>(
+    'loading',
+  );
+  const [configRetry, setConfigRetry] = useState(0);
   const [channel, setChannel] = useState<DonateChannel>('alipay');
   const [presetAmount, setPresetAmount] = useState<number>(10);
   const [customAmount, setCustomAmount] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<CreateDonationResponse | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const [qrFailed, setQrFailed] = useState(false);
   const [message, setMessage] = useState('');
+  /** 用于丢弃切换渠道/关闭弹窗后返回的旧下单结果 */
+  const requestSeq = useRef(0);
 
   const parsedCustom = Number(customAmount);
   const amount = customAmount.trim() ? parsedCustom : presetAmount;
   const amountValid = Number.isInteger(amount) && amount >= 1 && amount <= 500;
-  const configured = config?.[channel] ?? false;
+  const configured = configState === 'ready' && (config?.[channel] ?? false);
 
   useEffect(() => {
     if (!open) return;
 
     let active = true;
+    setConfigState('loading');
     fetchDonateConfig()
       .then((next) => {
-        if (active) setConfig(next);
+        if (!active) return;
+        setConfig(next);
+        setConfigState('ready');
       })
       .catch(() => {
-        if (active) setConfig(null);
+        if (!active) return;
+        setConfig(null);
+        setConfigState('error');
       });
 
     return () => {
       active = false;
     };
-  }, [open]);
+  }, [open, configRetry]);
 
   useEffect(() => {
     if (!order?.codeUrl) {
@@ -82,6 +97,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     }
 
     let active = true;
+    setQrFailed(false);
     void import('qrcode')
       .then(({ toDataURL }) =>
         toDataURL(order.codeUrl as string, {
@@ -94,7 +110,9 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
         if (active) setQrDataUrl(url);
       })
       .catch(() => {
-        if (active) setQrDataUrl('');
+        if (!active) return;
+        setQrDataUrl('');
+        setQrFailed(true);
       });
 
     return () => {
@@ -106,7 +124,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
     if (phase !== 'waiting' || !order) return;
 
     let active = true;
+    const deadline = Date.now() + PAYMENT_TIMEOUT_MS;
     const timer = window.setInterval(() => {
+      if (Date.now() > deadline) {
+        window.clearInterval(timer);
+        setPhase('error');
+        setMessage('支付超时，请重新生成支付码');
+        trackEvent('donate-result', { status: 'timeout' });
+        return;
+      }
+
       queryDonation(order.orderId)
         .then((result) => {
           if (!active) return;
@@ -133,9 +160,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   }, [phase, order]);
 
   const reset = () => {
+    requestSeq.current += 1;
     setPhase('idle');
     setOrder(null);
     setQrDataUrl('');
+    setQrFailed(false);
     setMessage('');
   };
 
@@ -147,19 +176,31 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   const handleCreate = async () => {
     if (!configured || !amountValid) return;
 
+    const seq = ++requestSeq.current;
     setPhase('creating');
     setMessage('');
     trackEvent('donate-create', { channel });
 
     try {
       const result = await createDonation({ channel, amount });
+      // 期间切换了渠道或关闭了弹窗，丢弃旧结果
+      if (seq !== requestSeq.current) return;
+
       if (result.redirectUrl) {
         window.location.assign(result.redirectUrl);
         return;
       }
+
+      if (!result.codeUrl) {
+        setMessage('支付信息缺失，请稍后重试');
+        setPhase('error');
+        return;
+      }
+
       setOrder(result);
       setPhase('waiting');
     } catch (error) {
+      if (seq !== requestSeq.current) return;
       captureException(error, { feature: 'donate-create' });
       setMessage(error instanceof DonateError ? error.message : '下单失败，请稍后重试');
       setPhase('error');
@@ -197,7 +238,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               <p className="mb-2 text-sm text-white/70">支付方式</p>
               <div className="grid grid-cols-3 gap-2">
                 {CHANNELS.map(({ id, label, hint }) => {
-                  const available = config?.[id] ?? false;
+                  const available = configState === 'ready' && (config?.[id] ?? false);
                   const selected = id === channel;
                   return (
                     <button
@@ -205,6 +246,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                       type="button"
                       aria-pressed={selected}
                       title={hint}
+                      disabled={phase === 'creating'}
                       data-umami-event="donate-channel"
                       data-umami-event-channel={id}
                       onClick={() => {
@@ -212,7 +254,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                         reset();
                       }}
                       className={cn(
-                        'relative flex cursor-pointer flex-col items-center gap-1 rounded-xl border px-2 py-3 text-sm transition-colors',
+                        'relative flex cursor-pointer flex-col items-center gap-1 rounded-xl border px-2 py-3 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                         selected
                           ? 'border-[#0295e5]/60 bg-[#0295e5]/10 text-white'
                           : 'border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:text-white',
@@ -220,12 +262,36 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                     >
                       <span className="font-bold">{label}</span>
                       <span className="text-[11px] text-white/35">
-                        {available ? '可用' : '未配置'}
+                        {configState === 'loading'
+                          ? '读取中'
+                          : available
+                            ? '可用'
+                            : '未配置'}
                       </span>
                     </button>
                   );
                 })}
               </div>
+              {configState === 'loading' && (
+                <p role="status" className="mt-2 text-xs text-white/40">
+                  正在读取支付渠道…
+                </p>
+              )}
+              {configState === 'error' && (
+                <p
+                  role="alert"
+                  className="mt-2 flex items-center gap-2 text-xs text-[#ff8a8a]"
+                >
+                  支付渠道配置加载失败。
+                  <button
+                    type="button"
+                    onClick={() => setConfigRetry((value) => value + 1)}
+                    className="cursor-pointer underline underline-offset-2 hover:text-white"
+                  >
+                    重试
+                  </button>
+                </p>
+              )}
             </div>
 
             <div>
@@ -285,6 +351,13 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
                         height={240}
                         className="size-44 rounded-lg bg-white p-1"
                       />
+                    ) : qrFailed ? (
+                      <div className="flex size-44 flex-col items-center justify-center gap-2 rounded-lg bg-white/10 px-3 text-center">
+                        <CircleAlert className="size-6 text-[#ff8a8a]" />
+                        <span className="text-xs text-white/60">
+                          二维码生成失败，请重新生成
+                        </span>
+                      </div>
                     ) : (
                       <div className="flex size-44 items-center justify-center rounded-lg bg-white/10">
                         <Loader2 className="size-6 animate-spin text-white/50" />
@@ -299,7 +372,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
               </div>
             ) : (
               <div className="space-y-2">
-                {config && !configured && (
+                {configState === 'ready' && !configured && (
                   <p className="flex items-start gap-2 rounded-lg border border-[#ffd166]/20 bg-[#ffd166]/5 p-3 text-sm text-[#ffd166]">
                     <CircleAlert className="mt-0.5 size-4 shrink-0" />
                     {activeChannel.label} 渠道暂未开通，站长完成商户配置后即可使用。
