@@ -16,6 +16,13 @@ const TypingSignature: React.FC<ITypingSignatureProps> = ({ onAnimationComplete 
   const [text, setText] = useState('');
 
   useEffect(() => {
+    // 自动化环境（部署预览截图）不跑打字机，直接显示完整文案
+    if (document.documentElement.classList.contains('preload-skip')) {
+      setText(SIGNATURE);
+      onAnimationComplete?.();
+      return;
+    }
+
     let timer = 0;
     let index = 0;
 
