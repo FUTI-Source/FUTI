@@ -14,6 +14,17 @@ const FADE_OUT_MS = 450;
 type Phase = 'loading' | 'leaving' | 'done';
 
 /**
+ * 截图/爬虫环境（Vercel 部署预览图、无头浏览器）不展示加载页。
+ * 这类环境通常只截首帧或等待时间很短，遮罩会让预览图永远停在加载态；
+ * 脚本在 body 起始处同步执行，早于遮罩渲染，保证截图直接拿到加载后的页面。
+ */
+const HIDE_PRELOADER_IN_AUTOMATION_SCRIPT = `(function(){try{
+var nav=window.navigator||{};
+var ua=nav.userAgent||'';
+if(nav.webdriver||/HeadlessChrome|Vercel-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
+}catch(e){}})();`;
+
+/**
  * 首屏加载页。
  *
  * 服务端就渲染出不透明的遮罩与加载圈，CSS/JS 到达前即可见；
@@ -71,6 +82,11 @@ export const SitePreloader = () => {
         {/* 脚本不可用时没有机会淡出，直接让出页面 */}
         <style>{'#site-preloader{display:none}'}</style>
       </noscript>
+      {/* 自动化环境直接隐藏遮罩，并跳过入场动画，让截图拿到最终态页面；正常用户不受影响 */}
+      <script dangerouslySetInnerHTML={{ __html: HIDE_PRELOADER_IN_AUTOMATION_SCRIPT }} />
+      <style>
+        {'html.preload-skip #site-preloader{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}
+      </style>
       <div
         id="site-preloader"
         role="status"
