@@ -99,6 +99,8 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
           const content = event.currentTarget as HTMLElement | null;
           content?.focus({ preventScroll: true });
         }}
+        // 关闭后不把焦点还给邮件按钮，避免出现焦点框
+        onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
         <div className="site-dialog-body">

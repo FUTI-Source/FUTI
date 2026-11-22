@@ -232,6 +232,15 @@ body [contenteditable=''] {
   user-select: text !important;
 }
 
+/* 已全局禁用 Tab 导航；从地址栏按 Tab 进入页面时浏览器不会把按键事件交给页面，
+   焦点框仍会出现，这里把默认 outline 与 Tailwind ring 一并关闭。 */
+:focus,
+:focus-visible {
+  outline: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-inset-ring-shadow: 0 0 #0000 !important;
+}
+
 /* 站内弹窗：宽度按视口留边，高度随 dvh 收缩，内容区自适应滚动。 */
 .site-dialog-content {
   --site-dialog-gutter: clamp(1rem, 5vw, 1.75rem);
