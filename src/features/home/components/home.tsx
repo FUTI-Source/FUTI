@@ -43,15 +43,6 @@ const Home: React.FC = () => {
   const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
 
-  // 微信授权跳转前保存过打赏草稿时，回到页面自动重新打开弹窗
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem('donate-draft')) setDonateOpen(true);
-    } catch {
-      // 隐私模式下存储不可用，忽略
-    }
-  }, []);
-
   const handleEmailOpenChange = (open: boolean) => {
     setEmailDialog((current) => (current ? { ...current, open } : current));
   };

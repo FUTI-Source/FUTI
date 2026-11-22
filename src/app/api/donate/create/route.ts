@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { createDonationSchema } from '@/features/donate/schema';
 import { createDonation, DonationGatewayError } from '@/features/donate/server';
-import { readWechatOpenid } from '@/features/donate/server/wechat/oauth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   let raw: unknown;
   try {
     raw = await request.json();
@@ -32,26 +31,16 @@ export async function POST(request: NextRequest) {
   }
 
   const origin = new URL(request.url).origin;
-  const notifyUrl =
-    process.env.WECHAT_NOTIFY_URL?.trim() || `${origin}/api/donate/notify/wechat`;
-  // JSAPI 下单需要 openid，Cookie 由网页授权回调写入并做了 HMAC 校验
-  const openid = readWechatOpenid(request.cookies.get('wx_openid')?.value);
 
   try {
-    const result = await createDonation(parsed.data, { notifyUrl, openid });
+    const result = await createDonation(parsed.data, {
+      successUrl: `${origin}/?donate=success`,
+      cancelUrl: `${origin}/?donate=cancel`,
+    });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof DonationGatewayError) {
-      const status =
-        error.code === 'GATEWAY_NOT_CONFIGURED'
-          ? 503
-          : error.code === 'GATEWAY_FAILED'
-            ? 502
-            : error.code === 'INVALID_ORDER'
-              ? 404
-              : error.code === 'WECHAT_OAUTH_REQUIRED'
-                ? 401
-                : 501;
+      const status = error.code === 'GATEWAY_NOT_CONFIGURED' ? 503 : 502;
       return NextResponse.json(
         { error: { code: error.code, message: error.message } },
         { status },

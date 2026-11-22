@@ -1,9 +1,8 @@
 import type {
   CreateDonationRequest,
   CreateDonationResponse,
-  DonateConfig,
+  DonateChannelConfig,
   DonateErrorBody,
-  DonationStatusResponse,
 } from '../types';
 
 export class DonateError extends Error {
@@ -39,8 +38,9 @@ async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export async function fetchDonateConfig(): Promise<DonateConfig> {
-  return requestJson<DonateConfig>('/api/donate/config');
+export async function fetchDonateConfig(): Promise<DonateChannelConfig> {
+  const data = await requestJson<{ channels: DonateChannelConfig }>('/api/donate/config');
+  return data.channels;
 }
 
 export function createDonation(input: CreateDonationRequest): Promise<CreateDonationResponse> {
@@ -49,10 +49,4 @@ export function createDonation(input: CreateDonationRequest): Promise<CreateDona
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
-}
-
-export function queryDonation(orderId: string): Promise<DonationStatusResponse> {
-  return requestJson<DonationStatusResponse>(
-    `/api/donate/status?orderId=${encodeURIComponent(orderId)}`,
-  );
 }
