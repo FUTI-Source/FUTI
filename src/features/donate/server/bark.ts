@@ -3,7 +3,7 @@ import { SITE_URL } from '@/lib/site';
 
 import type { DonateChannel } from '../types';
 
-const CHANNEL_LABEL: Record<DonateChannel, string> = {
+export const DONATE_CHANNEL_LABEL: Record<DonateChannel, string> = {
   alipay: '支付宝',
   wechat: '微信支付',
 };
@@ -24,10 +24,10 @@ export async function pushDonationBark(input: DonationBarkInput): Promise<void> 
 
   await sendBark({
     title: '收到一笔打赏',
-    subtitle: CHANNEL_LABEL[input.channel],
+    subtitle: DONATE_CHANNEL_LABEL[input.channel],
     body: lines.join('\n'),
     group: '打赏收入',
-    url: SITE_URL,
+    url: `${SITE_URL}/api/mail/open`,
     level: 'timeSensitive',
   });
 }

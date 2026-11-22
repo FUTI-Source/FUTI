@@ -223,6 +223,73 @@ function mapMailError(error: unknown): string {
   return '邮件发送失败，请稍后重试';
 }
 
+export interface DonationMailInput {
+  /** 渠道名称，如「支付宝」 */
+  channelLabel: string;
+  /** 金额，单位为元；缺失时显示以平台记录为准 */
+  amountYuan?: string;
+  orderId: string;
+}
+
+function buildDonationHtml(input: DonationMailInput): string {
+  const amount = input.amountYuan ? `¥${input.amountYuan}` : '以支付平台记录为准';
+  return buildMailShell({
+    preheader: `${input.channelLabel}收到一笔打赏 ${amount}`,
+    title: '收到一笔新打赏',
+    subtitle: '支付平台已确认到账',
+    cardLabel: '打赏金额',
+    cardHighlight: escapeHtml(amount),
+    cardBody: [
+      `渠道：${escapeHtml(input.channelLabel)}`,
+      `订单号：${escapeHtml(input.orderId)}`,
+    ].join('<br />'),
+    ctaText: '回到网站',
+    ctaHref: SITE_URL,
+    footerNote: '此邮件由系统自动发送，请勿直接回复。',
+  });
+}
+
+/** 打赏回调确认成功后通知站长；失败只记录日志，不影响回调响应 */
+export async function sendDonationMail(input: DonationMailInput): Promise<void> {
+  let config: SmtpConfig;
+  let transporter: Transporter;
+  try {
+    config = getConfig();
+    transporter = getTransporter(config);
+  } catch (error) {
+    console.warn(`[donate] 打赏邮件未发送：${(error as Error).message}`);
+    return;
+  }
+
+  const amountText = input.amountYuan ? `¥${input.amountYuan}` : '金额未知';
+  try {
+    await transporter.sendMail({
+      from: config.user,
+      to: config.to,
+      subject: `收到一笔打赏 · ${amountText}`,
+      text: [
+        '网站收到一笔新的打赏。',
+        '',
+        `渠道：${input.channelLabel}`,
+        `金额：${amountText}`,
+        `订单号：${input.orderId}`,
+        '',
+        '——',
+        SITE_NAME,
+        SITE_URL,
+      ].join('\n'),
+      html: buildDonationHtml(input),
+    });
+    console.info('[donate] 打赏邮件已发送');
+  } catch (error) {
+    const err = error as Error & { code?: string };
+    console.error(
+      `打赏通知邮件发送失败: ${err.code ?? ''} ${err.message}`,
+      err.stack,
+    );
+  }
+}
+
 export async function sendContactMail(
   dto: SendMailRequest,
 ): Promise<SendMailResponse> {
