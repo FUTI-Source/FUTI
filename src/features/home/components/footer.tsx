@@ -27,7 +27,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
             transition={{ duration: 0.2 }}
           >
             Drawn by NAVILAB
-            <BrandMark className="absolute h-7 [&>path]:fill-white/20" />
+            <BrandMark className="absolute h-7 [&>text]:fill-white/20" />
           </m.a>
         </TooltipTrigger>
         <TooltipContent sideOffset={16}>Drawn by Navigator Kepler</TooltipContent>
