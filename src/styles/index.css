@@ -109,6 +109,16 @@ main {
     -webkit-app-region: no-drag;
     app-region: no-drag;
   }
+  /* 桌面 PWA 的时钟是标题栏内容，沿用页头 22px 字号会撑满细窄的标题栏而显得突兀；
+     这里降为 12px 系统字、降低不透明度，并对齐可拖拽区左缘（macOS 的窗口按钮在左侧） */
+  .header-drag .header-no-drag {
+    min-width: 0;
+    padding-inline: calc(env(titlebar-area-x, 0px) + 0.75rem) 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: rgba(255, 255, 255, 0.55);
+  }
 }
 
 @layer base {
