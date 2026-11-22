@@ -22,6 +22,9 @@ const BLOCKED_PAGE_EVENTS = [
 const isEditableTarget = (target: EventTarget | null) =>
   target instanceof Element && target.closest(EDITABLE_SELECTOR) !== null;
 
+const isInDialog = (target: EventTarget | null) =>
+  target instanceof Element && target.closest('[role="dialog"]') !== null;
+
 /** F11 或 Ctrl/Cmd+Shift+F 切换全屏 */
 const isFullscreenShortcut = (event: KeyboardEvent) => {
   // 部分扩展/输入法派发的 keydown 没有 key 字段，直接调用 toLowerCase 会抛错
@@ -68,6 +71,13 @@ export const SiteInteractionGuard = () => {
       if (isRefreshShortcut(event)) return;
 
       if (isEditableTarget(event.target)) return;
+
+      // Tab 会在页面控件上留下类似标签页的焦点框，页面内禁用；输入框与弹窗内保留正常切换。
+      if (event.key === 'Tab' && !isInDialog(event.target)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
 
       const isFunctionKey = /^F\d{1,2}$/.test(event.key);
       const isModifierShortcut = event.ctrlKey || event.metaKey || event.altKey;
