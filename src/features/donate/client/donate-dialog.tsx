@@ -545,6 +545,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
             <div>
               <p className="mb-2 text-sm text-white/70">打赏金额（元）</p>
               <Input
+                id="donation-amount"
+                name="amount"
                 type="number"
                 inputMode="numeric"
                 min={DONATION_MIN_AMOUNT}
