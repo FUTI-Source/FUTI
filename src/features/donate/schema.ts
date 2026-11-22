@@ -8,7 +8,7 @@ export const createDonationSchema = z.object({
     .number()
     .int('金额必须为整数')
     .min(1, '最低 1 元')
-    .max(500, '最高 500 元'),
+    .max(10000, '最高 10000 元'),
 });
 
 export type CreateDonationInput = z.infer<typeof createDonationSchema>;

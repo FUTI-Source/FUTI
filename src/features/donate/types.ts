@@ -4,7 +4,7 @@ export type DonateChannelConfig = Record<DonateChannel, boolean>;
 
 export interface CreateDonationRequest {
   channel: DonateChannel;
-  /** 金额，单位为元，1–500 的整数 */
+  /** 金额，单位为元，1–10000 的整数 */
   amount: number;
 }
 

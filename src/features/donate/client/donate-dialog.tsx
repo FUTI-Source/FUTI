@@ -34,9 +34,6 @@ const CHANNELS = [
   hint: string;
 }>;
 
-const PRESET_AMOUNTS = [5, 10, 20, 50] as const;
-
-/** 等待支付的最长时间，超时后允许用户重新发起 */
 const PAYMENT_TIMEOUT_MS = 5 * 60_000;
 
 type Phase = 'idle' | 'creating' | 'waiting' | 'paid' | 'error';
@@ -53,7 +50,6 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   );
   const [configRetry, setConfigRetry] = useState(0);
   const [channel, setChannel] = useState<DonateChannel>('alipay');
-  const [presetAmount, setPresetAmount] = useState<number>(10);
   const [customAmount, setCustomAmount] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<CreateDonationResponse | null>(null);
@@ -63,9 +59,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
   /** 用于丢弃切换渠道/关闭弹窗后返回的旧下单结果 */
   const requestSeq = useRef(0);
 
-  const parsedCustom = Number(customAmount);
-  const amount = customAmount.trim() ? parsedCustom : presetAmount;
-  const amountValid = Number.isInteger(amount) && amount >= 1 && amount <= 500;
+  const amount = Number(customAmount);
+  const amountValid = Number.isInteger(amount) && amount >= 1 && amount <= 10000;
   const configured = configState === 'ready' && (config?.[channel] ?? false);
 
   useEffect(() => {
@@ -296,40 +291,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({ open, onOpenChange 
 
             <div>
               <p className="mb-2 text-sm text-white/70">打赏金额（元）</p>
-              <div className="grid grid-cols-4 gap-2">
-                {PRESET_AMOUNTS.map((value) => {
-                  const selected = !customAmount.trim() && presetAmount === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => {
-                        setPresetAmount(value);
-                        setCustomAmount('');
-                      }}
-                      className={cn(
-                        'cursor-pointer rounded-lg border px-2 py-2 text-sm transition-colors',
-                        selected
-                          ? 'border-[#0295e5]/60 bg-[#0295e5]/10 text-white'
-                          : 'border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:text-white',
-                      )}
-                    >
-                      ¥{value}
-                    </button>
-                  );
-                })}
-              </div>
               <Input
                 type="number"
                 inputMode="numeric"
                 min={1}
-                max={500}
+                max={10000}
                 step={1}
                 value={customAmount}
                 onChange={(event) => setCustomAmount(event.target.value)}
-                placeholder="自定义金额（1–500）"
-                className="mt-2 border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
+                placeholder="输入金额（1–10000）"
+                className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
               />
             </div>
 
