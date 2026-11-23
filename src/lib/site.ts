@@ -29,8 +29,6 @@ export const SITE_KNOWS_ABOUT = ['全栈开发', '开源项目', 'Web 开发'] a
 /** Twitter/X 账号，不含 @；留空则不输出 twitter site/creator */
 export const SITE_TWITTER_HANDLE = '';
 
-export const CONTACT_EMAIL = 'mine@139.com';
-
 /**
  * 备案号与备案查询页链接。
  * 优先读取环境变量 NEXT_PUBLIC_ICP_NUMBER，留空则不显示备案信息；

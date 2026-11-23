@@ -12,7 +12,6 @@
 - **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + Webhook 通知站长。
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕（含各机型启动图）与桌面 WCO 窗口控件覆盖。
 - **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报。
-- **WebMCP**：通过 `use-webmcp-tools` 暴露站点工具（如打开留言表单）。
 - **SEO**：Metadata API、`robots.ts`、`sitemap.ts`、OG 分享图与结构化数据。
 
 ## 技术栈
@@ -82,8 +81,7 @@ src/
 │   ├── profile/                  # 名称、描述、社交 / 打赏 / 联系链接
 │   ├── contact/                  # 联系表单（client / server / schema）
 │   ├── donate/                   # 打赏（client / server / alipay / wechat）
-│   ├── pwa/                      # Service Worker 注册
-│   └── webmcp/                   # WebMCP 工具 hook（use-webmcp-tools）
+│   └── pwa/                      # Service Worker 注册
 ├── hooks/                        # 通用 React hooks（debounce / event-emitter / external / ...）
 ├── lib/                          # 站点配置、日志、SEO、Bark、Umami、工具函数
 ├── styles/                       # 全局样式与 Tailwind 主题变量
@@ -103,7 +101,6 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 | `SITE_SIGNATURE` / `SITE_BRAND` | 首页副标题签名、左下角水印品牌字 |
 | `SITE_TWITTER_HANDLE` | Twitter/X 账号（不含 `@`），留空则不输出 twitter site/creator |
 | `SITE_SOCIAL_LINKS` | `{ blog, github }` 社交链接；**留空时对应入口置灰不可点**（Tooltip 提示「链接尚未配置」），且不写入结构化数据 `sameAs` |
-| `CONTACT_EMAIL` | 联系邮箱（默认 `mine@139.com`） |
 | `ICP_NUMBER` / `ICP_LINK` | 备案号与查询链接；优先读 `NEXT_PUBLIC_ICP_NUMBER`，未配置回退默认值，显式置空则隐藏 |
 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 打赏金额范围（默认 1–10000 元）与订单标题 |
 | `SITE_IMAGE_PATH` / `SITE_SOCIAL_IMAGE` / `SITE_NOTIFICATION_ICON` | 图标、OG 分享图（1200×630）、Bark 推送图标 |

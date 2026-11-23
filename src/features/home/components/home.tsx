@@ -19,7 +19,6 @@ import { DetroitBackground } from './background';
 import { Footer } from './footer';
 import { Header } from './header';
 
-import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import type { DonateResult } from '@/features/donate/types';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import {
@@ -74,11 +73,6 @@ const Home: React.FC = () => {
   const handleContactOpenChange = (open: boolean) => {
     setContactOpen(open);
   };
-
-  useWebMcpTools(() => {
-    trackEvent('contact-open', { source: 'webmcp' });
-    setContactOpen(true);
-  });
 
   const avatarEvent$ = useEventEmitter<AvatarEvent>();
   avatarEvent$.useSubscription((target) => {
