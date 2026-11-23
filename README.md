@@ -404,23 +404,11 @@ openssl rand -hex 32
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 [`src/styles/index.css`](src/styles/index.css) 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/launch/` 内置各机型 iOS 启动图。
 
-## 部署到 Vercel
-
-无需额外配置文件，Vercel 会自动识别 Next.js 并执行 `npm run build`。
-
-1. 推送本仓库到 GitHub / GitLab / Bitbucket。
-2. Vercel → Add New → Project 导入仓库，框架自动识别为 Next.js。
-3. Settings → Environment Variables 录入所需环境变量（邮件为必填，打赏/Bark 按需）。
-4. 推送 `main` 触发部署；完成后用真实邮箱测试联系表单，核对站长与访客各收到一封邮件。
-5. 如需自定义域名，在 Vercel 项目 Domains 中绑定（`SITE_URL` 需与之一致）。
-
-> 项目设置中的 Node.js Version 需选择 **24.x**，与 `package.json` 的 `engines` 保持一致。
-
 ## 常见问题
 
 - **`EAUTH` 认证失败**：检查 `MAIL_USER` 与 SMTP 授权码，授权码需在 139 邮箱后台单独生成。
 - **`550 Mail rejected score`**：确认 `mailer.ts` 中 `name` 与 `tls.servername` 未被删除；更换发信网络或改用 HTTP 邮件 API。
-- **函数超时 / 邮件偶发丢失**：检查 Vercel 套餐函数超时限制，必要时升级或迁移 HTTP 邮件 API。
+- **函数超时 / 邮件偶发丢失**：检查托管平台的函数超时限制，必要时调整配置或迁移 HTTP 邮件 API。
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。

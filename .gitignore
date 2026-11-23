@@ -27,8 +27,5 @@ next-env.d.ts
 # os
 .DS_Store
 
-# vercel
-.vercel
-
 # local uploads
 .uploads/
