@@ -28,7 +28,7 @@
 | 打赏 | qrcode（收款二维码）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 
-运行环境要求 **Node.js 20.19+**（见 `package.json` 的 `engines`），iGa Pages 使用 Node.js 20。
+运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`），iGa Pages 使用 Node.js 24。
 
 ## 快速开始
 
