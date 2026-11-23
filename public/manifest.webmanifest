@@ -1,0 +1,43 @@
+{
+  "name": "张文涛",
+  "short_name": "张文涛",
+  "id": "/",
+  "lang": "zh-CN",
+  "description": "张文涛的个人主页，分享全栈开发、开源项目与技术实践。",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "scope": "/",
+  "start_url": "/",
+  "theme_color": "#15161a",
+  "background_color": "#15161a",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x627",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "张文涛个人主页桌面端"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x751",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "张文涛个人主页移动端"
+    }
+  ]
+}

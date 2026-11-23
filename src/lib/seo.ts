@@ -146,7 +146,6 @@ export const siteMetadata: Metadata = {
     icon: [{ url: SITE_ICON_PATH }],
     apple: APPLE_TOUCH_ICONS,
   },
-  manifest: '/manifest.webmanifest',
   robots: {
     index: true,
     follow: true,

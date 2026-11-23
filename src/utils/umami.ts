@@ -93,6 +93,15 @@ export function initUmami(options: UmamiOptions) {
   if (document.querySelector('script[data-website-id]')) return;
 
   const base = url.replace(/\/$/, '');
+  const allowedDomains = options.domains
+    ?.split(',')
+    .map((domain) => domain.trim().toLowerCase())
+    .filter(Boolean);
+  // 预览、本地等非正式域名不加载统计脚本，避免无效请求与预览流量写入正式数据
+  if (allowedDomains?.length && !allowedDomains.includes(window.location.hostname.toLowerCase())) {
+    return;
+  }
+
   const script = document.createElement('script');
   script.defer = true;
   script.src = `${base}/script.js`;
@@ -121,16 +130,8 @@ export function initUmami(options: UmamiOptions) {
   document.head.appendChild(script);
 
   // 会话回放使用独立的 recorder.js：采样率、掩码级别、最大时长由 Umami 后台的网站配置决定，
-  // 脚本本身只接收 website-id 与 host-url。它不校验 domains，这里手动限制只在本站域名录制，
-  // 避免预览、本地环境把会话写进正式数据。
-  const allowedDomains = options.domains
-    ?.split(',')
-    .map((domain) => domain.trim().toLowerCase())
-    .filter(Boolean);
-  const hostAllowed =
-    !allowedDomains?.length || allowedDomains.includes(window.location.hostname.toLowerCase());
-
-  if (options.replays !== false && hostAllowed) {
+  // 脚本本身只接收 website-id 与 host-url。
+  if (options.replays !== false) {
     const recorder = document.createElement('script');
     recorder.defer = true;
     recorder.src = `${base}/recorder.js`;

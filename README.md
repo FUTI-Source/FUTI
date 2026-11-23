@@ -117,7 +117,6 @@ src/
 │   ├── page.tsx                 # 首页
 │   ├── globals.css              # 样式入口
 │   ├── error.tsx / not-found.tsx
-│   ├── manifest.ts              # PWA manifest
 │   ├── robots.ts / sitemap.ts   # SEO
 │   └── api/
 │       ├── donate/              # 打赏接口（见「打赏」章节）
@@ -141,7 +140,7 @@ src/
 │   └── webmcp/                  # WebMCP 工具（use-webmcp-tools）
 ├── hooks/  lib/  utils/  types/ # 通用 hooks、站点配置、工具、类型
 └── styles/                      # 全局样式与 Tailwind 主题
-public/                          # live2d 模型、字体、图标、iOS 启动图、文档配图
+public/                          # live2d 模型、字体、图标、iOS 启动图、PWA manifest、文档配图
 ```
 
 ## 站点配置
@@ -399,7 +398,7 @@ openssl rand -hex 32
 
 ## PWA 与 iOS 主屏幕
 
-- manifest 由 [`src/app/manifest.ts`](src/app/manifest.ts) 生成，Service Worker 由 [`features/pwa/service-worker-registration.tsx`](src/features/pwa/service-worker-registration.tsx) 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
+- manifest 为静态文件 [`public/manifest.webmanifest`](public/manifest.webmanifest)，由 layout 以 `crossOrigin="use-credentials"` 引入，便于预览域名携带校验 Cookie；Service Worker 由 [`features/pwa/service-worker-registration.tsx`](src/features/pwa/service-worker-registration.tsx) 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 [`src/styles/index.css`](src/styles/index.css) 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/launch/` 内置各机型 iOS 启动图。
