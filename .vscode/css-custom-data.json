@@ -1,0 +1,101 @@
+{
+  "version": 1.1,
+  "properties": [
+    {
+      "name": "-webkit-font-smoothing",
+      "description": "WebKit/Blink 私有属性，控制字体渲染时抗锯齿的应用方式，常与 -moz-osx-font-smoothing 成对出现。",
+      "syntax": "auto | antialiased | subpixel-antialiased",
+      "status": "nonstandard",
+      "restrictions": ["enum"],
+      "values": [
+        {
+          "name": "auto",
+          "description": "由浏览器决定，通常等同 subpixel-antialiased。"
+        },
+        {
+          "name": "antialiased",
+          "description": "灰度抗锯齿，字形更细更轻，暗色背景上更接近设计稿。"
+        },
+        {
+          "name": "subpixel-antialiased",
+          "description": "次像素抗锯齿，字形更饱满，但笔画边缘可能出现色边。"
+        }
+      ],
+      "references": [
+        {
+          "name": "MDN font-smooth",
+          "url": "https://developer.mozilla.org/docs/Web/CSS/font-smooth"
+        }
+      ]
+    },
+    {
+      "name": "-moz-osx-font-smoothing",
+      "description": "Firefox（macOS）私有属性，控制字体是否使用灰度抗锯齿。",
+      "syntax": "auto | grayscale",
+      "status": "nonstandard",
+      "restrictions": ["enum"],
+      "values": [
+        {
+          "name": "auto",
+          "description": "由浏览器决定，Retina 屏上通常是 grayscale。"
+        },
+        {
+          "name": "grayscale",
+          "description": "灰度抗锯齿，与 -webkit-font-smoothing: antialiased 效果对齐。"
+        }
+      ],
+      "references": [
+        {
+          "name": "MDN font-smooth",
+          "url": "https://developer.mozilla.org/docs/Web/CSS/font-smooth"
+        }
+      ]
+    },
+    {
+      "name": "-webkit-app-region",
+      "description": "把元素标记为桌面 PWA（窗口控件覆盖）或无边框窗口的标题栏拖拽区。",
+      "syntax": "drag | no-drag",
+      "status": "nonstandard",
+      "restrictions": ["enum"],
+      "values": [
+        {
+          "name": "drag",
+          "description": "该区域交给窗口系统接管，可拖动窗口，页面收不到按下事件。"
+        },
+        {
+          "name": "no-drag",
+          "description": "从拖拽区中排除该子区域，恢复点击、选字等页面交互。"
+        }
+      ],
+      "references": [
+        {
+          "name": "Edge：窗口控件覆盖",
+          "url": "https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps/how-to/window-controls-overlay"
+        }
+      ]
+    },
+    {
+      "name": "app-region",
+      "description": "-webkit-app-region 的无前缀写法，目前仅基于 Chromium 的浏览器支持。",
+      "syntax": "drag | no-drag",
+      "status": "nonstandard",
+      "restrictions": ["enum"],
+      "values": [
+        {
+          "name": "drag",
+          "description": "该区域交给窗口系统接管，可拖动窗口，页面收不到按下事件。"
+        },
+        {
+          "name": "no-drag",
+          "description": "从拖拽区中排除该子区域，恢复点击、选字等页面交互。"
+        }
+      ],
+      "references": [
+        {
+          "name": "Edge：窗口控件覆盖",
+          "url": "https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps/how-to/window-controls-overlay"
+        }
+      ]
+    }
+  ]
+}
