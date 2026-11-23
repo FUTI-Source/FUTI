@@ -32,7 +32,7 @@ export const SITE_TWITTER_HANDLE = '';
 export const CONTACT_EMAIL = 'mine@139.com';
 
 /** 备案号，留空则底部不显示备案信息 */
-export const ICP_NUMBER = '粤ICP备00000000号-1';
+export const ICP_NUMBER = '晋ICP备2026019630号';
 export const ICP_LINK = 'https://beian.miit.gov.cn/';
 
 /** SEO 与分享图资源 */
