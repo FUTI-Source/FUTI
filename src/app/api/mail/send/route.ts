@@ -8,12 +8,33 @@ export const dynamic = 'force-dynamic';
 
 const MAX_BODY_BYTES = 24 * 1024;
 
+/**
+ * 解析真实客户端 IP。
+ * CDN/边缘节点常把 x-real-ip 写成节点自身地址，所有访客会共用同一个限流桶，
+ * 因此优先取 x-forwarded-for 的第一个地址；都取不到时返回 null，跳过限流而不是全局误伤。
+ */
+function resolveClientId(request: Request): string | null {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const candidates = [
+    forwarded?.split(',')[0],
+    request.headers.get('x-real-ip'),
+    request.headers.get('x-client-ip'),
+    request.headers.get('true-client-ip'),
+  ];
+
+  for (const value of candidates) {
+    const clientId = value?.trim();
+    if (clientId && clientId !== 'unknown') return clientId;
+  }
+
+  return null;
+}
+
 export async function POST(request: Request) {
-  const clientId =
-    request.headers.get('x-real-ip')?.trim() ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    'unknown';
-  const rateLimit = checkMailRateLimit(clientId);
+  const clientId = resolveClientId(request);
+  const rateLimit = clientId
+    ? checkMailRateLimit(clientId)
+    : { allowed: true, retryAfterSeconds: 0 };
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
