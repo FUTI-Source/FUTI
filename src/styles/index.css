@@ -217,9 +217,26 @@ html.preload-skip .profile-description > h2 {
   display: none;
 }
 
+/* -webkit-touch-callout 只有 WebKit 系实现，Chromium 不认这个属性，会整条丢弃并在
+   DevTools 里标成无效值。用 @supports 圈住后 Chromium 根本看不到这两条声明，
+   iOS / macOS Safari 侧的长按菜单抑制行为与原来完全一致。 */
+@supports (-webkit-touch-callout: none) {
+  body,
+  body * {
+    -webkit-touch-callout: none;
+  }
+
+  body input,
+  body textarea,
+  body select,
+  body [contenteditable='true'],
+  body [contenteditable=''] {
+    -webkit-touch-callout: default;
+  }
+}
+
 body,
 body * {
-  -webkit-touch-callout: none;
   user-select: none !important;
 }
 
@@ -228,7 +245,6 @@ body textarea,
 body select,
 body [contenteditable='true'],
 body [contenteditable=''] {
-  -webkit-touch-callout: default;
   user-select: text !important;
 }
 

@@ -1,5 +1,0 @@
-{
-  // 补齐 IDE 自带 CSS 词典：这几条属性在语言服务的内置 customData 里没有条目，
-  // 否则 .header-drag / 字体平滑那几行会一直报「未知属性」。
-  "css.customData": [".vscode/css-custom-data.json"]
-}
