@@ -31,9 +31,15 @@ export const SITE_TWITTER_HANDLE = '';
 
 export const CONTACT_EMAIL = 'mine@139.com';
 
-/** 备案号，留空则底部不显示备案信息 */
-export const ICP_NUMBER = '晋ICP备2026019630号';
-export const ICP_LINK = 'https://beian.miit.gov.cn/';
+/**
+ * 备案号与备案查询页链接。
+ * 优先读取 Vercel 环境变量 NEXT_PUBLIC_ICP_NUMBER，留空则不显示备案信息；
+ * 未配置时回退到下方硬编码默认值，便于本地开发与预览。
+ */
+export const ICP_NUMBER =
+  (process.env.NEXT_PUBLIC_ICP_NUMBER ?? '晋ICP备2026019630号').trim() || '';
+export const ICP_LINK =
+  process.env.NEXT_PUBLIC_ICP_LINK?.trim() || 'https://beian.miit.gov.cn/';
 
 /** SEO 与分享图资源 */
 export const SITE_ICON_PATH = '/favicon.ico';
