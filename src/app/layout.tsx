@@ -28,8 +28,6 @@ export default function RootLayout({
     // React 会把它当成属性差异报警，这里只抑制该元素自身的属性校验。
     <html lang={SITE_LANG} translate="no" suppressHydrationWarning>
       <head>
-        {/* 带 use-credentials，预览域名等需要校验 Cookie 的环境也能取到 manifest */}
-        <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
         <meta name="google" content="notranslate" />
         {/* 首帧前用真实视口高度校正 --app-height：
