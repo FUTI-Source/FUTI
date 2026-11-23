@@ -30,13 +30,35 @@ function resolveClientId(request: Request): string | null {
   return null;
 }
 
+let loggedMissingClientId = false;
+
+/** 临时诊断：确认 IGA 实际透传了哪些客户端 IP 头，定位完成后移除。 */
+function logClientIpContext(reason: string, request: Request, clientId: string | null) {
+  const read = (name: string) => request.headers.get(name);
+
+  console.warn('[mail-rate-limit]', reason, {
+    clientId,
+    forwardedFor: read('x-forwarded-for'),
+    realIp: read('x-real-ip'),
+    clientIp: read('x-client-ip'),
+    trueClientIp: read('true-client-ip'),
+    userAgent: read('user-agent')?.slice(0, 120) ?? null,
+  });
+}
+
 export async function POST(request: Request) {
   const clientId = resolveClientId(request);
+  if (!clientId && !loggedMissingClientId) {
+    loggedMissingClientId = true;
+    logClientIpContext('missing-client-ip', request, clientId);
+  }
+
   const rateLimit = clientId
     ? checkMailRateLimit(clientId)
     : { allowed: true, retryAfterSeconds: 0 };
 
   if (!rateLimit.allowed) {
+    logClientIpContext('rate-limited', request, clientId);
     return NextResponse.json(
       {
         error: {
