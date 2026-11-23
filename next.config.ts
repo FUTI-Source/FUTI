@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
     deviceSizes: [448, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     remotePatterns: [],
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'zhang-wentao.tech' }],
+        destination: 'https://www.zhang-wentao.tech/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
