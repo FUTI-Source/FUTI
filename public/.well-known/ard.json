@@ -1,9 +1,0 @@
-{
-  "specVersion": "1.0",
-  "host": {
-    "displayName": "张文涛",
-    "identifier": "did:web:zhang-wentao.tech",
-    "documentationUrl": "https://zhang-wentao.tech/"
-  },
-  "entries": []
-}

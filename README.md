@@ -1,6 +1,6 @@
 # 张文涛 · 个人主页
 
-基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 iGa Pages。单页应用，包含 Live2D 形象、视差背景、打字机介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
+基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages。单页应用，包含 Live2D 形象、视差背景、打字机介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
 - 站点名称、域名、联系方式、社交链接等集中在 [`src/lib/site.ts`](src/lib/site.ts)，需要调整时只改这一处。
@@ -21,14 +21,14 @@
 | --- | --- |
 | 框架 | Next.js 16（App Router / Turbopack）· React 19 · TypeScript 5 |
 | 样式 | Tailwind CSS v4（@tailwindcss/postcss）· tw-animate-css · normalize.css |
-| 动画 / 交互 | motion · parallax-js · pixi.js（Live2D 渲染） |
+| 动画 / 交互 | motion · parallax-js · pixi.js / @pixi/*（Live2D 渲染） |
 | UI 组件 | Radix UI（Dialog / Label / Separator / Slot / Tooltip）· lucide-react · simple-icons |
 | 表单 | react-hook-form · @hookform/resolvers · zod |
 | 邮件 | nodemailer（139 邮箱 SMTP，Node Runtime） |
 | 打赏 | qrcode（收款二维码）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 
-运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`），iGa Pages 使用 Node.js 24。
+运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`）。IGA Pages 构建环境支持 20 / 22 / 24，默认 20.x，本项目需在控制台选择 **24.x**。
 
 ## 快速开始
 
@@ -45,6 +45,68 @@ npm run type:check   # tsc --noEmit
 npm run build        # next build（standalone 输出）
 npm run start        # next start
 ```
+
+## 部署到 IGA Pages
+
+IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 Next.js 框架并套用默认构建配置。本项目已做如下适配：
+
+- `next.config.ts` 使用 `output: 'standalone'`，`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
+- 根目录 [`iga.json`](iga.json) 固定安装与构建命令，优先级高于控制台构建配置。
+- 构建产物不需要手动填写输出目录，由平台按 Next.js 模式处理。
+
+### 控制台方式（首次使用推荐）
+
+1. 登录[全站加速控制台](https://console.volcengine.com/dcdn) → **服务概览** → **Pages** → **创建项目**。
+2. 代码源选择 GitHub 仓库（需先完成 GitHub 授权）或直接上传 ZIP；平台会自动识别为 Next.js。
+3. 进入 **项目设置** → **Node.js 版本**，选择 `24.x`。平台默认是 `20.x`，而 `package.json` 要求 Node ≥ 24。
+4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加。`NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署才生效。
+5. **构建配置**保持默认即可（`npm run build`），或由 `iga.json` 覆盖；不要额外指定输出目录。
+6. 首次部署完成后会生成 `xxx.preview.iga-pages.com` 预览域名，**仅 3 小时有效**，不适合正式对外。
+
+### CLI 方式
+
+```bash
+npm install -g @iga-pages/cli          # 需要 Node.js >= 20
+
+iga login                              # 浏览器登录；SSH/容器可用 iga login --remote；CI 用 --accessKey/--secretKey
+iga pages link                         # 关联已有项目，或按提示创建新项目
+iga pages dev                          # 本地启动，/api/* 由 Functions 代理
+iga pages deploy                       # 构建并部署到 DCDN 加速网络
+iga pages env pull                     # 将线上环境变量拉取到 .env.local
+iga pages logs --since 1h --level error # 查看运行时日志
+iga pages preview                      # 获取带访问凭证的预览地址
+```
+
+说明：
+
+- `iga pages dev` 会读取 `package.json` 的 `dev` 命令，请勿把 `dev` 改成 `iga pages dev`。
+- Next.js 的 API Routes 由 Next 运行时处理，**不需要**在根目录再建 `api/` 目录；`api/` 目录只用于非 Next.js 项目的 Functions。
+- 关联了 GitHub 仓库的项目，`iga pages deploy` 会优先从仓库拉取代码构建；未授权时会退化为上传 ZIP（上限 1024 MB）。
+- 单项目最多保留 10 个部署版本，超出后自动删除最早版本。
+
+### 自定义域名与加速
+
+1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**。
+2. 中国大陆加速区域要求域名完成 ICP 备案；HTTPS 证书可在平台申请或上传。
+3. 建议同时绑定根域与 `www`：`next.config.ts` 会把根域 308 重定向到 `SITE_URL`（当前为 `https://www.zhang-wentao.tech`）。
+4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
+
+### 用 AI 编程客户端对接（可选）
+
+- **Plugin（Skill + Pages MCP + 开发提醒一次装好）**：`npx plugins add volc-iga-pages/iga-pages-plugin`
+- **仅 MCP**：在 AI 客户端的 MCP 配置中加入远程端点，并完成 OAuth 授权：
+
+```json
+{
+  "mcpServers": {
+    "volcengine-mcp": {
+      "url": "https://iga-pages.mcp.volcbiz.com/mcp"
+    }
+  }
+}
+```
+
+Plugin 与 MCP 只负责查询/操作 IGA Pages 项目、环境变量、部署与日志；本地构建、`dev`、`deploy` 仍需安装 IGA CLI。CLI 登录（`iga login`）与 MCP OAuth 授权相互独立。
 
 ## 目录结构
 
@@ -68,7 +130,7 @@ src/
 │           ├── send/route.ts    # 发送邮件（Node Runtime，顺序两封）
 │           └── open/route.ts    # 邮箱入口跳转（Bark 通知点击目标）
 ├── assets/                      # svg、webp 静态资源
-├── components/ui/               # 通用 UI 组件（含 dynamic-text）
+├── components/                  # 通用 UI 与全局组件（ui、preloader、交互守卫）
 ├── features/
 │   ├── home/                    # 首页组装、视差背景、自定义光标、页头页脚
 │   ├── avatar/                  # 头像与 Live2D（components、live2d）
@@ -88,14 +150,14 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 - 站点：`SITE_URL`、`SITE_NAME`、`SITE_DESCRIPTION`、`SITE_AUTHOR_NAME`、`SITE_SIGNATURE`
 - 联系：`CONTACT_EMAIL`（默认 `mine@139.com`）
-- 社交：`SITE_SOCIAL_LINKS`（github / steam，留空则不显示对应入口）
-- 备案：`ICP_NUMBER` / `ICP_LINK`（留空则不显示）
+- 社交：`SITE_SOCIAL_LINKS`（blog / github，留空时对应入口置灰不可点）
+- 备案：`ICP_NUMBER` / `ICP_LINK`（未配置时使用默认备案号，显式置空则隐藏）
 - 打赏：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT`（默认 1–10000 元）、`DONATION_SUBJECT`
 - 统计：`SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS`
 
 ## 环境变量
 
-在 `.env.local`（本地）或 iGa Pages 的环境变量设置（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
+在 `.env.local`（本地）或 IGA Pages 的环境变量设置（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
 
 ### 邮件（联系表单）
 
@@ -123,7 +185,11 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
+| `NEXT_PUBLIC_ICP_NUMBER` | 否 | 页脚备案号；不配置时用 `site.ts` 默认值，显式置空则隐藏 |
+| `NEXT_PUBLIC_ICP_LINK` | 否 | 备案查询链接，默认工信部备案系统 |
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
+
+> `NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署。
 
 ## 联系表单（邮件）
 
@@ -176,7 +242,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 ### 接口契约
 
-所有路由位于 [`src/app/api/donate/`](src/app/api/donate)，运行时 `nodejs`、`force-dynamic`。错误响应统一为 `{ "error": { "code": "...", "message": "..." } }`。
+所有路由位于 [`src/app/api/donate/`](src/app/api/donate)，运行时 `nodejs`、`force-dynamic`。config / create / status 的错误响应统一为 `{ "error": { "code": "...", "message": "..." } }`；支付回调按平台协议返回：支付宝纯文本 `success` / `failure`，微信 `{ "code": "...", "message": "..." }`。
 
 | 路由 | 方法 | 说明 |
 | --- | --- | --- |
@@ -340,13 +406,15 @@ openssl rand -hex 32
 
 ## 部署到 Vercel
 
-仓库根目录含 `vercel.json`，部署命令已预置。
+无需额外配置文件，Vercel 会自动识别 Next.js 并执行 `npm run build`。
 
 1. 推送本仓库到 GitHub / GitLab / Bitbucket。
 2. Vercel → Add New → Project 导入仓库，框架自动识别为 Next.js。
 3. Settings → Environment Variables 录入所需环境变量（邮件为必填，打赏/Bark 按需）。
 4. 推送 `main` 触发部署；完成后用真实邮箱测试联系表单，核对站长与访客各收到一封邮件。
 5. 如需自定义域名，在 Vercel 项目 Domains 中绑定（`SITE_URL` 需与之一致）。
+
+> 项目设置中的 Node.js Version 需选择 **24.x**，与 `package.json` 的 `engines` 保持一致。
 
 ## 常见问题
 
