@@ -41,10 +41,16 @@ npm run dev                        # http://localhost:3000
 类型检查与生产构建：
 
 ```bash
-npm run type:check   # tsc --noEmit（含 noUnusedLocals / noUnusedParameters）
-npm run build        # next build（standalone 输出）
-npm run start        # next start
+npm run type:check        # tsc --noEmit（含 noUnusedLocals / noUnusedParameters）
+npm run build             # next build（standalone 输出）
+npm run start             # next start
+npm run start:standalone  # 按 standalone 产物启动（与线上入口一致）
 ```
+
+两个启动命令的区别：
+
+- `npm run start` 会提示 `"next start" does not work with "output: standalone"`。这是入口与产物形式不匹配的提醒，**不是故障**：`next start` 直接读取常规 `.next/` 目录，静态资源齐全，日常本地验证用它即可。
+- `npm run start:standalone` 跑的是线上同款的 `node .next/standalone/server.js`。该入口只依赖 `.next/standalone/`，而 `next build` 不会把 `public/` 与 `.next/static/` 复制进去（部署平台会自动补齐），因此先由 [`prepare-standalone.mjs`](prepare-standalone.mjs) 补这两份目录再启动。需要验证「部署后真实表现」（如 Service Worker、字体、iOS 启动图能否取到）时用这条，缺资源会暴露成 404 而不是侥幸跑通。注意重跑 `next build` 不保证清除上一次留下的副本，做这类验证前建议先删掉整个 `.next` 再构建。
 
 ## 项目结构
 

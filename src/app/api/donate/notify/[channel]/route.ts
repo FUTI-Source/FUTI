@@ -2,16 +2,30 @@ import { NextResponse } from 'next/server';
 
 import { donateChannelSchema } from '@/features/donate/schema';
 import { notifyDonationSuccess } from '@/features/donate/server/notify';
-import { AlipayNotifyError } from '@/features/donate/server/alipay';
-import { handleAlipayNotify } from '@/features/donate/server/alipay/notify';
-import { WechatNotifyError } from '@/features/donate/server/wechat';
-import { handleWechatNotify } from '@/features/donate/server/wechat/notify';
+import { AlipayNotifyError, parseAlipayNotify } from '@/features/donate/server/alipay';
+import { WechatNotifyError, parseWechatNotify } from '@/features/donate/server/wechat';
 
+/**
+ * 无状态模式：回调只做验签（微信额外解密），确认收到即可。
+ * 支付结果由前端携带签名令牌向支付宝/微信查单确认，无需落库。
+ */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /** 回调体很小，超过该长度直接拒绝 */
 const MAX_NOTIFY_BODY_BYTES = 64 * 1024;
+
+type NotifyChannel = 'alipay' | 'wechat';
+
+/**
+ * 两个渠道对“处理失败”的应答格式不同：
+ * 支付宝只看 body 是否为 failure，微信要求 JSON 的 code。
+ */
+function channelFailure(channel: NotifyChannel, message: string, status: number) {
+  return channel === 'alipay'
+    ? new Response('failure', { status })
+    : NextResponse.json({ code: 'FAIL', message }, { status });
+}
 
 export async function POST(
   request: Request,
@@ -27,22 +41,20 @@ export async function POST(
     );
   }
 
+  const notifyChannel = parsedChannel.data;
+
   // 先校验 Content-Length 头，避免超大 body 被完整读入内存后才拦截
   const contentLength = Number(request.headers.get('content-length'));
-  if (!Number.isNaN(contentLength) && contentLength > MAX_NOTIFY_BODY_BYTES) {
-    return parsedChannel.data === 'alipay'
-      ? new Response('failure', { status: 400 })
-      : NextResponse.json({ code: 'FAIL', message: '请求体过大' }, { status: 400 });
+  if (Number.isFinite(contentLength) && contentLength > MAX_NOTIFY_BODY_BYTES) {
+    return channelFailure(notifyChannel, '请求体过大', 400);
   }
 
   const rawBody = await request.text();
   if (Buffer.byteLength(rawBody, 'utf8') > MAX_NOTIFY_BODY_BYTES) {
-    return parsedChannel.data === 'alipay'
-      ? new Response('failure', { status: 400 })
-      : NextResponse.json({ code: 'FAIL', message: '请求体过大' }, { status: 400 });
+    return channelFailure(notifyChannel, '请求体过大', 400);
   }
 
-  if (parsedChannel.data === 'alipay') {
+  if (notifyChannel === 'alipay') {
     const notifyParams: Record<string, string> = {};
     new URLSearchParams(rawBody).forEach((value, key) => {
       notifyParams[key] = value;
@@ -50,7 +62,7 @@ export async function POST(
 
     try {
       // 验签与校验应用信息；支付状态由前端查单确认
-      const event = await handleAlipayNotify(notifyParams);
+      const event = parseAlipayNotify(notifyParams);
       if (event.tradeStatus === 'TRADE_SUCCESS' || event.tradeStatus === 'TRADE_FINISHED') {
         await notifyDonationSuccess({
           channel: 'alipay',
@@ -75,7 +87,7 @@ export async function POST(
 
   try {
     // 验签与解密，失败即返回非 2xx 让微信重试；支付状态由前端查单确认
-    const event = await handleWechatNotify(request.headers, rawBody);
+    const event = parseWechatNotify(request.headers, rawBody);
     if (event.tradeState === 'SUCCESS') {
       await notifyDonationSuccess({
         channel: 'wechat',

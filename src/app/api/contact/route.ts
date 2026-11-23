@@ -30,27 +30,16 @@ function resolveClientId(request: Request): string | null {
   return null;
 }
 
-let loggedMissingClientId = false;
-
-/** 临时诊断：确认 IGA 实际透传了哪些客户端 IP 头，定位完成后移除。 */
-function logClientIpContext(reason: string, request: Request, clientId: string | null) {
-  const read = (name: string) => request.headers.get(name);
-
-  console.warn('[contact-rate-limit]', reason, {
-    clientId,
-    forwardedFor: read('x-forwarded-for'),
-    realIp: read('x-real-ip'),
-    clientIp: read('x-client-ip'),
-    trueClientIp: read('true-client-ip'),
-    userAgent: read('user-agent')?.slice(0, 120) ?? null,
-  });
-}
+let warnedMissingClientId = false;
 
 export async function POST(request: Request) {
   const clientId = resolveClientId(request);
-  if (!clientId && !loggedMissingClientId) {
-    loggedMissingClientId = true;
-    logClientIpContext('missing-client-ip', request, clientId);
+
+  // 取不到客户端 IP 时跳过限流而不是把所有访客归入同一个桶；
+  // 这属于限流失效的降级路径，首个请求提醒一次即可，避免刷日志。
+  if (!clientId && !warnedMissingClientId) {
+    warnedMissingClientId = true;
+    console.warn('[contact] 未能解析客户端 IP，本次跳过限流');
   }
 
   const rateLimit = clientId
@@ -58,7 +47,6 @@ export async function POST(request: Request) {
     : { allowed: true, retryAfterSeconds: 0 };
 
   if (!rateLimit.allowed) {
-    logClientIpContext('rate-limited', request, clientId);
     return NextResponse.json(
       {
         error: {
