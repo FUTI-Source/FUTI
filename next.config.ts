@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 
+import { SITE_DOMAIN, SITE_URL } from './src/lib/site';
+
 // Next 16 默认拦截跨域 dev 请求；预览沙箱的代理域名通过 .env.local 注入，
 // 避免把环境专属主机名写进仓库。
 const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? '')
@@ -27,8 +29,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/:path*',
-        has: [{ type: 'host', value: 'zhang-wentao.tech' }],
-        destination: 'https://www.zhang-wentao.tech/:path*',
+        has: [{ type: 'host', value: SITE_DOMAIN }],
+        destination: `${SITE_URL}/:path*`,
         permanent: true,
       },
     ];

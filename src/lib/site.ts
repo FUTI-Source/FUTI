@@ -7,7 +7,7 @@
 export const SITE_URL = 'https://www.zhang-wentao.tech';
 /** 完整主机名，含 www */
 export const SITE_HOSTNAME = new URL(SITE_URL).hostname;
-/** 展示用域名，不含 www */
+/** 根域名，不含 www；用于展示及根域到 www 的重定向 */
 export const SITE_DOMAIN = SITE_HOSTNAME.replace(/^www\./, '');
 
 export const SITE_LANG = 'zh-CN';
