@@ -36,7 +36,7 @@ export class WechatNotifyError extends Error {
   }
 }
 
-export interface WechatPayConfig {
+interface WechatPayConfig {
   mchId: string;
   appId: string;
   apiV3Key: string;
@@ -46,38 +46,20 @@ export interface WechatPayConfig {
   publicKey: string;
 }
 
-export function getWechatPayConfig(): WechatPayConfig | null {
-  const {
-    WECHAT_MCH_ID,
-    WECHAT_APP_ID,
-    WECHAT_API_V3_KEY,
-    WECHAT_CERT_SERIAL_NO,
-    WECHAT_PRIVATE_KEY,
-    WECHAT_PUBLIC_KEY_ID,
-    WECHAT_PUBLIC_KEY,
-  } = process.env;
+function getWechatPayConfig(): WechatPayConfig | null {
+  const mchId = process.env.WECHAT_MCH_ID?.trim();
+  const appId = process.env.WECHAT_APP_ID?.trim();
+  const apiV3Key = process.env.WECHAT_API_V3_KEY?.trim();
+  const serialNo = process.env.WECHAT_CERT_SERIAL_NO?.trim();
+  const privateKey = process.env.WECHAT_PRIVATE_KEY?.trim();
+  const publicKeyId = process.env.WECHAT_PUBLIC_KEY_ID?.trim();
+  const publicKey = process.env.WECHAT_PUBLIC_KEY?.trim();
 
-  if (
-    !WECHAT_MCH_ID ||
-    !WECHAT_APP_ID ||
-    !WECHAT_API_V3_KEY ||
-    !WECHAT_CERT_SERIAL_NO ||
-    !WECHAT_PRIVATE_KEY ||
-    !WECHAT_PUBLIC_KEY_ID ||
-    !WECHAT_PUBLIC_KEY
-  ) {
+  if (!mchId || !appId || !apiV3Key || !serialNo || !privateKey || !publicKeyId || !publicKey) {
     return null;
   }
 
-  return {
-    mchId: WECHAT_MCH_ID,
-    appId: WECHAT_APP_ID,
-    apiV3Key: WECHAT_API_V3_KEY,
-    serialNo: WECHAT_CERT_SERIAL_NO,
-    privateKey: WECHAT_PRIVATE_KEY,
-    publicKeyId: WECHAT_PUBLIC_KEY_ID,
-    publicKey: WECHAT_PUBLIC_KEY,
-  };
+  return { mchId, appId, apiV3Key, serialNo, privateKey, publicKeyId, publicKey };
 }
 
 async function wechatRequest<T>(

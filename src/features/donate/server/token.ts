@@ -8,7 +8,7 @@ const TOKEN_VERSION = 1;
 /** 派生信息串：未显式配置时据此从支付私钥派生订单签名密钥，实现用途隔离 */
 const DERIVE_INFO = 'zyf-homepage/donation-order-secret';
 
-export interface OrderTokenPayload {
+interface OrderTokenPayload {
   orderId: string;
   channel: DonateChannel;
   amountFen: number;
@@ -50,7 +50,7 @@ function sign(data: string, secret: string): string {
 /** 把订单信息签成无状态令牌，服务端无需落库即可在查单时还原 */
 export function createOrderToken(payload: OrderTokenPayload): string {
   const secret = getSecret();
-  if (!secret) throw new Error('未配置 DONATION_ORDER_SECRET');
+  if (!secret) throw new Error('无法获取订单令牌签名密钥：请配置 DONATION_ORDER_SECRET 或确保支付私钥可用');
 
   const body: SignedPayload = {
     v: TOKEN_VERSION,

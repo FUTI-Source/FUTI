@@ -11,9 +11,9 @@ import { Live2DModel } from '@/features/avatar/live2d';
 
 import { AvatarEvent } from '../events';
 
-import { BasicsProps } from '@/components/type.ts';
+import { BasicsProps } from '@/components/types';
 
-import { EventEmitter } from '@/hooks/use-event-emitter.ts';
+import { EventEmitter } from '@/hooks/use-event-emitter';
 
 extensions.add(BatchRenderer, TickerPlugin);
 Live2DModel.registerTicker(Ticker);
@@ -40,7 +40,7 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
     let initialization: Promise<void> | null = null;
 
     // 以原始 256px 构图为准按宽度等比缩放，画布变化时保持同样的取景。
-    const applyModelLayout = (width: number, height: number) => {
+    const applyModelLayout = (width: number) => {
       if (!model) return;
       const ratio = width / BASE_SIZE;
 
@@ -104,7 +104,7 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
         model.anchor.set(0, 0);
 
         pixiApp.stage.addChild(model);
-        applyModelLayout(pixiApp.screen.width, pixiApp.screen.height);
+        applyModelLayout(pixiApp.screen.width);
         event$?.emit(AvatarEvent.INIT);
       } catch (error) {
         destroy();
@@ -115,13 +115,15 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
       }
     };
 
-    const resizeObserver = new ResizeObserver(([entry]) => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
       const { width, height } = entry.contentRect;
       if (disposed || width <= 0 || height <= 0) return;
 
       if (pixiApp) {
         pixiApp.renderer.resize(width, height);
-        applyModelLayout(width, height);
+        applyModelLayout(width);
       } else if (!initialization) {
         initialization = initialize(width, height);
       }

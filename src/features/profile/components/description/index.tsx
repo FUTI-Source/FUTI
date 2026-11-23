@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { BasicsProps } from '@/components/type.ts';
+import { BasicsProps } from '@/components/types';
 
 import { SITE_SIGNATURE } from '@/lib/site';
 import { cn } from '@/lib/utils';

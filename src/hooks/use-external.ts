@@ -72,13 +72,6 @@ const loadCss: LoadExternal = (path, props = {}) => {
     Object.keys(props).forEach((key) => {
       (newCss as any)[key] = props[key];
     });
-    // IE9+
-    const isLegacyIECss = 'hideFocus' in newCss;
-    // use preload in IE Edge (to detect load errors)
-    if (isLegacyIECss && newCss.relList) {
-      newCss.rel = 'preload';
-      newCss.as = 'style';
-    }
     newCss.setAttribute('data-status', 'loading');
     document.head.appendChild(newCss);
 
@@ -116,7 +109,7 @@ const useExternal = (path?: string, options?: Options) => {
       ref.current = result.ref;
       setStatus(result.status);
     } else {
-      // do nothing
+      // 无法推断外部资源类型，记录错误但不创建元素
       logger.error("Cannot infer the type of external resource, and please provide a type ('js' | 'css'). " + 'Refer to the https://ahooks.js.org/hooks/dom/use-external/#options');
     }
 
@@ -146,10 +139,12 @@ const useExternal = (path?: string, options?: Options) => {
 
       if (EXTERNAL_USED_COUNT[path] === 0 && !options?.keepWhenUnused) {
         ref.current?.remove();
+        delete EXTERNAL_USED_COUNT[path];
       }
 
       ref.current = undefined;
     };
+    // 仅以 path 为依赖：options 变化不触发资源重载（ahooks 原设计）；如需重载请变更 path
   }, [path]);
 
   return status;

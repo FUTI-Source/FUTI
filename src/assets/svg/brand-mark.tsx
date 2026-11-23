@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { BasicsProps } from '@/components/type.ts';
+import { BasicsProps } from '@/components/types';
 import { SITE_BRAND } from '@/lib/site';
 
 type IBrandMarkProps = BasicsProps<'svg'>;

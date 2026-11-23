@@ -6,7 +6,7 @@
 
 export const SITE_URL = 'https://www.zhang-wentao.tech';
 /** 完整主机名，含 www */
-export const SITE_HOSTNAME = new URL(SITE_URL).hostname;
+const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 /** 根域名，不含 www；用于展示及根域到 www 的重定向 */
 export const SITE_DOMAIN = SITE_HOSTNAME.replace(/^www\./, '');
 
@@ -75,7 +75,7 @@ export const SITE_ANALYTICS_DOMAINS = `${SITE_HOSTNAME},${SITE_DOMAIN}`;
 /** 调用支付网关时使用的 User-Agent */
 export const SITE_USER_AGENT = 'zhang-wentao-site/1.0';
 
-export interface SiteSocialLinks {
+interface SiteSocialLinks {
   blog: string;
   github: string;
 }

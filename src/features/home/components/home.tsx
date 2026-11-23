@@ -26,9 +26,8 @@ import {
   SITE_ANALYTICS_DOMAINS,
   SITE_ANALYTICS_URL,
   SITE_ANALYTICS_WEBSITE_ID,
-  SITE_URL,
 } from '@/lib/site';
-import { identifyUmami, initUmami, trackEvent } from '@/utils/umami';
+import { identifyUmami, initUmami, trackEvent } from '@/lib/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
 const ContactDialog = lazy(() =>

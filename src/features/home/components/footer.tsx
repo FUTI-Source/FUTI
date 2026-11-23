@@ -2,13 +2,13 @@ import React from 'react';
 
 import * as m from 'motion/react-m';
 
-import { Separator } from '@/components/ui/separator.tsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { BasicsProps } from '@/components/type';
+import { BasicsProps } from '@/components/types';
 
-import { BrandMark } from '@/assets/svg/brand-mark.tsx';
-import { cn } from '@/lib/utils.ts';
+import { BrandMark } from '@/assets/svg/brand-mark';
+import { cn } from '@/lib/utils';
 import {
   ICP_LINK,
   ICP_NUMBER,

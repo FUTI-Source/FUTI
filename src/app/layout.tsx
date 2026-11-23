@@ -68,7 +68,7 @@ window.addEventListener('orientationchange',update);
 window.addEventListener('pageshow',update);
 if(window.visualViewport)window.visualViewport.addEventListener('resize',update);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
-}catch(e){}})();`,
+}catch(e){console.error(e)}})();`,
           }}
         />
         <link

@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import type Parallax from 'parallax-js';
 
-import { BasicsProps } from '@/components/type';
+import { BasicsProps } from '@/components/types';
 
 import backgroundLeftImage from '@/assets/webp/background_left.webp';
 import backgroundRightImage from '@/assets/webp/background_right.webp';
-import useDebounceEffect from '@/hooks/use-debounce-effect.ts';
-import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
+import useDebounceEffect from '@/hooks/use-debounce-effect';
+import useMemoizedFn from '@/hooks/use-memoized-fn';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 

@@ -1,6 +1,6 @@
 import { createDecipheriv, createHmac, createSign, createVerify, randomBytes } from 'node:crypto';
 
-export interface WechatNotifyHeaders {
+interface WechatNotifyHeaders {
   timestamp: string;
   nonce: string;
   signature: string;
@@ -17,7 +17,7 @@ export interface WechatNotifyResource {
 const TIMESTAMP_TOLERANCE_SECONDS = 300;
 
 /** 环境变量里的私钥/公钥常用 \n 转义换行，这里统一还原 */
-export function normalizePem(value: string): string {
+function normalizePem(value: string): string {
   return (value.includes('\\n') ? value.replace(/\\n/g, '\n') : value).trim();
 }
 

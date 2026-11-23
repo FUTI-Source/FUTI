@@ -4,11 +4,11 @@ import type { IconType } from '@icons-pack/react-simple-icons';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 
-import { buttonVariants } from '@/components/ui/button.tsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
+import { buttonVariants } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { LINKS } from './consts.tsx';
-import { BasicsProps } from '@/components/type';
+import { LINKS } from './consts';
+import { BasicsProps } from '@/components/types';
 
 import { cn } from '@/lib/utils';
 

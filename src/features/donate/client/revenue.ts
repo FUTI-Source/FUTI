@@ -1,4 +1,4 @@
-import { trackEvent } from '@/utils/umami';
+import { trackEvent } from '@/lib/umami';
 
 import type { DonateChannel } from '../types';
 

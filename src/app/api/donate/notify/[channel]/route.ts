@@ -27,6 +27,14 @@ export async function POST(
     );
   }
 
+  // 先校验 Content-Length 头，避免超大 body 被完整读入内存后才拦截
+  const contentLength = Number(request.headers.get('content-length'));
+  if (!Number.isNaN(contentLength) && contentLength > MAX_NOTIFY_BODY_BYTES) {
+    return parsedChannel.data === 'alipay'
+      ? new Response('failure', { status: 400 })
+      : NextResponse.json({ code: 'FAIL', message: '请求体过大' }, { status: 400 });
+  }
+
   const rawBody = await request.text();
   if (Buffer.byteLength(rawBody, 'utf8') > MAX_NOTIFY_BODY_BYTES) {
     return parsedChannel.data === 'alipay'

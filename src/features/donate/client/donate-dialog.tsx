@@ -27,7 +27,7 @@ import type {
 } from '../types';
 import { cn } from '@/lib/utils';
 import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '@/lib/site';
-import { captureException, trackEvent } from '@/utils/umami';
+import { captureException, trackEvent } from '@/lib/umami';
 
 const CHANNELS = [
   { id: 'alipay', label: '支付宝', hint: '使用支付宝扫码支付' },

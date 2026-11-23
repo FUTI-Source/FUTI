@@ -1,9 +1,9 @@
 # 张文涛 · 个人主页
 
-基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages。单页应用，包含 Live2D 形象、视差背景、打字机介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
+基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
-- 站点名称、域名、联系方式、社交链接等集中在 [`src/lib/site.ts`](src/lib/site.ts)，需要调整时只改这一处。
+- 站点名称、域名、联系方式、社交链接、打赏金额范围等集中在 [`src/lib/site.ts`](src/lib/site.ts)，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
 
 ## 功能特性
 
@@ -21,11 +21,11 @@
 | --- | --- |
 | 框架 | Next.js 16（App Router / Turbopack）· React 19 · TypeScript 5 |
 | 样式 | Tailwind CSS v4（@tailwindcss/postcss）· tw-animate-css · normalize.css |
-| 动画 / 交互 | motion · parallax-js · pixi.js / @pixi/*（Live2D 渲染） |
-| UI 组件 | Radix UI（Dialog / Label / Separator / Slot / Tooltip）· lucide-react · simple-icons |
+| 动画 / 交互 | motion · parallax-js · pixi.js（`@pixi/app`、`@pixi/core`、`@pixi/ticker`，Live2D 渲染） |
+| UI 组件 | Radix UI（Dialog / Label / Separator / Slot / Tooltip）· lucide-react · @icons-pack/react-simple-icons |
 | 表单 | react-hook-form · @hookform/resolvers · zod |
-| 通知 | 通用 HTTP Webhook（fetch，Node Runtime） |
-| 打赏 | qrcode（收款二维码）· 微信 APIv3 / 支付宝 RSA2 |
+| 通知 | 通用 HTTP Webhook（fetch，Node Runtime）· Bark（可选推送） |
+| 打赏 | qrcode（收款二维码，动态加载）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 
 运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`）。IGA Pages 构建环境支持 20 / 22 / 24，默认 20.x，本项目需在控制台选择 **24.x**。
@@ -41,117 +41,72 @@ npm run dev                        # http://localhost:3000
 类型检查与生产构建：
 
 ```bash
-npm run type:check   # tsc --noEmit
+npm run type:check   # tsc --noEmit（含 noUnusedLocals / noUnusedParameters）
 npm run build        # next build（standalone 输出）
 npm run start        # next start
 ```
 
-## 部署到 IGA Pages
-
-IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 Next.js 框架并套用默认构建配置。本项目已做如下适配：
-
-- `next.config.ts` 使用 `output: 'standalone'`，`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
-- 根目录 [`iga.json`](iga.json) 固定安装与构建命令，优先级高于控制台构建配置。
-- 构建产物不需要手动填写输出目录，由平台按 Next.js 模式处理。
-
-### 控制台方式（首次使用推荐）
-
-1. 登录[全站加速控制台](https://console.volcengine.com/dcdn) → **服务概览** → **Pages** → **创建项目**。
-2. 代码源选择 GitHub 仓库（需先完成 GitHub 授权）或直接上传 ZIP；平台会自动识别为 Next.js。
-3. 进入 **项目设置** → **Node.js 版本**，选择 `24.x`。平台默认是 `20.x`，而 `package.json` 要求 Node ≥ 24。
-4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加。`NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署才生效。
-5. **构建配置**保持默认即可（`npm run build`），或由 `iga.json` 覆盖；不要额外指定输出目录。
-6. 首次部署完成后会生成 `xxx.preview.iga-pages.com` 预览域名，**仅 3 小时有效**，不适合正式对外。
-
-### CLI 方式
-
-```bash
-npm install -g @iga-pages/cli          # 需要 Node.js >= 20
-
-iga login                              # 浏览器登录；SSH/容器可用 iga login --remote；CI 用 --accessKey/--secretKey
-iga pages link                         # 关联已有项目，或按提示创建新项目
-iga pages dev                          # 本地启动，/api/* 由 Functions 代理
-iga pages deploy                       # 构建并部署到 DCDN 加速网络
-iga pages env pull                     # 将线上环境变量拉取到 .env.local
-iga pages logs --since 1h --level error # 查看运行时日志
-iga pages preview                      # 获取带访问凭证的预览地址
-```
-
-说明：
-
-- `iga pages dev` 会读取 `package.json` 的 `dev` 命令，请勿把 `dev` 改成 `iga pages dev`。
-- Next.js 的 API Routes 由 Next 运行时处理，**不需要**在根目录再建 `api/` 目录；`api/` 目录只用于非 Next.js 项目的 Functions。
-- 关联了 GitHub 仓库的项目，`iga pages deploy` 会优先从仓库拉取代码构建；未授权时会退化为上传 ZIP（上限 1024 MB）。
-- 单项目最多保留 10 个部署版本，超出后自动删除最早版本。
-
-### 自定义域名与加速
-
-1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**。
-2. 中国大陆加速区域要求域名完成 ICP 备案；HTTPS 证书可在平台申请或上传。
-3. 建议同时绑定根域与 `www`：`next.config.ts` 会把根域 308 重定向到 `SITE_URL`（当前为 `https://www.zhang-wentao.tech`）。
-4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
-
-### 用 AI 编程客户端对接（可选）
-
-- **Plugin（Skill + Pages MCP + 开发提醒一次装好）**：`npx plugins add volc-iga-pages/iga-pages-plugin`
-- **仅 MCP**：在 AI 客户端的 MCP 配置中加入远程端点，并完成 OAuth 授权：
-
-```json
-{
-  "mcpServers": {
-    "volcengine-mcp": {
-      "url": "https://iga-pages.mcp.volcbiz.com/mcp"
-    }
-  }
-}
-```
-
-Plugin 与 MCP 只负责查询/操作 IGA Pages 项目、环境变量、部署与日志；本地构建、`dev`、`deploy` 仍需安装 IGA CLI。CLI 登录（`iga login`）与 MCP OAuth 授权相互独立。
-
-## 目录结构
+## 项目结构
 
 ```
 src/
-├── app/                         # App Router
-│   ├── layout.tsx               # 根布局（metadata、字体、首屏显示模式脚本）
-│   ├── page.tsx                 # 首页
-│   ├── globals.css              # 样式入口
+├── app/                          # App Router 入口
+│   ├── api/                      # Route Handlers（统一 nodejs runtime）
+│   │   ├── contact/route.ts      # 联系表单 → Webhook / Bark 通知
+│   │   └── donate/               # 打赏接口
+│   │       ├── config/route.ts           # 各渠道是否已配置
+│   │       ├── create/route.ts           # 下单
+│   │       ├── status/route.ts           # 查单（验签 statusToken）
+│   │       ├── notify/[channel]/route.ts # 微信 / 支付宝异步回调
+│   │       └── wechat/oauth/             # 微信内 JSAPI 静默授权（snsapi_base）
+│   ├── layout.tsx / page.tsx     # 根布局（metadata / 字体 / 首屏脚本）与首页
+│   ├── globals.css               # 样式入口（@import normalize / tw-animate）
 │   ├── error.tsx / not-found.tsx
-│   ├── manifest.ts              # PWA manifest
-│   ├── robots.ts / sitemap.ts   # SEO
-│   └── api/
-│       ├── donate/              # 打赏接口（见「打赏」章节）
-│       │   ├── config/route.ts
-│       │   ├── create/route.ts
-│       │   ├── status/route.ts
-│       │   ├── notify/[channel]/route.ts
-│       │   └── wechat/oauth/{route.ts,callback/route.ts}
-│       └── contact/route.ts    # 联系表单 → Webhook 通知（Node Runtime）
-├── assets/                      # svg、webp 静态资源
-├── components/                  # 通用 UI 与全局组件（ui、preloader、交互守卫）
-├── features/
-│   ├── home/                    # 首页组装、视差背景、自定义光标、页头页脚
-│   ├── avatar/                  # 头像与 Live2D（components、live2d）
-│   ├── profile/                 # 名称、描述、社交 / 打赏 / 联系链接
-│   ├── contact/                 # 联系表单（client、server）
-│   ├── donate/                  # 打赏（client、server、alipay、wechat）
-│   ├── pwa/                     # Service Worker 注册
-│   └── webmcp/                  # WebMCP 工具（use-webmcp-tools）
-├── hooks/  lib/  utils/  types/ # 通用 hooks、站点配置、工具、类型
-└── styles/                      # 全局样式与 Tailwind 主题
-public/                          # live2d 模型、字体、图标、iOS 启动图、文档配图
+│   ├── manifest.ts               # PWA manifest
+│   └── robots.ts / sitemap.ts    # SEO
+├── assets/                       # 内联 SVG 组件与 webp 背景图
+├── components/                   # 通用 UI（shadcn 风格）与全局组件
+│   ├── ui/                       # button / dialog / form / input / label / ...
+│   ├── site-preloader.tsx        # 首屏加载进度圈
+│   ├── site-interaction-guard.tsx
+│   └── types.ts                  # 组件公共 props 类型
+├── features/                     # 按业务域组织（client / server 分离）
+│   ├── home/                     # 首页组装、视差背景、自定义光标、页头页脚
+│   ├── avatar/                   # Live2D 头像（PixiJS 渲染 + cubism4 SDK 动态加载）
+│   ├── profile/                  # 名称、描述、社交 / 打赏 / 联系链接
+│   ├── contact/                  # 联系表单（client / server / schema）
+│   ├── donate/                   # 打赏（client / server / alipay / wechat）
+│   ├── pwa/                      # Service Worker 注册
+│   └── webmcp/                   # WebMCP 工具 hook（use-webmcp-tools）
+├── hooks/                        # 通用 React hooks（debounce / event-emitter / external / ...）
+├── lib/                          # 站点配置、日志、SEO、Bark、Umami、工具函数
+├── styles/                       # 全局样式与 Tailwind 主题变量
+└── types/                        # 第三方模块类型声明（webp / parallax-js / react-css）
+public/                           # live2d 模型、字体、图标、iOS 启动图、文档配图
 ```
 
 ## 站点配置
 
 [`src/lib/site.ts`](src/lib/site.ts) 集中管理站点元信息，会被客户端组件引用，**切勿写入任何密钥**：
 
-- 站点：`SITE_URL`、`SITE_NAME`、`SITE_DESCRIPTION`、`SITE_AUTHOR_NAME`、`SITE_SIGNATURE`
-- 联系：`CONTACT_EMAIL`（默认 `mine@139.com`）
-- 社交：`SITE_SOCIAL_LINKS`（blog / github，留空时对应入口置灰不可点）
-- 备案：`ICP_NUMBER` / `ICP_LINK`（未配置时使用默认备案号，显式置空则隐藏）
-- 打赏：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT`（默认 1–10000 元）、`DONATION_SUBJECT`
-- 统计：`SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS`
+| 配置 | 说明 |
+| --- | --- |
+| `SITE_URL` / `SITE_DOMAIN` | 站点完整地址与根域名（`SITE_HOSTNAME` 为内部派生常量，不导出） |
+| `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_KEYWORDS` | 站点名称、描述、关键词 |
+| `SITE_AUTHOR_NAME` / `SITE_JOB_TITLE` / `SITE_JOB_TITLE_EN` | 作者与职位（中英文） |
+| `SITE_SIGNATURE` / `SITE_BRAND` | 首页副标题签名、左下角水印品牌字 |
+| `SITE_TWITTER_HANDLE` | Twitter/X 账号（不含 `@`），留空则不输出 twitter site/creator |
+| `SITE_SOCIAL_LINKS` | `{ blog, github }` 社交链接；**留空时对应入口置灰不可点**（Tooltip 提示「链接尚未配置」），且不写入结构化数据 `sameAs` |
+| `CONTACT_EMAIL` | 联系邮箱（默认 `mine@139.com`） |
+| `ICP_NUMBER` / `ICP_LINK` | 备案号与查询链接；优先读 `NEXT_PUBLIC_ICP_NUMBER`，未配置回退默认值，显式置空则隐藏 |
+| `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 打赏金额范围（默认 1–10000 元）与订单标题 |
+| `SITE_IMAGE_PATH` / `SITE_SOCIAL_IMAGE` / `SITE_NOTIFICATION_ICON` | 图标、OG 分享图（1200×630）、Bark 推送图标 |
+| `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 统计配置与需排除的域名 |
+| `SITE_LANG` / `SITE_LOCALE` | 站点语言（zh-CN）与区域设置（zh_CN），用于 metadata 与支付网关 |
+| `SITE_KNOWS_ABOUT` | 作者技能关键词数组，写入结构化数据 |
+| `SITE_ICON_PATH` | 站点 favicon 路径 |
+| `SITE_USER_AGENT` | 调用支付网关时使用的 User-Agent |
+| `SITE_COPYRIGHT_START` / `SITE_THEME_CREDIT` / `SITE_THEME_CREDIT_HOVER` | 页脚版权起始年份与主题署名（含 hover 文案） |
 
 ## 环境变量
 
@@ -233,6 +188,8 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 | `BARK_DEVICE_KEY` | 否 | Bark App 中的设备 key，留空则不推送 |
 | `BARK_SERVER_URL` | 否 | 自建 Bark 服务端，留空用官方 `https://api.day.app` |
 
+实现见 [`src/lib/bark.ts`](src/lib/bark.ts)。未配置 `BARK_DEVICE_KEY` 时直接跳过；推送失败只记日志，不影响业务流程。推送内容包含标题、副标题、正文、分组与站点图标，**不携带跳转链接**（点击通知仅停留在 Bark）。
+
 ### 打赏（微信支付 / 支付宝 / 订单签名）
 
 见下文「打赏」章节的完整环境变量表与获取方式（含官方配图）。核心变量：`DONATION_ORDER_SECRET`、`WECHAT_*`、`ALIPAY_*`。
@@ -307,7 +264,16 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 下单请求体：`{ "channel": "wechat" | "alipay", "amount": 整数元, "mode": "native" | "jsapi"(可选) }`，成功返回 `201`。
 
-错误码：`400 BAD_REQUEST`、`401 WECHAT_OAUTH_REQUIRED`、`404 INVALID_ORDER`、`502 GATEWAY_FAILED`、`503 GATEWAY_NOT_CONFIGURED`。
+错误码（`create` / `status` 路由统一映射）：
+
+| HTTP | code | 触发场景 |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | 请求体不是合法 JSON，或字段校验未通过，或查单缺少令牌 |
+| 401 | `WECHAT_OAUTH_REQUIRED` | 微信内 JSAPI 下单缺少有效 openid（需先走 `/wechat/oauth` 授权） |
+| 404 | `INVALID_ORDER` | `statusToken` 验签失败、已过期或订单不存在 |
+| 501 | `GATEWAY_NOT_IMPLEMENTED` | 该渠道/模式的下单或查单能力暂未实现 |
+| 502 | `GATEWAY_FAILED` | 调用支付网关失败或返回异常 |
+| 503 | `GATEWAY_NOT_CONFIGURED` | 对应渠道的商户配置缺失（未配置环境变量） |
 
 ### 支付方式选择
 
@@ -422,8 +388,8 @@ openssl rand -hex 32
 
 回调验签通过后，[`server/notify.ts`](src/features/donate/server/notify.ts) 的 `notifyDonationSuccess` 并行执行：
 
-- **Bark 推送**（[`lib/bark.ts`](src/lib/bark.ts)）：需 `BARK_DEVICE_KEY`，点击通知打开站点首页。
-- **Webhook 通知**（[`webhook.ts`](src/features/contact/server/webhook.ts)）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`。
+- **Bark 推送**（[`lib/bark.ts`](src/lib/bark.ts)）：需 `BARK_DEVICE_KEY`，推送渠道、金额与订单号；失败只记日志。
+- **Webhook 通知**（[`webhook.ts`](src/features/contact/server/webhook.ts)）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`，主 Webhook 失败时尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`。
 
 任一通知失败只记日志，不影响回调返回成功，避免支付平台重复投递；未配置时自动跳过。
 
@@ -457,6 +423,68 @@ openssl rand -hex 32
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 [`src/styles/index.css`](src/styles/index.css) 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/launch/` 内置各机型 iOS 启动图。
 
+## 部署到 IGA Pages
+
+IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 Next.js 框架并套用默认构建配置。本项目已做如下适配：
+
+- `next.config.ts` 使用 `output: 'standalone'`，`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
+- 根目录 [`iga.json`](iga.json) 固定安装与构建命令，优先级高于控制台构建配置。
+- 构建产物不需要手动填写输出目录，由平台按 Next.js 模式处理。
+
+### 控制台方式（首次使用推荐）
+
+1. 登录[全站加速控制台](https://console.volcengine.com/dcdn) → **服务概览** → **Pages** → **创建项目**。
+2. 代码源选择 GitHub 仓库（需先完成 GitHub 授权）或直接上传 ZIP；平台会自动识别为 Next.js。
+3. 进入 **项目设置** → **Node.js 版本**，选择 `24.x`。平台默认是 `20.x`，而 `package.json` 要求 Node ≥ 24。
+4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加。`NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署才生效。
+5. **构建配置**保持默认即可（`npm run build`），或由 `iga.json` 覆盖；不要额外指定输出目录。
+6. 首次部署完成后会生成 `xxx.preview.iga-pages.com` 预览域名，**仅 3 小时有效**，不适合正式对外。
+
+### CLI 方式
+
+```bash
+npm install -g @iga-pages/cli          # 需要 Node.js >= 20
+
+iga login                              # 浏览器登录；SSH/容器可用 iga login --remote；CI 用 --accessKey/--secretKey
+iga pages link                         # 关联已有项目，或按提示创建新项目
+iga pages dev                          # 本地启动，/api/* 由 Functions 代理
+iga pages deploy                       # 构建并部署到 DCDN 加速网络
+iga pages env pull                     # 将线上环境变量拉取到 .env.local
+iga pages logs --since 1h --level error # 查看运行时日志
+iga pages preview                      # 获取带访问凭证的预览地址
+```
+
+说明：
+
+- `iga pages dev` 会读取 `package.json` 的 `dev` 命令，请勿把 `dev` 改成 `iga pages dev`。
+- Next.js 的 API Routes 由 Next 运行时处理，**不需要**在根目录再建 `api/` 目录；`api/` 目录只用于非 Next.js 项目的 Functions。
+- 关联了 GitHub 仓库的项目，`iga pages deploy` 会优先从仓库拉取代码构建；未授权时会退化为上传 ZIP（上限 1024 MB）。
+- 单项目最多保留 10 个部署版本，超出后自动删除最早版本。
+
+### 自定义域名与加速
+
+1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**。
+2. 中国大陆加速区域要求域名完成 ICP 备案；HTTPS 证书可在平台申请或上传。
+3. 建议同时绑定根域与 `www`：`next.config.ts` 会把根域 308 重定向到 `SITE_URL`（当前为 `https://www.zhang-wentao.tech`）。
+4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
+
+### 用 AI 编程客户端对接（可选）
+
+- **Plugin（Skill + Pages MCP + 开发提醒一次装好）**：`npx plugins add volc-iga-pages/iga-pages-plugin`
+- **仅 MCP**：在 AI 客户端的 MCP 配置中加入远程端点，并完成 OAuth 授权：
+
+```json
+{
+  "mcpServers": {
+    "volcengine-mcp": {
+      "url": "https://iga-pages.mcp.volcbiz.com/mcp"
+    }
+  }
+}
+```
+
+Plugin 与 MCP 只负责查询/操作 IGA Pages 项目、环境变量、部署与日志；本地构建、`dev`、`deploy` 仍需安装 IGA CLI。CLI 登录（`iga login`）与 MCP OAuth 授权相互独立。
+
 ## 常见问题
 
 - **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。若配置了 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才会返回 502。若接收端是飞书 / 钉钉 / 企微机器人，执行 `iga pages logs --since 1h` 查看日志中的 `code` / `errcode`，据此判断是消息格式、签名校验还是自定义关键词问题。
@@ -464,3 +492,4 @@ openssl rand -hex 32
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。
+- **打赏查单返回 501**：`GATEWAY_NOT_IMPLEMENTED`，对应渠道/模式的查单能力暂未实现，检查所选渠道与模式是否匹配。

@@ -3,9 +3,9 @@ import React from 'react';
 import type { MotionProps } from 'motion/react';
 import * as m from 'motion/react-m';
 
-import { Separator } from '@/components/ui/separator.tsx';
+import { Separator } from '@/components/ui/separator';
 
-import { BasicsProps } from '@/components/type.ts';
+import { BasicsProps } from '@/components/types';
 
 import { SITE_AUTHOR_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';

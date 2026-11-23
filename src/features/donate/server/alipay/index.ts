@@ -22,14 +22,14 @@ export class AlipayNotifyError extends Error {
   }
 }
 
-export interface AlipayConfig {
+interface AlipayConfig {
   appId: string;
   privateKey: string;
   publicKey: string;
   gateway: string;
 }
 
-export function getAlipayConfig(): AlipayConfig | null {
+function getAlipayConfig(): AlipayConfig | null {
   const appId = process.env.ALIPAY_APP_ID?.trim();
   const privateKey = process.env.ALIPAY_PRIVATE_KEY?.trim();
   const publicKey = process.env.ALIPAY_PUBLIC_KEY?.trim();
@@ -93,6 +93,10 @@ async function callAlipay<T extends AlipayResponse>(
     throw new AlipayError('支付宝网关请求失败');
   }
 
+  if (!response.ok) {
+    throw new AlipayError(`支付宝网关响应异常 (HTTP ${response.status})`);
+  }
+
   const text = await response.text();
   let json: Record<string, unknown>;
   try {
@@ -105,7 +109,7 @@ async function callAlipay<T extends AlipayResponse>(
   const payload = (json[responseKey] ?? json.error_response) as T | undefined;
   if (!payload) throw new AlipayError('支付宝返回结构异常');
 
-  if (payload.code && payload.code !== '10000') {
+  if (!payload.code || payload.code !== '10000') {
     const message = payload.sub_msg || payload.msg || '支付宝请求失败';
     throw new AlipayError(message, payload.sub_code || payload.code);
   }

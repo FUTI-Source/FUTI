@@ -5,7 +5,7 @@ import { hmacSha256 } from './crypto';
 const OAUTH_AUTHORIZE_URL = 'https://open.weixin.qq.com/connect/oauth2/authorize';
 const OAUTH_TOKEN_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
-export interface WechatJsapiConfig {
+interface WechatJsapiConfig {
   appId: string;
   appSecret: string;
 }

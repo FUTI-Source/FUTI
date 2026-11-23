@@ -9,7 +9,7 @@ import {
   SITE_LANG,
   SITE_URL,
 } from '@/lib/site';
-import { trackEvent } from '@/utils/umami';
+import { trackEvent } from '@/lib/umami';
 
 type ToolTextResult = { content: Array<{ type: 'text'; text: string }> };
 

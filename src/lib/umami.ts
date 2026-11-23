@@ -1,6 +1,6 @@
 type UmamiValue = string | number | boolean;
 
-export type UmamiData = Record<string, UmamiValue | null | undefined>;
+type UmamiData = Record<string, UmamiValue | null | undefined>;
 
 interface UmamiClient {
   track: (eventName: string, eventData?: UmamiData) => void;
@@ -141,7 +141,7 @@ export function initUmami(options: UmamiOptions) {
   }
 }
 
-export function getCurrentLang(): string {
+function getCurrentLang(): string {
   return document.documentElement.lang || navigator.language || 'zh-CN';
 }
 

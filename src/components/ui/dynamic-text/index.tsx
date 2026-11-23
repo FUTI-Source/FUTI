@@ -1,8 +1,8 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import type { DOMMotionComponents, MotionProps } from 'motion/react';
 import * as m from 'motion/react-m';
-import { AsComp, BasicsProps } from '@/components/type.ts';
-import useMemoizedFn from '@/hooks/use-memoized-fn.ts';
+import { AsComp, BasicsProps } from '@/components/types';
+import useMemoizedFn from '@/hooks/use-memoized-fn';
 import { cn } from '@/lib/utils';
 import {
   getRandom,
@@ -100,7 +100,7 @@ export const DynamicText: React.FC<IDynamicTextProps> = memo(
             } else if (i >= index) {
               return isMultibyteText(it) ? '//' : '/';
             } else {
-              void (void 0 === temp[i] && (temp[i] = shuffleCount));
+              if (temp[i] === undefined) temp[i] = shuffleCount;
               if (temp[i]) {
                 temp[i]--;
                 if (isCJK(it)) {

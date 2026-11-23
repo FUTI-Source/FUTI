@@ -6,20 +6,20 @@ const PUBLIC_KEY_BEGIN = '-----BEGIN PUBLIC KEY-----';
 const PUBLIC_KEY_END = '-----END PUBLIC KEY-----';
 
 /** 兼容环境变量里的 \n 转义与不带 PEM 头的裸密钥 */
-export function normalizePrivateKey(value: string): string {
+function normalizePrivateKey(value: string): string {
   const key = value.trim().replace(/\\n/g, '\n');
   if (key.includes('-----BEGIN')) return key;
   return `${PRIVATE_KEY_BEGIN}\n${key.replace(/\s+/g, '')}\n${PRIVATE_KEY_END}`;
 }
 
-export function normalizePublicKey(value: string): string {
+function normalizePublicKey(value: string): string {
   const key = value.trim().replace(/\\n/g, '\n');
   if (key.includes('-----BEGIN')) return key;
   return `${PUBLIC_KEY_BEGIN}\n${key.replace(/\s+/g, '')}\n${PUBLIC_KEY_END}`;
 }
 
 /** 支付宝签名串：排除 sign 与 sign_type，按参数名升序拼接 */
-export function buildSignContent(params: Record<string, string | undefined>): string {
+function buildSignContent(params: Record<string, string | undefined>): string {
   return Object.keys(params)
     .filter((key) => key !== 'sign' && key !== 'sign_type')
     .filter((key) => {
@@ -67,7 +67,7 @@ export function formatTimestamp(date = new Date()): string {
 }
 
 /** RFC3986 编码，避免 !'()* 未转义导致验签失败 */
-export function encodeRfc3986(value: string): string {
+function encodeRfc3986(value: string): string {
   return encodeURIComponent(value).replace(
     /[!'()*]/g,
     (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,

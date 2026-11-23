@@ -23,7 +23,7 @@ import {
   WechatPayError,
 } from './wechat';
 
-export type DonationErrorCode =
+type DonationErrorCode =
   | 'GATEWAY_NOT_CONFIGURED'
   | 'GATEWAY_NOT_IMPLEMENTED'
   | 'GATEWAY_FAILED'
@@ -54,7 +54,7 @@ const REQUIRED_ENV: Record<DonateChannel, string[]> = {
   ],
 };
 
-export const isDonateChannelConfigured = (channel: DonateChannel): boolean =>
+const isDonateChannelConfigured = (channel: DonateChannel): boolean =>
   REQUIRED_ENV[channel].every((key) => Boolean(process.env[key]));
 
 export const getDonateChannelConfig = (): DonateChannelConfig => ({
@@ -73,7 +73,7 @@ function createOrderId(): string {
 
 const MOBILE_USER_AGENT = /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i;
 
-export interface CreateDonationOptions {
+interface CreateDonationOptions {
   /** 请求 UA，用于决定支付宝走扫码还是手机网站支付 */
   userAgent: string;
   /** 微信内支付需要的 openid，由授权 Cookie 解析而来 */
@@ -107,8 +107,8 @@ export async function createDonation(
   const order = {
     orderId: createOrderId(),
     channel: input.channel,
-    // 金额以「分」提交给微信，支付宝按元换算
-    amountFen: input.amount * 100,
+    // 金额以「分」提交给微信，支付宝按元换算；Math.round 避免浮点误差（如 0.29 * 100 = 28.999…）
+    amountFen: Math.round(input.amount * 100),
   };
   const statusToken = createOrderToken({
     orderId: order.orderId,
@@ -151,7 +151,7 @@ export async function createDonation(
         amountFen: order.amountFen,
         description: DONATION_SUBJECT,
         notifyUrl,
-        openid: options.openid as string,
+        openid: options.openid!, // 上方 L101 已校验非空
       });
       return { orderId: order.orderId, channel: 'wechat', payment, statusToken };
     }

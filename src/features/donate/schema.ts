@@ -13,5 +13,3 @@ export const createDonationSchema = z.object({
     .max(DONATION_MAX_AMOUNT, `最高 ${DONATION_MAX_AMOUNT} 元`),
   mode: z.enum(['native', 'jsapi']).optional(),
 });
-
-export type CreateDonationInput = z.infer<typeof createDonationSchema>;

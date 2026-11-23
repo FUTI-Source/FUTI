@@ -26,7 +26,7 @@ const SOCIAL_IMAGE = {
   alt: `${SITE_NAME} 封面图`,
 } as const;
 
-export const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
+const SITE_IMAGE_URL = `${SITE_URL}${SITE_IMAGE_PATH}`;
 
 /**
  * QQ 分享抓取用的 Microdata 标记。

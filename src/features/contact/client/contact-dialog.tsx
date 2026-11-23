@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { sendContact, ContactError } from './send-contact';
 import { contactSchema, type ContactInput } from '../schema';
 import { cn } from '@/lib/utils';
-import { trackEvent, captureException } from '@/utils/umami';
+import { trackEvent, captureException } from '@/lib/umami';
 
 interface IContactDialogProps {
   open: boolean;

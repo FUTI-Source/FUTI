@@ -7,10 +7,10 @@ import * as m from 'motion/react-m';
 
 import { Loading } from './loading';
 
-import { BasicsProps } from '@/components/type.ts';
+import { BasicsProps } from '@/components/types';
 
-import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter.ts';
-import useExternal from '@/hooks/use-external.ts';
+import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter';
+import useExternal from '@/hooks/use-external';
 
 import { AvatarEvent } from '../events';
 

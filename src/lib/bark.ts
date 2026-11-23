@@ -3,9 +3,9 @@ import { SITE_NOTIFICATION_ICON } from './site';
 const DEFAULT_SERVER_URL = 'https://api.day.app';
 const REQUEST_TIMEOUT_MS = 5_000;
 
-export type BarkLevel = 'active' | 'timeSensitive' | 'passive' | 'critical';
+type BarkLevel = 'active' | 'timeSensitive' | 'passive' | 'critical';
 
-export interface BarkMessage {
+interface BarkMessage {
   title: string;
   subtitle?: string;
   body: string;
