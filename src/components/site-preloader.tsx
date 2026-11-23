@@ -21,7 +21,7 @@ type Phase = 'loading' | 'leaving' | 'done';
 const HIDE_PRELOADER_IN_AUTOMATION_SCRIPT = `(function(){try{
 var nav=window.navigator||{};
 var ua=nav.userAgent||'';
-if(nav.webdriver||/HeadlessChrome|Vercel-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
+if(nav.webdriver||/HeadlessChrome|Vercel-Screenshot|IGA-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
 }catch(e){}})();`;
 
 /**
