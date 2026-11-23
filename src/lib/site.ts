@@ -84,12 +84,12 @@ export const SITE_ANALYTICS_DOMAINS = `${SITE_HOSTNAME},${SITE_DOMAIN}`;
 export const SITE_USER_AGENT = 'zhang-wentao-site/1.0';
 
 export interface SiteSocialLinks {
+  blog: string;
   github: string;
-  steam: string;
 }
 
 /** 社交链接，留空时对应入口不跳转，也不会写入结构化数据 */
 export const SITE_SOCIAL_LINKS: SiteSocialLinks = {
+  blog: '',
   github: '',
-  steam: '',
 };
