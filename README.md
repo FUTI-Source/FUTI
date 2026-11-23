@@ -7,8 +7,8 @@
 
 ## 功能特性
 
-- **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、parallax-js 视差背景、打字机式自我介绍、自定义光标、首屏加载进度圈。
-- **联系表单**：react-hook-form + zod 校验，收集姓名、邮箱与可选电话（含区号），提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
+- **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、parallax-js 视差背景、打字机式自我介绍、全局自定义光标、首屏加载进度圈。
+- **联系表单**：react-hook-form + zod 校验，收集姓名、邮箱与内容，提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
 - **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + Webhook 通知站长。
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕（含各机型启动图）与桌面 WCO 窗口控件覆盖。
 - **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报。
@@ -175,7 +175,6 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
   "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
   "name": "访客姓名",
   "email": "访客邮箱",
-  "phone": "+86 13800000000",
   "content": "留言内容",
   "timestamp": "2026-01-01T00:00:00.000Z"
 }
@@ -195,7 +194,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 }
 ```
 
-失败 Webhook 请求体（主 Webhook 返回非 2xx、网络错误或超时后触发）：
+失败 Webhook 请求体（主 Webhook 返回非 2xx、网络错误或超时后触发；`type` 为「原始事件类型 + `.webhook_failed`」，留言与打赏均覆盖）：
 
 ```json
 {
@@ -208,7 +207,24 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 }
 ```
 
-约定：单次请求 8 秒超时，接收端返回 2xx 即视为成功。主 Webhook 失败后自动尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`；失败 Webhook 成功则整体视为通知成功，两者都失败才报错。Webhook 地址只放在服务端环境变量，不要暴露给前端。
+打赏失败时 `original` 携带完整打赏信息，便于定位是哪一笔：
+
+```json
+{
+  "type": "donation.webhook_failed",
+  "title": "Webhook 投递失败",
+  "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
+  "error": "Webhook 业务处理失败（HTTP 200）：errcode 310000",
+  "original": { "type": "donation", "channel": "微信支付", "amount": "10.00", "orderId": "订单号" },
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
+```
+
+机器人（飞书 / 钉钉 / 企微）接收失败事件时，消息体会同时渲染错误原因与原始事件的关键字段（留言的姓名/邮箱/内容，或打赏的渠道/金额/订单号）；通用接收端则原样收到含 `original` 的完整 JSON。
+
+约定：单次请求 8 秒超时。通用接收端（自建服务、n8n、Make、Zapier 等）返回 2xx 即视为成功；主 Webhook 失败后自动尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`，失败 Webhook 成功则整体视为通知成功，两者都失败才返回 `502`。Webhook 地址只放在服务端环境变量，不要暴露给前端。
+
+**飞书 / 钉钉 / 企业微信群机器人**：会按 webhook 域名自动识别，并把通用 JSON 转换成对应协议的消息体（飞书 `interactive` 卡片、钉钉 / 企微 `markdown`），无需额外配置。这类机器人在 payload 格式错误、签名校验失败或关键词不匹配时，通常仍返回 HTTP 200 但 body 中 `code` / `errcode` 非 0；现在会被判定为投递失败（触发失败 Webhook 或返回 `502`），真实原因写入服务端日志（`iga pages logs --since 1h`），不再静默误报成功。如果机器人开启了「签名校验」，需在机器人前加一层转换服务处理签名，或暂时关闭签名校验。
 
 ### Bark 推送（收到留言 / 打赏时通知 iPhone，可选）
 
@@ -235,13 +251,11 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 提交表单后，[`src/app/api/contact/route.ts`](src/app/api/contact/route.ts) 会：
 
-1. 校验姓名、邮箱、可选电话与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；主 Webhook 失败时自动投递失败事件到 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才返回 `502`。
+1. 校验姓名、邮箱与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；主 Webhook 失败时自动投递失败事件到 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才返回 `502`。
 2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
 3. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
 
 反滥用：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 与 `Retry-After`；含隐藏蜜罐字段，请求体限制 24 KiB。速率记录保存在 Node 进程内存中，多实例间不共享；如需全局精确限流，应接入共享存储（如 Redis）或部署平台 WAF。
-
-区号列表在打开表单时从 `restcountries.com` 拉取，成功后在 `localStorage` 缓存 7 天；请求失败或离线时回退到内置常用区号。
 
 运行约束（已在代码中落实）：
 
@@ -445,7 +459,7 @@ openssl rand -hex 32
 
 ## 常见问题
 
-- **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。若配置了 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才会返回 502。
+- **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。若配置了 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才会返回 502。若接收端是飞书 / 钉钉 / 企微机器人，执行 `iga pages logs --since 1h` 查看日志中的 `code` / `errcode`，据此判断是消息格式、签名校验还是自定义关键词问题。
 - **Bark 没收到推送**：检查 `BARK_DEVICE_KEY` 与 `BARK_SERVER_URL`；Bark 失败不会影响留言提交。
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。

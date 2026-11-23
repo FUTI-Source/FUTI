@@ -1,4 +1,4 @@
-import { SITE_NOTIFICATION_ICON, SITE_URL } from './site';
+import { SITE_NOTIFICATION_ICON } from './site';
 
 const DEFAULT_SERVER_URL = 'https://api.day.app';
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -10,7 +10,6 @@ export interface BarkMessage {
   subtitle?: string;
   body: string;
   group?: string;
-  url?: string;
   level?: BarkLevel;
 }
 
@@ -55,7 +54,6 @@ export async function sendBark(message: BarkMessage): Promise<void> {
         body: message.body,
         group: message.group,
         icon: SITE_NOTIFICATION_ICON,
-        url: message.url,
         level: message.level,
       }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),

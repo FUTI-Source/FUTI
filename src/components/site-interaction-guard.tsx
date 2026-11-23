@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { initCustomCursor } from '@/features/home/utils/custom-cursor';
+
 const EDITABLE_SELECTOR =
   'input, textarea, select, [contenteditable="true"], [contenteditable=""]';
 const BLOCKED_PAGE_EVENTS = [
@@ -49,6 +51,8 @@ const toggleFullscreen = () => {
 
 export const SiteInteractionGuard = () => {
   useEffect(() => {
+    const destroyCustomCursor = initCustomCursor();
+
     const preventPageInteraction = (event: Event) => {
       if (!isEditableTarget(event.target)) {
         event.preventDefault();
@@ -115,6 +119,7 @@ export const SiteInteractionGuard = () => {
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('mousedown', handleMouseDown, true);
+      destroyCustomCursor();
     };
   }, []);
 

@@ -28,7 +28,6 @@ import {
   SITE_ANALYTICS_WEBSITE_ID,
   SITE_URL,
 } from '@/lib/site';
-import { initCustomCursor } from '../utils/custom-cursor';
 import { identifyUmami, initUmami, trackEvent } from '@/utils/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
@@ -135,11 +134,6 @@ const Home: React.FC = () => {
     const timer = window.setTimeout(() => setAvatarVisible(true), 1500);
     return () => window.clearTimeout(timer);
   }, [avatarVisible]);
-
-  useEffect(() => {
-    const destroyCursor = initCustomCursor();
-    return () => destroyCursor();
-  }, []);
 
   return (
     <LazyMotion features={loadMotionFeatures} strict>

@@ -67,8 +67,8 @@ export const SITE_COPYRIGHT_START = 2017;
 export const SITE_THEME_CREDIT = 'Drawn by NAVILAB';
 export const SITE_THEME_CREDIT_HOVER = 'Drawn by Navigator Kepler';
 
-export const SITE_ANALYTICS_URL = 'https://umami.zhang-wentao.tech';
-export const SITE_ANALYTICS_WEBSITE_ID = 'c53b1321-886d-4d04-b4a1-4c2010db6735';
+export const SITE_ANALYTICS_URL = 'https://cloud.umami.is';
+export const SITE_ANALYTICS_WEBSITE_ID = '123ce0ff-afc4-4a61-9435-9face57dbd70';
 /** 统计需要排除的域名列表 */
 export const SITE_ANALYTICS_DOMAINS = `${SITE_HOSTNAME},${SITE_DOMAIN}`;
 

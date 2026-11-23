@@ -1,30 +1,16 @@
 import { z } from 'zod';
 
-export const contactSchema = z
-  .object({
-    name: z.string().trim().min(1, '请输入姓名').max(50, '姓名过长'),
-    email: z.string().min(1, '请输入邮箱地址').max(254).email('邮箱格式不正确'),
-    phoneCountryCode: z
-      .string()
-      .trim()
-      .regex(/^\+\d{1,4}$/, '区号格式不正确')
-      .optional(),
-    phone: z.string().trim().max(32, '电话号码过长').optional(),
-    content: z.string().min(1, '请输入发送内容').max(5000),
-    website: z.string().max(0, '请求无效').optional(),
-  })
-  .superRefine((value, ctx) => {
-    const phone = value.phone?.trim();
-    if (!phone) return;
-
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length < 5 || digits.length > 15) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['phone'],
-        message: '请输入有效电话号码',
-      });
-    }
-  });
+export const contactSchema = z.object({
+  name: z.string().trim().min(1, '请填写姓名').max(50, '姓名过长'),
+  email: z
+    .string()
+    .trim()
+    .min(1, '请填写邮箱')
+    .max(255, '邮箱过长')
+    .email('请输入正确的邮箱地址'),
+  content: z.string().trim().min(1, '请填写内容').max(2000, '内容过长'),
+  // 蜜罐：真实访客不会填写，仅用于拦截机器人
+  website: z.string().trim().max(0, '检测到异常提交'),
+});
 
 export type ContactInput = z.infer<typeof contactSchema>;

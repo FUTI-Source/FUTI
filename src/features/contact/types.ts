@@ -1,8 +1,6 @@
 export interface ContactRequest {
   name: string;
   email: string;
-  phoneCountryCode?: string;
-  phone?: string;
   content: string;
 }
 

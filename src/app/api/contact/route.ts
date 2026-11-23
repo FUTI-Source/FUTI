@@ -126,10 +126,11 @@ export async function POST(request: Request) {
     const result = await sendContactWebhook(parsed.data);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : '通知发送失败，请稍后重试';
+    // 真实原因（含 webhook 响应体）只记服务端日志，避免向访客泄露内部细节；
+    // 站长可通过 `iga pages logs` 查看。访客统一看到友好提示。
+    console.error('[contact] webhook 投递失败', error);
     return NextResponse.json(
-      { error: { code: 'NOTIFY_FAILED', message } },
+      { error: { code: 'NOTIFY_FAILED', message: '通知发送失败，请稍后重试' } },
       { status: 502 },
     );
   }

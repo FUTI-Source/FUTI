@@ -1,5 +1,4 @@
 import { sendBark } from '@/lib/bark';
-import { SITE_URL } from '@/lib/site';
 
 import type { DonateChannel } from '../types';
 
@@ -27,7 +26,6 @@ export async function pushDonationBark(input: DonationBarkInput): Promise<void> 
     subtitle: DONATE_CHANNEL_LABEL[input.channel],
     body: lines.join('\n'),
     group: '打赏收入',
-    url: SITE_URL,
     level: 'timeSensitive',
   });
 }

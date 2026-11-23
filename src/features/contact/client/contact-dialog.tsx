@@ -25,7 +25,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { sendContact, ContactError } from './send-contact';
-import { useCountryCodes } from './use-country-codes';
 import { contactSchema, type ContactInput } from '../schema';
 import { cn } from '@/lib/utils';
 import { trackEvent, captureException } from '@/utils/umami';
@@ -38,7 +37,6 @@ interface IContactDialogProps {
 export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChange }) => {
   const [submitState, setSubmitState] = useState<'idle' | 'success' | 'error'>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const countryCodes = useCountryCodes(open);
   const isSubmitted = submitState === 'success';
 
   const form = useForm<ContactInput>({
@@ -46,8 +44,6 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
     defaultValues: {
       name: '',
       email: '',
-      phoneCountryCode: '+86',
-      phone: '',
       content: '',
       website: '',
     },
@@ -163,39 +159,6 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-[#ff8a8a]" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white/70">电话（可选）</FormLabel>
-                    <div className="flex gap-2">
-                      <select
-                        {...form.register('phoneCountryCode')}
-                        aria-label="电话区号"
-                        className="h-9 w-[9.5rem] shrink-0 rounded-md border border-white/15 bg-[#1b1f26] px-2 text-sm text-white outline-none focus-visible:border-[#0295e5]"
-                      >
-                        {countryCodes.map(({ code, label }) => (
-                          <option key={`${code}-${label}`} value={code}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          inputMode="tel"
-                          autoComplete="tel"
-                          placeholder="13800000000"
-                          className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
-                          {...field}
-                        />
-                      </FormControl>
-                    </div>
                     <FormMessage className="text-[#ff8a8a]" />
                   </FormItem>
                 )}
