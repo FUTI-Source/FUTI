@@ -23,7 +23,6 @@ import { useWebMcpTools } from '@/features/webmcp/use-webmcp-tools';
 import type { DonateResult } from '@/features/donate/types';
 import useEventEmitter from '@/hooks/use-event-emitter';
 import {
-  CONTACT_EMAIL,
   SITE_ANALYTICS_DOMAINS,
   SITE_ANALYTICS_URL,
   SITE_ANALYTICS_WEBSITE_ID,
@@ -33,8 +32,8 @@ import { initCustomCursor } from '../utils/custom-cursor';
 import { identifyUmami, initUmami, trackEvent } from '@/utils/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
-const EmailDialog = lazy(() =>
-  import('@/features/mail/client/email-dialog').then(({ EmailDialog: Component }) => ({
+const ContactDialog = lazy(() =>
+  import('@/features/contact/client/contact-dialog').then(({ ContactDialog: Component }) => ({
     default: Component,
   })),
 );
@@ -46,7 +45,7 @@ const DonateDialog = lazy(() =>
 
 const Home: React.FC = () => {
   const [avatarVisible, setAvatarVisible] = useState(false);
-  const [emailDialog, setEmailDialog] = useState<{ href: string; open: boolean } | null>(null);
+  const [contactOpen, setContactOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
   const [donateResult, setDonateResult] = useState<DonateResult | null>(null);
 
@@ -74,13 +73,13 @@ const Home: React.FC = () => {
     );
   }, []);
 
-  const handleEmailOpenChange = (open: boolean) => {
-    setEmailDialog((current) => (current ? { ...current, open } : current));
+  const handleContactOpenChange = (open: boolean) => {
+    setContactOpen(open);
   };
 
   useWebMcpTools(() => {
     trackEvent('contact-open', { source: 'webmcp' });
-    setEmailDialog({ href: `mailto:${CONTACT_EMAIL}`, open: true });
+    setContactOpen(true);
   });
 
   const avatarEvent$ = useEventEmitter<AvatarEvent>();
@@ -168,9 +167,9 @@ const Home: React.FC = () => {
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} />
             <div className="h-7"><Description /></div>
             <Links
-              onEmailClick={(href) => {
+              onContactClick={() => {
                 trackEvent('contact-open', { source: 'profile' });
-                setEmailDialog({ href, open: true });
+                setContactOpen(true);
               }}
               onDonateClick={() => {
                 trackEvent('donate-open', { source: 'profile' });
@@ -181,12 +180,11 @@ const Home: React.FC = () => {
         </main>
         <Footer />
       </ScrollArea>
-      {emailDialog && (
+      {contactOpen && (
         <Suspense fallback={null}>
-          <EmailDialog
-            href={emailDialog.href}
-            open={emailDialog.open}
-            onOpenChange={handleEmailOpenChange}
+          <ContactDialog
+            open={contactOpen}
+            onOpenChange={handleContactOpenChange}
           />
         </Suspense>
       )}

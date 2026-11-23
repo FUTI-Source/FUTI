@@ -27,7 +27,7 @@ export async function pushDonationBark(input: DonationBarkInput): Promise<void> 
     subtitle: DONATE_CHANNEL_LABEL[input.channel],
     body: lines.join('\n'),
     group: '打赏收入',
-    url: `${SITE_URL}/api/mail/open`,
+    url: SITE_URL,
     level: 'timeSensitive',
   });
 }

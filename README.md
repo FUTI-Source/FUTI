@@ -8,11 +8,11 @@
 ## 功能特性
 
 - **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、parallax-js 视差背景、打字机式自我介绍、自定义光标、首屏加载进度圈。
-- **联系表单**：react-hook-form + zod 校验，Nodemailer 经 139 邮箱 SMTP 顺序发送「站长通知 + 访客确认」两封邮件，带 IP 限流与蜜罐反滥用。
-- **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + 邮件通知站长。
+- **联系表单**：react-hook-form + zod 校验，提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
+- **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + Webhook 通知站长。
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕（含各机型启动图）与桌面 WCO 窗口控件覆盖。
 - **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报。
-- **WebMCP**：通过 `use-webmcp-tools` 暴露站点工具（如触发联系邮箱）。
+- **WebMCP**：通过 `use-webmcp-tools` 暴露站点工具（如打开留言表单）。
 - **SEO**：Metadata API、`robots.ts`、`sitemap.ts`、OG 分享图与结构化数据。
 
 ## 技术栈
@@ -24,7 +24,7 @@
 | 动画 / 交互 | motion · parallax-js · pixi.js / @pixi/*（Live2D 渲染） |
 | UI 组件 | Radix UI（Dialog / Label / Separator / Slot / Tooltip）· lucide-react · simple-icons |
 | 表单 | react-hook-form · @hookform/resolvers · zod |
-| 邮件 | nodemailer（139 邮箱 SMTP，Node Runtime） |
+| 通知 | 通用 HTTP Webhook（fetch，Node Runtime） |
 | 打赏 | qrcode（收款二维码）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 
@@ -126,16 +126,14 @@ src/
 │       │   ├── status/route.ts
 │       │   ├── notify/[channel]/route.ts
 │       │   └── wechat/oauth/{route.ts,callback/route.ts}
-│       └── mail/
-│           ├── send/route.ts    # 发送邮件（Node Runtime，顺序两封）
-│           └── open/route.ts    # 邮箱入口跳转（Bark 通知点击目标）
+│       └── contact/route.ts    # 联系表单 → Webhook 通知（Node Runtime）
 ├── assets/                      # svg、webp 静态资源
 ├── components/                  # 通用 UI 与全局组件（ui、preloader、交互守卫）
 ├── features/
 │   ├── home/                    # 首页组装、视差背景、自定义光标、页头页脚
 │   ├── avatar/                  # 头像与 Live2D（components、live2d）
 │   ├── profile/                 # 名称、描述、社交 / 打赏 / 联系链接
-│   ├── mail/                    # 联系表单（client、server）
+│   ├── contact/                 # 联系表单（client、server）
 │   ├── donate/                  # 打赏（client、server、alipay、wechat）
 │   ├── pwa/                     # Service Worker 注册
 │   └── webmcp/                  # WebMCP 工具（use-webmcp-tools）
@@ -159,16 +157,41 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 在 `.env.local`（本地）或 IGA Pages 的环境变量设置（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
 
-### 邮件（联系表单）
+### 通知 Webhook（联系表单 / 打赏）
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
-| `MAIL_USER` | 是 | 139 发件邮箱地址，同时是 SMTP 登录账号 |
-| `MAIL_PASS` | 是 | 139 邮箱 **SMTP 授权码**（不是邮箱登录密码） |
-| `MAIL_TO` | 否 | 站长收信地址，留空默认发给 `MAIL_USER` |
-| `MAIL_SMTP_HOST` | 否 | 默认 `smtp.139.com` |
-| `MAIL_SMTP_PORT` | 否 | 默认 `465` |
-| `MAIL_SMTP_SECURE` | 否 | 默认 `true`（465 implicit TLS） |
+| `NOTIFY_WEBHOOK_URL` | 是 | 接收 POST JSON 的 HTTP(S) 地址 |
+| `NOTIFY_WEBHOOK_SECRET` | 否 | 设置后以 `Authorization: Bearer <secret>` 发送 |
+
+联系表单请求体：
+
+```json
+{
+  "type": "contact",
+  "title": "收到一条新的留言",
+  "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
+  "email": "访客邮箱",
+  "content": "留言内容",
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
+```
+
+打赏请求体：
+
+```json
+{
+  "type": "donation",
+  "title": "收到一笔新打赏",
+  "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
+  "channel": "微信支付",
+  "amount": "10.00",
+  "orderId": "订单号",
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
+```
+
+约定：8 秒超时，接收端返回 2xx 即视为成功。Webhook 地址只放在服务端环境变量，不要暴露给前端。
 
 ### Bark 推送（收到留言 / 打赏时通知 iPhone，可选）
 
@@ -191,24 +214,21 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 > `NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署。
 
-## 联系表单（邮件）
+## 联系表单（Webhook）
 
-提交表单后，[`src/app/api/mail/send/route.ts`](src/app/api/mail/send/route.ts) 顺序执行：
+提交表单后，[`src/app/api/contact/route.ts`](src/app/api/contact/route.ts) 会：
 
-1. 第一封发给站长（`MAIL_TO`），`replyTo` 设为访客邮箱；**失败则整体返回错误，不发确认信**。
-2. 第一封成功后，第二封「留言提交成功」确认信发给访客；第二封失败不推翻第一封结果，仅在响应里把 `confirmationSent` 置为 `false`。
+1. 校验邮箱与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；Webhook 失败时返回 `502`，表单提示重试。
+2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
+3. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
 
 反滥用：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 与 `Retry-After`；含隐藏蜜罐字段，请求体限制 24 KiB。速率记录保存在 Node 进程内存中，多实例间不共享；如需全局精确限流，应接入共享存储（如 Redis）或部署平台 WAF。
 
-邮件服务运行约束（已在代码中落实）：
+运行约束（已在代码中落实）：
 
-- 使用 `export const runtime = 'nodejs'`（nodemailer 不能跑在 Edge Runtime）。
-- 两封邮件都 `await` 完成后才返回响应，确保请求结束前完成发送。
-- Nodemailer 启用最多 2 条 SMTP 连接的连接池，复用连接发送两封邮件。
-- 显式设置较短的连接/握手/套接字超时（8s/8s/10s），避免邮件发送长时间占用请求。
-- 保留 EHLO `name` 与 `tls.servername`，规避 139 反垃圾 `550 Mail rejected score`。
-
-> 若上线后出现冷启动超时或连接不稳，可将 [`mailer.ts`](src/features/mail/server/mailer.ts) 内部替换为 Resend / SendGrid 等 HTTP 邮件 API（走 443），路由与前端无需改动。
+- 使用 `export const runtime = 'nodejs'`，`fetch` 走标准 HTTP(S) 出网。
+- Webhook 超时 8 秒，接收端返回 2xx 才算成功。
+- 联系表单会等待 Webhook 完成后才返回，避免请求提前结束导致通知丢失。
 
 ## 打赏（微信支付 / 支付宝）
 
@@ -221,7 +241,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 前端 <──statusToken + (codeUrl|redirectUrl|payment)── 服务端
 前端 ──轮询 GET /api/donate/status?token──> 服务端 ──查单──> 网关
 前端 <──{ status: pending|paid|closed }── 服务端
-网关 ──异步回调──> /api/donate/notify/[channel] ──验签/解密──> Bark + 邮件通知站长
+网关 ──异步回调──> /api/donate/notify/[channel] ──验签/解密──> Bark + Webhook 通知站长
 ```
 
 关键决策：
@@ -369,8 +389,8 @@ openssl rand -hex 32
 
 回调验签通过后，[`server/notify.ts`](src/features/donate/server/notify.ts) 的 `notifyDonationSuccess` 并行执行：
 
-- **Bark 推送**（[`lib/bark.ts`](src/lib/bark.ts)）：需 `BARK_DEVICE_KEY`，点击通知打开 `${SITE_URL}/api/mail/open`。
-- **邮件通知**（[`mailer.ts`](src/features/mail/server/mailer.ts)）：向 `MAIL_TO` 发送含渠道、金额、订单号的邮件。
+- **Bark 推送**（[`lib/bark.ts`](src/lib/bark.ts)）：需 `BARK_DEVICE_KEY`，点击通知打开站点首页。
+- **Webhook 通知**（[`webhook.ts`](src/features/contact/server/webhook.ts)）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`。
 
 任一通知失败只记日志，不影响回调返回成功，避免支付平台重复投递；未配置时自动跳过。
 
@@ -406,9 +426,8 @@ openssl rand -hex 32
 
 ## 常见问题
 
-- **`EAUTH` 认证失败**：检查 `MAIL_USER` 与 SMTP 授权码，授权码需在 139 邮箱后台单独生成。
-- **`550 Mail rejected score`**：确认 `mailer.ts` 中 `name` 与 `tls.servername` 未被删除；更换发信网络或改用 HTTP 邮件 API。
-- **函数超时 / 邮件偶发丢失**：检查托管平台的函数超时限制，必要时调整配置或迁移 HTTP 邮件 API。
+- **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。
+- **Bark 没收到推送**：检查 `BARK_DEVICE_KEY` 与 `BARK_SERVER_URL`；Bark 失败不会影响留言提交。
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。

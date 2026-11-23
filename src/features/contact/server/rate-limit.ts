@@ -5,7 +5,7 @@ const MAX_TRACKED_CLIENTS = 10_000;
 const requestsByClient = new Map<string, number[]>();
 let requestsSinceCleanup = 0;
 
-export function checkMailRateLimit(
+export function checkContactRateLimit(
   clientId: string,
   now = Date.now(),
 ): { allowed: boolean; retryAfterSeconds: number } {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { checkMailRateLimit, sendContactMail } from '@/features/mail/server';
-import { sendMailSchema } from '@/features/mail/schema';
+import { checkContactRateLimit, sendContactWebhook } from '@/features/contact/server';
+import { contactSchema } from '@/features/contact/schema';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,7 +36,7 @@ let loggedMissingClientId = false;
 function logClientIpContext(reason: string, request: Request, clientId: string | null) {
   const read = (name: string) => request.headers.get(name);
 
-  console.warn('[mail-rate-limit]', reason, {
+  console.warn('[contact-rate-limit]', reason, {
     clientId,
     forwardedFor: read('x-forwarded-for'),
     realIp: read('x-real-ip'),
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const rateLimit = clientId
-    ? checkMailRateLimit(clientId)
+    ? checkContactRateLimit(clientId)
     : { allowed: true, retryAfterSeconds: 0 };
 
   if (!rateLimit.allowed) {
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = sendMailSchema.safeParse(raw);
+  const parsed = contactSchema.safeParse(raw);
   if (!parsed.success) {
     const firstIssue = parsed.error.issues[0];
     return NextResponse.json(
@@ -123,13 +123,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await sendContactMail(parsed.data);
+    const result = await sendContactWebhook(parsed.data);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : '邮件发送失败，请稍后重试';
+      error instanceof Error ? error.message : '通知发送失败，请稍后重试';
     return NextResponse.json(
-      { error: { code: 'MAIL_FAILED', message } },
+      { error: { code: 'NOTIFY_FAILED', message } },
       { status: 502 },
     );
   }

@@ -13,7 +13,7 @@ import { BasicsProps } from '@/components/type';
 import { cn } from '@/lib/utils';
 
 type ILinksProps = BasicsProps & {
-  onEmailClick: (href: string) => void;
+  onContactClick: () => void;
   onDonateClick: () => void;
 };
 
@@ -46,7 +46,7 @@ const ActionTrigger: React.FC<ITriggerProps> = ({ Icon, label, iconClassName, on
   </m.button>
 );
 
-export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick, onDonateClick }) => (
+export const Links: React.FC<ILinksProps> = ({ className, style, onContactClick, onDonateClick }) => (
   <AnimatePresence>
     <m.div
       className={cn(
@@ -62,13 +62,13 @@ export const Links: React.FC<ILinksProps> = ({ className, style, onEmailClick, o
       animate="visible"
     >
       {LINKS.map(({ id, Icon, href, label }, i) => {
-        if (id === 'email') {
+        if (id === 'contact') {
           return (
             <ActionTrigger
               key={i}
               Icon={Icon}
               label={label}
-              onClick={() => onEmailClick(href)}
+              onClick={onContactClick}
             />
           );
         }

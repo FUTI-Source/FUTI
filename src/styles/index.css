@@ -297,15 +297,15 @@ body [contenteditable=''] {
   line-height: 1.5;
 }
 
-.email-dialog-form {
+.contact-dialog-form {
   margin-top: clamp(0.75rem, 3vh, 1.25rem);
 }
 
-.email-dialog-form > * + * {
+.contact-dialog-form > * + * {
   margin-top: clamp(0.625rem, 2.5vh, 1rem);
 }
 
-.email-dialog-form textarea {
+.contact-dialog-form textarea {
   min-height: clamp(5.5rem, 20dvh, 8rem);
   max-height: 32dvh;
 }
@@ -316,15 +316,15 @@ body [contenteditable=''] {
     padding: clamp(0.625rem, 3vw, 1rem);
   }
 
-  .email-dialog-form {
+  .contact-dialog-form {
     margin-top: 0.625rem;
   }
 
-  .email-dialog-form > * + * {
+  .contact-dialog-form > * + * {
     margin-top: 0.5rem;
   }
 
-  .email-dialog-form textarea {
+  .contact-dialog-form textarea {
     min-height: 4.5rem;
     max-height: 8rem;
   }

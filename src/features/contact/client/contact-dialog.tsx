@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleAlert, CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
+import { CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -24,48 +24,39 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-import { sendMail, SendMailError } from './send-mail';
-import { sendMailSchema, type SendMailInput } from '../schema';
+import { sendContact, ContactError } from './send-contact';
+import { contactSchema, type ContactInput } from '../schema';
 import { cn } from '@/lib/utils';
 import { trackEvent, captureException } from '@/utils/umami';
 
-interface IEmailDialogProps {
-  href: string;
+interface IContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenChange }) => {
-  const [submitState, setSubmitState] = useState<
-    'idle' | 'success' | 'partial' | 'error'
-  >('idle');
+export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChange }) => {
+  const [submitState, setSubmitState] = useState<'idle' | 'success' | 'error'>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const recipient = href.replace(/^mailto:/, '');
-  const isSubmitted =
-    submitState === 'success' || submitState === 'partial';
+  const isSubmitted = submitState === 'success';
 
-  const form = useForm<SendMailInput>({
-    resolver: zodResolver(sendMailSchema),
+  const form = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
     defaultValues: { email: '', content: '', website: '' },
   });
 
-  const onSubmit = async (data: SendMailInput) => {
+  const onSubmit = async (data: ContactInput) => {
     try {
-      const result = await sendMail(data);
-      setSubmitState(result.confirmationSent ? 'success' : 'partial');
-      trackEvent('contact-submit', { status: result.confirmationSent ? 'success' : 'partial' });
-      setFeedbackMessage(
-        result.confirmationSent
-          ? `留言已发送至 ${recipient}，确认邮件也已发送。再次点击按钮可清空表单。`
-          : `站长已收到留言，但确认邮件未能送达 ${data.email}。请检查邮箱地址或垃圾邮件文件夹；留言已成功提交，无需重复发送。点击“完成”清空表单。`,
-      );
+      await sendContact(data);
+      setSubmitState('success');
+      trackEvent('contact-submit', { status: 'success' });
+      setFeedbackMessage('留言已提交，站长会通过你留下的邮箱回复。再次点击按钮可清空表单。');
     } catch (error) {
-      const message = error instanceof SendMailError ? error.message : undefined;
+      const message = error instanceof ContactError ? error.message : undefined;
       captureException(error, { feature: 'contact-form' });
       setSubmitState('error');
       trackEvent('contact-submit', { status: 'error' });
       setFeedbackMessage(
-        `${message ?? '发送失败，请稍后重试'}；点击“重试提交”可保留内容再次发送。`,
+        `${message ?? '提交失败，请稍后重试'}；点击“重试提交”可保留内容再次发送。`,
       );
     }
   };
@@ -99,22 +90,22 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
           const content = event.currentTarget as HTMLElement | null;
           content?.focus({ preventScroll: true });
         }}
-        // 关闭后不把焦点还给邮件按钮，避免出现焦点框
+        // 关闭后不把焦点还给触发按钮，避免出现焦点框
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
         <div className="site-dialog-body">
           <DialogHeader>
             <DialogTitle className="font-geometos text-xl tracking-wide text-white/90">
-              发送邮件
+              发送留言
             </DialogTitle>
             <DialogDescription className="text-white/45">
-              留下你的邮箱与内容，提交后将通过 139 邮箱发送给站长
+              留下你的邮箱与内容，提交后将通过 Webhook 通知站长
             </DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="email-dialog-form">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="contact-dialog-form">
               <input
                 {...form.register('website')}
                 type="text"
@@ -172,11 +163,7 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                   role={submitState === 'error' ? 'alert' : 'status'}
                   className={cn(
                     'text-sm',
-                    submitState === 'error'
-                      ? 'text-[#ff8a8a]'
-                      : submitState === 'partial'
-                        ? 'text-[#ffd166]'
-                        : 'text-[#64c6f4]',
+                    submitState === 'error' ? 'text-[#ff8a8a]' : 'text-[#64c6f4]',
                   )}
                 >
                   {feedbackMessage}
@@ -199,25 +186,18 @@ export const EmailDialog: React.FC<IEmailDialogProps> = ({ href, open, onOpenCha
                     'text-white shadow-[0_8px_24px_-8px_rgba(2_149_229_0.5)]',
                     submitState === 'error'
                       ? 'bg-[#c94b55] hover:bg-[#c94b55]/90'
-                      : submitState === 'partial'
-                        ? 'bg-[#9b741e] hover:bg-[#9b741e]/90'
-                        : 'bg-[#0295e5] hover:bg-[#0295e5]/90',
+                      : 'bg-[#0295e5] hover:bg-[#0295e5]/90',
                   )}
                 >
                   {form.formState.isSubmitting ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      发送中…
+                      提交中…
                     </>
                   ) : submitState === 'success' ? (
                     <>
                       <CircleCheck className="size-4" />
-                      已发送
-                    </>
-                  ) : submitState === 'partial' ? (
-                    <>
-                      <CircleAlert className="size-4" />
-                      完成
+                      已提交
                     </>
                   ) : submitState === 'error' ? (
                     <>

@@ -1,6 +1,6 @@
 /**
  * 站点集中配置。
- * 站点名称、描述、域名、联系方式、备案号、打赏、邮件与统计等需要调整时，只改这里。
+ * 站点名称、描述、域名、联系方式、备案号、打赏、通知与统计等需要调整时，只改这里。
  * 注意：本文件会被客户端组件引用，切勿写入任何密钥或授权码。
  */
 
@@ -46,13 +46,6 @@ export const SITE_ICON_PATH = '/favicon.ico';
 export const SITE_IMAGE_PATH = '/icon-192x192.png';
 /** Bark 等推送通知使用的图标，必须是可公网访问的地址 */
 export const SITE_NOTIFICATION_ICON = `${SITE_URL}${SITE_IMAGE_PATH}`;
-/** 通知点击后的邮箱入口：iOS 通过通用链接唤起 App，桌面端打开网页版 */
-export const SITE_MAILBOX = {
-  /** y.10086.cn 配置了 139 邮箱的通用链接，未安装 App 时打开移动版网页 */
-  ios: 'https://y.10086.cn/',
-  /** 电脑端网页版 */
-  desktop: 'https://mail.10086.cn/',
-};
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 export const SITE_SOCIAL_IMAGE = {
   path: '/og-image.png',
@@ -67,13 +60,6 @@ export const DONATION_MAX_AMOUNT = 10000;
 /** 支付订单标题 */
 export const DONATION_SUBJECT = '打赏支持';
 
-/** 邮件服务默认值，密钥仍由环境变量提供 */
-export const SITE_MAIL_PROVIDER = '139 邮箱';
-export const SITE_MAIL_SMTP_HOST = 'smtp.139.com';
-export const SITE_MAIL_SMTP_PORT = 465;
-export const SITE_MAIL_OWNER_SUBJECT_PREFIX = '网站留言';
-export const SITE_MAIL_CONFIRM_SUBJECT = '留言提交成功 · 我们已收到你的消息';
-export const SITE_MAIL_HOME_CTA = '返回个人主页';
 
 /** 页脚版权起始年份 */
 export const SITE_COPYRIGHT_START = 2017;
