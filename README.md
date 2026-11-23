@@ -1,6 +1,6 @@
 # 张文涛 · 个人主页
 
-基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于 Vercel。单页应用，包含 Live2D 形象、视差背景、打字机介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
+基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 iGa Pages。单页应用，包含 Live2D 形象、视差背景、打字机介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
 - 站点名称、域名、联系方式、社交链接等集中在 [`src/lib/site.ts`](src/lib/site.ts)，需要调整时只改这一处。
@@ -28,7 +28,7 @@
 | 打赏 | qrcode（收款二维码）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 
-运行环境要求 **Node.js 26.x**（见 `package.json` 的 `engines`）。
+运行环境要求 **Node.js 20.19+**（见 `package.json` 的 `engines`），iGa Pages 使用 Node.js 20。
 
 ## 快速开始
 
@@ -95,7 +95,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 ## 环境变量
 
-在 `.env.local`（本地）或 Vercel → Settings → Environment Variables（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
+在 `.env.local`（本地）或 iGa Pages 的环境变量设置（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
 
 ### 邮件（联系表单）
 
@@ -132,15 +132,14 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 1. 第一封发给站长（`MAIL_TO`），`replyTo` 设为访客邮箱；**失败则整体返回错误，不发确认信**。
 2. 第一封成功后，第二封「留言提交成功」确认信发给访客；第二封失败不推翻第一封结果，仅在响应里把 `confirmationSent` 置为 `false`。
 
-反滥用：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 与 `Retry-After`；含隐藏蜜罐字段，请求体限制 24 KiB。速率记录保存在 Node 进程内存中，Serverless 多实例间不共享；如需全局精确限流，应接入共享存储（如 Redis）或部署平台 WAF。
+反滥用：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 与 `Retry-After`；含隐藏蜜罐字段，请求体限制 24 KiB。速率记录保存在 Node 进程内存中，多实例间不共享；如需全局精确限流，应接入共享存储（如 Redis）或部署平台 WAF。
 
-Vercel Serverless 关键约束（已在代码中落实）：
+邮件服务运行约束（已在代码中落实）：
 
 - 使用 `export const runtime = 'nodejs'`（nodemailer 不能跑在 Edge Runtime）。
-- 两封邮件都 `await` 完成后才返回响应，避免函数提前冻结丢信。
+- 两封邮件都 `await` 完成后才返回响应，确保请求结束前完成发送。
 - Nodemailer 启用最多 2 条 SMTP 连接的连接池，复用连接发送两封邮件。
-- Vercel 仅封出站 25 端口，465/587 开放，139 的 465 可直连。
-- 显式设置较短的连接/握手/套接字超时（8s/8s/10s），控制在函数超时预算内。
+- 显式设置较短的连接/握手/套接字超时（8s/8s/10s），避免邮件发送长时间占用请求。
 - 保留 EHLO `name` 与 `tls.servername`，规避 139 反垃圾 `550 Mail rejected score`。
 
 > 若上线后出现冷启动超时或连接不稳，可将 [`mailer.ts`](src/features/mail/server/mailer.ts) 内部替换为 Resend / SendGrid 等 HTTP 邮件 API（走 443），路由与前端无需改动。

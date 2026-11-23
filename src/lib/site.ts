@@ -33,7 +33,7 @@ export const CONTACT_EMAIL = 'mine@139.com';
 
 /**
  * 备案号与备案查询页链接。
- * 优先读取 Vercel 环境变量 NEXT_PUBLIC_ICP_NUMBER，留空则不显示备案信息；
+ * 优先读取环境变量 NEXT_PUBLIC_ICP_NUMBER，留空则不显示备案信息；
  * 未配置时回退到下方硬编码默认值，便于本地开发与预览。
  */
 export const ICP_NUMBER =
