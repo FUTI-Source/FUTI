@@ -25,24 +25,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { sendContact, ContactError } from './send-contact';
+import { useCountryCodes } from './use-country-codes';
 import { contactSchema, type ContactInput } from '../schema';
 import { cn } from '@/lib/utils';
 import { trackEvent, captureException } from '@/utils/umami';
-
-const AREA_CODES = [
-  { code: '+86', label: '+86 中国大陆' },
-  { code: '+852', label: '+852 中国香港' },
-  { code: '+853', label: '+853 中国澳门' },
-  { code: '+886', label: '+886 中国台湾' },
-  { code: '+1', label: '+1 美国/加拿大' },
-  { code: '+44', label: '+44 英国' },
-  { code: '+81', label: '+81 日本' },
-  { code: '+82', label: '+82 韩国' },
-  { code: '+65', label: '+65 新加坡' },
-  { code: '+61', label: '+61 澳大利亚' },
-  { code: '+49', label: '+49 德国' },
-  { code: '+33', label: '+33 法国' },
-];
 
 interface IContactDialogProps {
   open: boolean;
@@ -52,6 +38,7 @@ interface IContactDialogProps {
 export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChange }) => {
   const [submitState, setSubmitState] = useState<'idle' | 'success' | 'error'>('idle');
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const countryCodes = useCountryCodes(open);
   const isSubmitted = submitState === 'success';
 
   const form = useForm<ContactInput>({
@@ -192,8 +179,8 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
                         aria-label="电话区号"
                         className="h-9 w-[9.5rem] shrink-0 rounded-md border border-white/15 bg-[#1b1f26] px-2 text-sm text-white outline-none focus-visible:border-[#0295e5]"
                       >
-                        {AREA_CODES.map(({ code, label }) => (
-                          <option key={code} value={code}>
+                        {countryCodes.map(({ code, label }) => (
+                          <option key={`${code}-${label}`} value={code}>
                             {label}
                           </option>
                         ))}
