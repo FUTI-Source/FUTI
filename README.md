@@ -163,6 +163,8 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 | --- | --- | --- |
 | `NOTIFY_WEBHOOK_URL` | 是 | 接收 POST JSON 的 HTTP(S) 地址 |
 | `NOTIFY_WEBHOOK_SECRET` | 否 | 设置后以 `Authorization: Bearer <secret>` 发送 |
+| `NOTIFY_WEBHOOK_FALLBACK_URL` | 否 | 主 Webhook 失败时接收失败事件的备用地址 |
+| `NOTIFY_WEBHOOK_FALLBACK_SECRET` | 否 | 失败 Webhook 的独立令牌，留空复用 `NOTIFY_WEBHOOK_SECRET` |
 
 联系表单请求体：
 
@@ -193,7 +195,20 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 }
 ```
 
-约定：8 秒超时，接收端返回 2xx 即视为成功。Webhook 地址只放在服务端环境变量，不要暴露给前端。
+失败 Webhook 请求体（主 Webhook 返回非 2xx、网络错误或超时后触发）：
+
+```json
+{
+  "type": "contact.webhook_failed",
+  "title": "Webhook 投递失败",
+  "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
+  "error": "Webhook 返回 500",
+  "original": { "type": "contact", "name": "访客姓名", "content": "留言内容" },
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
+```
+
+约定：单次请求 8 秒超时，接收端返回 2xx 即视为成功。主 Webhook 失败后自动尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`；失败 Webhook 成功则整体视为通知成功，两者都失败才报错。Webhook 地址只放在服务端环境变量，不要暴露给前端。
 
 ### Bark 推送（收到留言 / 打赏时通知 iPhone，可选）
 
@@ -220,7 +235,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 提交表单后，[`src/app/api/contact/route.ts`](src/app/api/contact/route.ts) 会：
 
-1. 校验姓名、邮箱、可选电话与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；Webhook 失败时返回 `502`，表单提示重试。
+1. 校验姓名、邮箱、可选电话与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；主 Webhook 失败时自动投递失败事件到 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才返回 `502`。
 2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
 3. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
 
@@ -231,7 +246,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 运行约束（已在代码中落实）：
 
 - 使用 `export const runtime = 'nodejs'`，`fetch` 走标准 HTTP(S) 出网。
-- Webhook 超时 8 秒，接收端返回 2xx 才算成功。
+- Webhook 超时 8 秒，接收端返回 2xx 才算成功；主 Webhook 失败时会尝试失败 Webhook。
 - 联系表单会等待 Webhook 完成后才返回，避免请求提前结束导致通知丢失。
 
 ## 打赏（微信支付 / 支付宝）
@@ -430,7 +445,7 @@ openssl rand -hex 32
 
 ## 常见问题
 
-- **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。
+- **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。若配置了 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才会返回 502。
 - **Bark 没收到推送**：检查 `BARK_DEVICE_KEY` 与 `BARK_SERVER_URL`；Bark 失败不会影响留言提交。
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。

@@ -9,13 +9,19 @@ function getWebhookUrl(): string | null {
   return process.env.NOTIFY_WEBHOOK_URL?.trim() || null;
 }
 
-async function postWebhook(payload: Record<string, unknown>): Promise<void> {
-  const url = getWebhookUrl();
-  if (!url) {
-    throw new Error('通知 Webhook 尚未配置，请设置 NOTIFY_WEBHOOK_URL');
-  }
+function getFallbackUrl(): string | null {
+  return process.env.NOTIFY_WEBHOOK_FALLBACK_URL?.trim() || null;
+}
 
-  const secret = process.env.NOTIFY_WEBHOOK_SECRET?.trim();
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function deliver(
+  url: string,
+  payload: Record<string, unknown>,
+  secret?: string,
+): Promise<void> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
 
@@ -45,6 +51,61 @@ async function postWebhook(payload: Record<string, unknown>): Promise<void> {
     throw error;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+function buildFailurePayload(
+  payload: Record<string, unknown>,
+  reason: string,
+): Record<string, unknown> {
+  const type = typeof payload.type === 'string' ? payload.type : 'notification';
+
+  return {
+    type: `${type}.webhook_failed`,
+    title: 'Webhook 投递失败',
+    site: payload.site,
+    error: reason.slice(0, 500),
+    original: payload,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+async function postWebhook(payload: Record<string, unknown>): Promise<void> {
+  const primaryUrl = getWebhookUrl();
+  const fallbackUrl = getFallbackUrl();
+  const primarySecret = process.env.NOTIFY_WEBHOOK_SECRET?.trim();
+  const fallbackSecret =
+    process.env.NOTIFY_WEBHOOK_FALLBACK_SECRET?.trim() || primarySecret;
+
+  if (!primaryUrl) {
+    if (!fallbackUrl) {
+      throw new Error('通知 Webhook 尚未配置，请设置 NOTIFY_WEBHOOK_URL');
+    }
+
+    await deliver(
+      fallbackUrl,
+      buildFailurePayload(payload, '未配置 NOTIFY_WEBHOOK_URL'),
+      fallbackSecret,
+    );
+    return;
+  }
+
+  try {
+    await deliver(primaryUrl, payload, primarySecret);
+  } catch (primaryError) {
+    if (!fallbackUrl) throw primaryError;
+
+    try {
+      await deliver(
+        fallbackUrl,
+        buildFailurePayload(payload, errorMessage(primaryError)),
+        fallbackSecret,
+      );
+    } catch (fallbackError) {
+      throw new Error(
+        `主 Webhook 失败：${errorMessage(primaryError)}；失败 Webhook 也失败：${errorMessage(fallbackError)}`,
+      );
+    }
   }
 }
 
@@ -97,8 +158,8 @@ export async function sendDonationWebhook(input: {
   amountYuan?: string;
   orderId: string;
 }): Promise<void> {
-  if (!getWebhookUrl()) {
-    console.warn('[donate] 未配置 NOTIFY_WEBHOOK_URL，跳过 Webhook 通知');
+  if (!getWebhookUrl() && !getFallbackUrl()) {
+    console.warn('[donate] 未配置通知 Webhook，跳过 Webhook 通知');
     return;
   }
 
