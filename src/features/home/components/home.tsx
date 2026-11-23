@@ -154,7 +154,7 @@ const Home: React.FC = () => {
                 {!avatarVisible && (
                   <m.div
                     key="profile-loading"
-                    className="absolute inset-0 flex items-center justify-center"
+                    className="profile-loading absolute inset-0 flex items-center justify-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1, transition: { delay: 0.2 } }}
                     exit={{ opacity: 0, transition: { duration: 0.2 } }}

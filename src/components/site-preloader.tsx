@@ -21,7 +21,8 @@ type Phase = 'loading' | 'leaving' | 'done';
 const HIDE_PRELOADER_IN_AUTOMATION_SCRIPT = `(function(){try{
 var nav=window.navigator||{};
 var ua=nav.userAgent||'';
-if(nav.webdriver||/HeadlessChrome|Vercel-Screenshot|IGA-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
+var q=window.location.search||'';
+if(nav.webdriver||/[?&]preview=1(?:&|$)/.test(q)||/HeadlessChrome|Vercel-Screenshot|IGA-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
 }catch(e){}})();`;
 
 /**
@@ -85,7 +86,7 @@ export const SitePreloader = () => {
       {/* 自动化环境直接隐藏遮罩，并跳过入场动画，让截图拿到最终态页面；正常用户不受影响 */}
       <script dangerouslySetInnerHTML={{ __html: HIDE_PRELOADER_IN_AUTOMATION_SCRIPT }} />
       <style>
-        {'html.preload-skip #site-preloader{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}
+        {'html.preload-skip #site-preloader{display:none}html.preload-skip .profile-loading,html.preload-skip .avatar-loading{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}
       </style>
       <div
         id="site-preloader"

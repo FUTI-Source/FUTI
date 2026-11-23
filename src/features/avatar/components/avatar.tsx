@@ -122,7 +122,7 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
         {!init && (
           <m.div
             key="avatar-loading"
-            className="absolute inset-0 flex items-center justify-center"
+            className="avatar-loading absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 0.2 } }}
             exit={{ opacity: 0 }}
