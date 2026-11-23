@@ -16,6 +16,11 @@ export default function manifest(): MetadataRoute.Manifest {
     display_override: ['window-controls-overlay', 'standalone'],
     scope: '/',
     start_url: '/',
+    // 个人主页同时适配竖屏与横屏（见样式里的 landscape 分支），显式声明 any
+    // 避免部分终端按默认 portrait 锁方向。
+    orientation: 'any',
+    // 便于应用商店/浏览器归类，提升安装面板的展示质量。
+    categories: ['personalization', 'portfolio'],
     theme_color: THEME_COLOR,
     background_color: THEME_COLOR,
     icons: [

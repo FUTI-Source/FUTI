@@ -1,10 +1,12 @@
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/apple-touch-icon.png',
   '/fonts/Geometos.woff',
   '/fonts/Kanit-300.woff2',
   '/fonts/Kanit-400.woff2',
@@ -12,6 +14,14 @@ const PRECACHE_URLS = [
   '/offline.html',
 ];
 const STATIC_DESTINATIONS = new Set(['font', 'image', 'script', 'style', 'worker']);
+
+// 宿主页面发来 SKIP_WAITING 时立即接管，避免更新卡在 waiting 状态、
+// 必须关闭所有标签页才能生效。配合注册端的空闲触发使用。
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
