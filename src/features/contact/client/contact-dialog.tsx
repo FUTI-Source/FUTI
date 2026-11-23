@@ -29,6 +29,21 @@ import { contactSchema, type ContactInput } from '../schema';
 import { cn } from '@/lib/utils';
 import { trackEvent, captureException } from '@/utils/umami';
 
+const AREA_CODES = [
+  { code: '+86', label: '+86 中国大陆' },
+  { code: '+852', label: '+852 中国香港' },
+  { code: '+853', label: '+853 中国澳门' },
+  { code: '+886', label: '+886 中国台湾' },
+  { code: '+1', label: '+1 美国/加拿大' },
+  { code: '+44', label: '+44 英国' },
+  { code: '+81', label: '+81 日本' },
+  { code: '+82', label: '+82 韩国' },
+  { code: '+65', label: '+65 新加坡' },
+  { code: '+61', label: '+61 澳大利亚' },
+  { code: '+49', label: '+49 德国' },
+  { code: '+33', label: '+33 法国' },
+];
+
 interface IContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,7 +56,14 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
 
   const form = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
-    defaultValues: { email: '', content: '', website: '' },
+    defaultValues: {
+      name: '',
+      email: '',
+      phoneCountryCode: '+86',
+      phone: '',
+      content: '',
+      website: '',
+    },
   });
 
   const onSubmit = async (data: ContactInput) => {
@@ -49,7 +71,7 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
       await sendContact(data);
       setSubmitState('success');
       trackEvent('contact-submit', { status: 'success' });
-      setFeedbackMessage('留言已提交，站长会通过你留下的邮箱回复。再次点击按钮可清空表单。');
+      setFeedbackMessage('留言已提交，站长会通过你留下的联系方式回复。再次点击按钮可清空表单。');
     } catch (error) {
       const message = error instanceof ContactError ? error.message : undefined;
       captureException(error, { feature: 'contact-form' });
@@ -117,6 +139,27 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
               />
               <FormField
                 control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white/70">
+                      姓名 <span aria-hidden="true" className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        autoComplete="name"
+                        placeholder="怎么称呼你"
+                        className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[#ff8a8a]" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -133,6 +176,39 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage className="text-[#ff8a8a]" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white/70">电话（可选）</FormLabel>
+                    <div className="flex gap-2">
+                      <select
+                        {...form.register('phoneCountryCode')}
+                        aria-label="电话区号"
+                        className="h-9 w-[9.5rem] shrink-0 rounded-md border border-white/15 bg-[#1b1f26] px-2 text-sm text-white outline-none focus-visible:border-[#0295e5]"
+                      >
+                        {AREA_CODES.map(({ code, label }) => (
+                          <option key={code} value={code}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="13800000000"
+                          className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
                     <FormMessage className="text-[#ff8a8a]" />
                   </FormItem>
                 )}

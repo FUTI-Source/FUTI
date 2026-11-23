@@ -8,7 +8,7 @@
 ## 功能特性
 
 - **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、parallax-js 视差背景、打字机式自我介绍、自定义光标、首屏加载进度圈。
-- **联系表单**：react-hook-form + zod 校验，提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
+- **联系表单**：react-hook-form + zod 校验，收集姓名、邮箱与可选电话（含区号），提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
 - **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + Webhook 通知站长。
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕（含各机型启动图）与桌面 WCO 窗口控件覆盖。
 - **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报。
@@ -171,7 +171,9 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
   "type": "contact",
   "title": "收到一条新的留言",
   "site": { "name": "站点名称", "url": "https://www.zhang-wentao.tech" },
+  "name": "访客姓名",
   "email": "访客邮箱",
+  "phone": "+86 13800000000",
   "content": "留言内容",
   "timestamp": "2026-01-01T00:00:00.000Z"
 }
@@ -218,7 +220,7 @@ public/                          # live2d 模型、字体、图标、iOS 启动�
 
 提交表单后，[`src/app/api/contact/route.ts`](src/app/api/contact/route.ts) 会：
 
-1. 校验邮箱与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；Webhook 失败时返回 `502`，表单提示重试。
+1. 校验姓名、邮箱、可选电话与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；Webhook 失败时返回 `502`，表单提示重试。
 2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
 3. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
 

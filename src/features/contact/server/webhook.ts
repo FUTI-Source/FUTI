@@ -52,18 +52,25 @@ async function postWebhook(payload: Record<string, unknown>): Promise<void> {
 export async function sendContactWebhook(
   dto: ContactRequest,
 ): Promise<ContactResponse> {
+  const phone = dto.phone?.trim();
+  const phoneWithCode = phone
+    ? `${dto.phoneCountryCode?.trim() || '+86'} ${phone}`
+    : null;
+
   const results = await Promise.allSettled([
     postWebhook({
       type: 'contact',
       title: '收到一条新的留言',
       site: { name: SITE_NAME, url: SITE_URL },
+      name: dto.name,
       email: dto.email,
+      phone: phoneWithCode,
       content: dto.content,
       timestamp: new Date().toISOString(),
     }),
     sendBark({
-      title: `网站留言 · ${dto.email}`,
-      subtitle: '来自网站联系表单',
+      title: `网站留言 · ${dto.name}`,
+      subtitle: phoneWithCode ? `${dto.email} / ${phoneWithCode}` : dto.email,
       body: truncateBarkBody(dto.content) || '（无内容）',
       group: '网站留言',
       url: SITE_URL,
