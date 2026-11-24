@@ -169,12 +169,13 @@ main {
   }
 
   /* 页面固定为一屏，滚动只发生在内部 ScrollArea。
-     iOS 软键盘弹出/收起时 Safari 会把整个文档往上顶，收起后若停留在偏移位置，
-     底部就会露出一段黑色画布间隔；禁止文档级滚动可从根本上避免。 */
+     overflow:hidden 只挡住「持久性的文档滚动偏移」（iOS 键盘顶起后不回弹、
+     底部露黑色画布），并不影响橡皮筋回弹；键盘收起后的位置归零由
+     app-height.js 的 focusout / visualViewport 复查兜底。
+     不设 overscroll-behavior:none，保留 iOS 原生的页面弹性回弹。 */
   html,
   body {
     overflow: hidden;
-    overscroll-behavior: none;
   }
 
   /* 关闭 iOS Safari 横屏文字自动放大，避免同一字号在不同终端大小不一 */
