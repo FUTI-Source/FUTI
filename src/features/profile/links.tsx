@@ -7,7 +7,7 @@ import * as m from 'motion/react-m';
 import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { LINKS } from './consts';
+import { LINKS } from './links-consts';
 import { BasicsProps } from '@/components/types';
 
 import { cn } from '@/lib/utils';

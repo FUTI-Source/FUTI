@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { SOFT_REFRESH_EVENT } from '@/lib/app-events';
-import { initCustomCursor } from '@/features/home/utils/custom-cursor';
+import { initCustomCursor } from '@/features/home/custom-cursor';
 
 const EDITABLE_SELECTOR =
   'input, textarea, select, [contenteditable="true"], [contenteditable=""]';

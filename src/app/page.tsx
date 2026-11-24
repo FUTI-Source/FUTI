@@ -1,3 +1,3 @@
 'use client';
 
-export { default } from '@/features/home/components/home';
+export { default } from '@/features/home/home';

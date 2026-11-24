@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 import { sendContact, ContactError } from './send-contact';
-import { contactSchema, type ContactInput } from '../schema';
+import { contactSchema, type ContactInput } from './schema';
 import { cn } from '@/lib/utils';
 import { trackEvent, captureException } from '@/lib/umami';
 

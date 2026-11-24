@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import type { NextConfig } from 'next';
 
 import { SITE_CDN_CACHE } from './site.config';
@@ -20,8 +21,16 @@ const STATIC_CACHE = SITE_CDN_CACHE.static;
 /** Service Worker 必须永不缓存，否则新版本推不下去 */
 const SW_CACHE = SITE_CDN_CACHE.serviceWorker;
 
+// 软刷新走 router.refresh()，只换 RSC 数据，不会重新加载客户端 JS bundle。
+// Next.js 会在 RSC 响应里比对 buildId，不一致才降级为 MPA 导航去取新 bundle；
+// 因此每次构建都要写入新的 .next/BUILD_ID（不依赖构建平台是否复用旧产物）。
+// BUILD_ID 环境变量可显式指定，便于 CI 用提交号作为版本标识。
+const generateBuildId = async () =>
+  process.env.BUILD_ID ?? `${Date.now().toString(36)}-${randomBytes(6).toString('hex')}`;
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  generateBuildId,
   // 不输出浏览器 source map：避免源码经 DCDN 公开，同时减小部署产物与上传体积
   productionBrowserSourceMaps: false,
   // 部署产物依赖 framework standalone 输出（自包含 server.js）

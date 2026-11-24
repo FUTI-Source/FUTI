@@ -9,7 +9,7 @@ import { BatchRenderer, extensions } from '@pixi/core';
 import { Ticker, TickerPlugin } from '@pixi/ticker';
 import { Live2DModel } from '@/features/avatar/live2d';
 
-import { AvatarEvent } from '../events';
+import { AvatarEvent } from './events';
 
 import { BasicsProps } from '@/components/types';
 

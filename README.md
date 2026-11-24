@@ -58,18 +58,18 @@ src/
 │   ├── globals.css               # 样式入口
 │   └── manifest.ts / robots.ts   # PWA / SEO
 ├── components/                   # 通用 UI（shadcn 风格）
-├── features/                     # 按业务域组织
+├── features/                     # 按业务域组织，每个域的文件平铺，不套空目录
 │   ├── home/                     # 首页、视差背景、自定义光标
-│   ├── avatar/                   # Live2D 头像（PixiJS）
+│   ├── avatar/                   # Live2D 头像（PixiJS 运行时单独放 live2d/）
 │   ├── profile/                  # 名称、描述、社交链接
 │   ├── contact/                  # 联系表单
-│   ├── donate/                   # 打赏
-│   └── pwa/                      # Service Worker
+│   ├── donate/                   # 打赏（支付渠道实现集中在 server/）
+│   └── pwa/                      # Service Worker 注册
 ├── hooks/                        # 通用 React hooks
 ├── lib/                          # 站点工具（日志、通知、限流）
 ├── proxy.ts                      # 裸域自动补 www + 国内外分流
 └── styles/                       # 全局样式与 Tailwind 主题
-public/                           # Live2D 模型、字体、图标、iOS 启动图
+public/                           # Live2D 模型、字体、图标、iOS 启动图、文档配图
 site.config.ts                    # 站点全局配置
 ```
 
@@ -301,6 +301,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
+| `BUILD_ID` | 否 | 构建标识，写入 `.next/BUILD_ID`；留空则每次构建自动生成（见「PWA 与 iOS 主屏幕」） |
 
 > 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY` / `IGA_SECRET_KEY`）只存在于本机环境变量或密码管理器中：运行时密钥分别配在 Vercel 与 IGA 的项目后台里，发布用 token / AK / SK 不落仓库。见「部署到 Vercel」与「部署到 IGA Pages」。
 
@@ -437,7 +438,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 
 配置总入口：登录 [微信商户平台](https://pay.weixin.qq.com/) → 顶部「账户中心」→ 左侧「API 安全」。
 
-![进入 API 安全](public/docs/wechat-pay/nav-account-center-api-security.png)
+![进入 API 安全](public/docs/nav-account-center-api-security.png)
 
 **`DONATION_ORDER_SECRET`**（可选）—— 留空即自动从支付私钥派生，通常无需配置；如需显式指定可自行生成：
 
@@ -450,43 +451,43 @@ openssl rand -hex 32
 
 **`WECHAT_APP_ID` 与 `WECHAT_APP_SECRET`** —— 公众号 / 服务号：前往 [微信开发者平台](https://developers.weixin.qq.com/platform/) 扫码登录 → 「我的业务 → 公众号/服务号」→ 详情页 → 「基础信息」查看 AppID 与 AppSecret。
 
-![开发者平台 - 我的业务](public/docs/wechat-pay/appid-01-devplatform-mybiz.png)
+![开发者平台 - 我的业务](public/docs/appid-01-devplatform-mybiz.png)
 
-![公众号详情页 - AppID / AppSecret](public/docs/wechat-pay/appid-02-detail-appid-appsecret.png)
+![公众号详情页 - AppID / AppSecret](public/docs/appid-02-detail-appid-appsecret.png)
 
 > AppSecret 平台不储存明文，忘记需点「重置」重新生成（旧密钥立即失效），重置弹窗中可复制明文：
 
-![重置 AppSecret 弹窗](public/docs/wechat-pay/appsecret-reset-dialog.png)
+![重置 AppSecret 弹窗](public/docs/appsecret-reset-dialog.png)
 
 > 旧入口仍可在 [微信公众平台](https://mp.weixin.qq.com/) →「设置与开发 → 开发接口管理 → 基本配置」找到。AppID 必须与商户号完成绑定才能下单。
 
 **`WECHAT_API_V3_KEY`** —— 32 位 APIv3 密钥：「API 安全」页底部「APIv3 密钥」→「设置」。**设置后无法查看**，遗失须重新设置。
 
-![API 安全 - 设置 APIv3 密钥](public/docs/wechat-pay/apiv3-key-api-security.png)
+![API 安全 - 设置 APIv3 密钥](public/docs/apiv3-key-api-security.png)
 
 **`WECHAT_CERT_SERIAL_NO` 与 `WECHAT_PRIVATE_KEY`** —— 商户 API 证书（二者配套）：
 
 1. 「API 安全」→「商户 API 证书」→「申请证书」。
 
-   ![申请商户 API 证书](public/docs/wechat-pay/cert-01-apply-entry.png)
+   ![申请商户 API 证书](public/docs/cert-01-apply-entry.png)
 
 2. 按提示下载「微信支付证书工具」，本地生成证书文件：`apiclient_key.pem` 为私钥、`apiclient_cert.pem` 为证书。证书**只能下载一次**，遗失须重新申请。
 
-   ![证书工具生成本地文件](public/docs/wechat-pay/cert-02-tool-generated.png)
+   ![证书工具生成本地文件](public/docs/cert-02-tool-generated.png)
 
 3. 提交证书串后，在「API 证书管理」列表的「证书序列号」列查看序列号填入 `WECHAT_CERT_SERIAL_NO`；把 `apiclient_key.pem` 全文（换行写成 `\n`）填入 `WECHAT_PRIVATE_KEY`。
 
-   ![API 证书管理 - 证书序列号](public/docs/wechat-pay/cert-03-serial-number.png)
+   ![API 证书管理 - 证书序列号](public/docs/cert-03-serial-number.png)
 
 **`WECHAT_PUBLIC_KEY_ID` 与 `WECHAT_PUBLIC_KEY`** —— 微信支付公钥（公钥模式，长期有效无需定期更换）：
 
 1. 「API 安全」→「微信支付公钥」→「管理公钥」。
 
-   ![微信支付公钥入口](public/docs/wechat-pay/pubkey-01-entry.png)
+   ![微信支付公钥入口](public/docs/pubkey-01-entry.png)
 
 2. 列表查看「公钥 ID」填入 `WECHAT_PUBLIC_KEY_ID`；「下载公钥」得到 `.pem`，其全文（换行写成 `\n`）填入 `WECHAT_PUBLIC_KEY`。
 
-   ![下载微信支付公钥](public/docs/wechat-pay/pubkey-02-download.png)
+   ![下载微信支付公钥](public/docs/pubkey-02-download.png)
 
 #### 微信支付接入详解
 
@@ -516,7 +517,7 @@ openssl rand -hex 32
 
 #### 前端支付流程
 
-见 `src/features/donate/client/donate-dialog.tsx` 与 `src/features/donate/client/revenue.ts`：
+见 `src/features/donate/donate-dialog.tsx` 与 `src/features/donate/revenue.ts`：
 
 1. 打开弹窗 → `GET /api/donate/config` 决定可用渠道。
 2. 输入金额 → `POST /api/donate/create`：扫码用 `codeUrl` 渲染二维码并每 3 秒轮询查单（最长 5 分钟）；跳转打开 `redirectUrl`，支付后回跳 `/?donate=success&token=...` 再查单确认；JSAPI 用 `payment` 调起收银台后轮询确认。
@@ -543,6 +544,7 @@ openssl rand -hex 32
 <summary><strong>PWA 与 iOS 主屏幕</strong></summary>
 
 - manifest 由 `src/app/manifest.ts` 生成，Service Worker 由 `src/features/pwa/service-worker-registration.tsx` 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
+- **版本切换**：软刷新（`router.refresh()`）只换 RSC 数据，不会替换已加载的客户端 JS bundle。`next.config.ts` 的 `generateBuildId` 每次构建写入唯一 `.next/BUILD_ID`（可用 `BUILD_ID` 环境变量指定）；Next.js 在 RSC 响应里发现 buildId 与当前页面不一致时会自动降级为 MPA 导航，从而加载新 bundle。`prepare-standalone.mjs` 会把它同步进 standalone 产物，本地验证时行为与线上一致。
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 `src/styles/index.css` 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/launch/` 内置各机型 iOS 启动图。

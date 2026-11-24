@@ -1,5 +1,5 @@
-import type { ContactInput } from '../schema';
-import type { ApiErrorBody, ContactResponse } from '../types';
+import type { ContactInput } from './schema';
+import type { ApiErrorBody, ContactResponse } from './types';
 
 export class ContactError extends Error {
   constructor(

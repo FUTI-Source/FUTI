@@ -12,7 +12,7 @@ import { BasicsProps } from '@/components/types';
 import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter';
 import useExternal from '@/hooks/use-external';
 
-import { AvatarEvent } from '../events';
+import { AvatarEvent } from './events';
 
 const AvatarCore = lazy(() => import('./avatar-core.tsx'));
 

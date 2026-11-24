@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 import { BasicsProps } from '@/components/types';
 
-import { BrandMark } from '@/assets/svg/brand-mark';
+import { BrandMark } from '@/assets/brand-mark';
 import { cn } from '@/lib/utils';
 import {
   ICP_LINK,

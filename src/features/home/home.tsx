@@ -5,15 +5,15 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { AnimatePresence, LazyMotion } from 'motion/react';
 import * as m from 'motion/react-m';
 
-import { Avatar } from '@/features/avatar/components/avatar';
-import { Loading } from '@/features/avatar/components/loading';
+import { Avatar } from '@/features/avatar/avatar';
+import { Loading } from '@/features/avatar/loading';
 import { AvatarEvent } from '@/features/avatar/events';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { Description } from '@/features/profile/components/description';
-import { Links } from '@/features/profile/components/links';
-import { Name } from '@/features/profile/components/name';
-import { ProfileWrapper } from '@/features/profile/components/wrapper';
+import { Description } from '@/features/profile/description';
+import { Links } from '@/features/profile/links';
+import { Name } from '@/features/profile/name';
+import { ProfileWrapper } from '@/features/profile/wrapper';
 
 import { DetroitBackground } from './background';
 import { Footer } from './footer';
@@ -30,12 +30,12 @@ import { identifyUmami, initUmami, trackEvent } from '@/lib/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
 const ContactDialog = lazy(() =>
-  import('@/features/contact/client/contact-dialog').then(({ ContactDialog: Component }) => ({
+  import('@/features/contact/contact-dialog').then(({ ContactDialog: Component }) => ({
     default: Component,
   })),
 );
 const DonateDialog = lazy(() =>
-  import('@/features/donate/client/donate-dialog').then(({ DonateDialog: Component }) => ({
+  import('@/features/donate/donate-dialog').then(({ DonateDialog: Component }) => ({
     default: Component,
   })),
 );

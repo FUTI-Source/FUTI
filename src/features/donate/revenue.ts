@@ -1,6 +1,6 @@
 import { trackEvent } from '@/lib/umami';
 
-import type { DonateChannel } from '../types';
+import type { DonateChannel } from './types';
 
 const DEDUPE_PREFIX = 'donation-revenue:';
 const tracked = new Set<string>();

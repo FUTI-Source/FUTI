@@ -4,7 +4,7 @@ import type {
   DonateConfig,
   DonateErrorBody,
   DonationStatusResponse,
-} from '../types';
+} from './types';
 
 export class DonateError extends Error {
   constructor(

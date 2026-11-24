@@ -1,7 +1,7 @@
 import { notifyOwner } from '@/lib/notify';
 import { SITE_NAME, SITE_URL } from '~/site.config';
 
-import type { ContactRequest, ContactResponse } from '../types';
+import type { ContactRequest, ContactResponse } from './types';
 
 /**
  * 留言通知：Webhook 是主通道，投递失败必须让接口返回失败，

@@ -18,6 +18,10 @@ const STATIC_ASSET_DIRS = [
   ['.next/static', `${STANDALONE_DIR}/.next/static`],
 ];
 
+/** 服务端靠这个 ID 判定版本；软刷新时的 buildId 比对也需要它，缺了就永远拿不到新 bundle */
+const BUILD_ID = '.next/BUILD_ID';
+const STANDALONE_BUILD_ID = `${STANDALONE_DIR}/.next/BUILD_ID`;
+
 const root = process.cwd();
 
 /** 缺产物与缺源目录的成因不同，提示也要分开 */
@@ -38,3 +42,10 @@ for (const [source, target] of STATIC_ASSET_DIRS) {
   cpSync(resolve(root, source), resolve(root, target), { recursive: true });
   console.log(`已复制 ${source} -> ${target}`);
 }
+
+if (!existsSync(resolve(root, BUILD_ID))) {
+  console.error(`未找到 ${BUILD_ID}，请先执行 npm run build`);
+  process.exit(1);
+}
+cpSync(resolve(root, BUILD_ID), resolve(root, STANDALONE_BUILD_ID));
+console.log(`已复制 ${BUILD_ID} -> ${STANDALONE_BUILD_ID}`);
