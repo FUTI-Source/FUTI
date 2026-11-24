@@ -87,6 +87,9 @@ main {
        必须带 !important 压过脚本写在 <html> 上的内联像素值，否则切回原生标题栏后
        页面仍沿用全屏时的大高度，底部会被窗口边缘遮住。 */
     --app-height: 100% !important;
+    /* 各终端标题栏高度不同（Windows 较高、macOS 较矮），统一成变量供高度与字号共用 */
+    --wco-titlebar-height: max(env(titlebar-area-height, 0px), 2rem);
+    --wco-titlebar-x: env(titlebar-area-x, 0px);
   }
   html,
   body {
@@ -95,21 +98,23 @@ main {
   [data-slot='scroll-area'] {
     overscroll-behavior: contain;
   }
-  .header-drag {
+  /* 用 :root 提高特异性，避免后面「横屏矮窗口」规则把标题栏高度改成 2.75rem，
+     那会与系统标题栏实际高度不一致，字号也就跟着失配 */
+  :root .header-drag {
     width: 100%;
-    height: max(env(titlebar-area-height, 0px), 2rem);
+    height: var(--wco-titlebar-height);
     margin-top: env(titlebar-area-y, 0px);
     padding-top: 0;
     background-color: #15161a;
     -webkit-app-region: no-drag;
     app-region: no-drag;
   }
-  .header-drag::before {
+  :root .header-drag::before {
     position: absolute;
     top: 0;
     left: env(titlebar-area-x, 0px);
     width: env(titlebar-area-width, 100%);
-    height: max(env(titlebar-area-height, 0px), 2rem);
+    height: var(--wco-titlebar-height);
     content: '';
     -webkit-app-region: drag;
     app-region: drag;
@@ -130,15 +135,18 @@ main {
     -webkit-app-region: no-drag;
     app-region: no-drag;
   }
-  /* 桌面 PWA 的时钟是标题栏内容，沿用页头 22px 字号会撑满细窄的标题栏而显得突兀；
-     这里降为 12px 系统字、降低不透明度，并对齐可拖拽区左缘（macOS 的窗口按钮在左侧） */
+  /* 桌面 PWA 的时钟是标题栏内容，字号按标题栏高度自适应：
+     矮标题栏不会被 12px 固定值撑满，高 DPI / 大字号终端也不会小到看不清。
+     11px ~ 15px 区间覆盖 Windows / macOS / Linux 的常见标题栏高度。
+     text-align 显式左对齐，避免窄窗口被移动端规则改成居中后与窗口按钮重叠。 */
   .header-drag .header-no-drag {
     min-width: 0;
-    padding-inline: calc(env(titlebar-area-x, 0px) + 0.75rem) 0.75rem;
-    font-size: 0.75rem;
+    padding-inline: calc(var(--wco-titlebar-x) + 0.75rem) 0.75rem;
+    font-size: clamp(0.6875rem, calc(var(--wco-titlebar-height) * 0.42), 0.9375rem);
     line-height: 1;
     letter-spacing: 0.03em;
     color: rgba(255, 255, 255, 0.55);
+    text-align: left;
   }
 }
 
