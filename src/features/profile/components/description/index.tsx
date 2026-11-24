@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { BasicsProps } from '@/components/types';
 
-import { SITE_SIGNATURE } from '@/lib/site';
+import { SITE_SIGNATURE } from '~/site.config';
 import { cn } from '@/lib/utils';
 
 const SIGNATURE = SITE_SIGNATURE;

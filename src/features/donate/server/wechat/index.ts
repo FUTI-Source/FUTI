@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import { getWechatPayEnv } from '@/config/env';
-import { SITE_USER_AGENT } from '../../../../lib/site';
+import { SITE_USER_AGENT } from '~/site.config';
 import type { DonationStatus, WechatJsapiPaymentParams } from '../../types';
 import { normalizeTradeState } from '../status';
 import {

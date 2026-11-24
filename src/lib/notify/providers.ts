@@ -33,7 +33,6 @@ export function detectProvider(url: string): WebhookProvider {
 export function toBotSafeText(value: string, max = 1000): string {
   const flat = value
     .replace(/\r\n?/g, '\n')
-    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '')
     .replace(/\[[^\]]*\]\(\s*(?:javascript|data|vbscript):[^)]*\)/gi, '（已移除可疑链接）')
     .replace(/\[/g, '［')

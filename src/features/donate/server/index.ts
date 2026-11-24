@@ -8,7 +8,7 @@ import {
   isWechatPayEnvSet,
 } from '@/config/env';
 import { logger } from '@/lib/logger';
-import { DONATION_SUBJECT, SITE_URL } from '@/lib/site';
+import { DONATION_SUBJECT, SITE_URL } from '~/site.config';
 import type {
   CreateDonationRequest,
   CreateDonationResponse,

@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { BasicsProps } from '@/components/types';
 
-import { SITE_AUTHOR_NAME } from '@/lib/site';
+import { SITE_AUTHOR_NAME } from '~/site.config';
 import { cn } from '@/lib/utils';
 
 type INameProps = BasicsProps & MotionProps;

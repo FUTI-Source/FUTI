@@ -1,7 +1,7 @@
 import { HandHeart } from 'lucide-react';
 import { IconType, SiGithub, SiGmail, SiRss } from '@icons-pack/react-simple-icons';
 
-import { SITE_SOCIAL_LINKS } from '@/lib/site';
+import { SITE_SOCIAL_LINKS } from '~/site.config';
 
 interface ILink {
   /** 稳定的英文标识，用于埋点与逻辑判断，避免依赖展示文案 */

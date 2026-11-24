@@ -1,5 +1,5 @@
 import { notifyOwner } from '@/lib/notify';
-import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { SITE_NAME, SITE_URL } from '~/site.config';
 
 import type { ContactRequest, ContactResponse } from '../types';
 

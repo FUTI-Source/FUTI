@@ -3,7 +3,7 @@
  *
  * 所有值一律先 trim 再判空，避免出现「配置探测认为可用、实际读取认为缺失」
  * 这类不一致（旧代码用 Boolean(process.env[k]) 探测、用 .trim() 读取）。
- * 仅服务端引用；客户端可见配置在 src/lib/site.ts。
+ * 仅服务端引用；客户端可见配置在仓库根目录 site.config.ts。
  */
 import { createHmac } from 'node:crypto';
 

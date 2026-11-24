@@ -1,10 +1,12 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import localFont from 'next/font/local';
 
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
 import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
-import { SITE_ANALYTICS_URL, SITE_LANG } from '@/lib/site';
+import { SITE_ANALYTICS_URL, SITE_LANG } from '~/site.config';
 
 import './globals.css';
 
@@ -34,6 +36,8 @@ export default function RootLayout({
             1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度；
             2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，
                这里取 innerHeight 与 visualViewport.height 的较大值，保证铺满画布。 */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts --
+            必须同步：改的是首帧高度，异步加载会先按错误高度画一帧再抖回去 */}
         <script src="/scripts/app-height.js" />
         <link
           rel="preconnect"
@@ -58,6 +62,16 @@ export default function RootLayout({
         {children}
         <ServiceWorkerRegistration />
         <SiteInteractionGuard />
+        {/* Vercel 统计只在 Vercel 部署注入：IGA 侧加载同一个脚本只会多一次无归属的境外请求。
+            预览部署记为 development，避免 PR / 预览流量计入生产数据。 */}
+        {process.env.VERCEL === '1' ? (
+          <>
+            <Analytics
+              mode={process.env.VERCEL_ENV === 'production' ? 'production' : 'development'}
+            />
+            <SpeedInsights />
+          </>
+        ) : null}
       </body>
     </html>
   );

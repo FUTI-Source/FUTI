@@ -15,7 +15,7 @@ import {
   SITE_SOCIAL_LINKS,
   SITE_TWITTER_HANDLE,
   SITE_URL,
-} from '@/lib/site';
+} from '~/site.config';
 
 /** Safari 顶部工具栏着色固定，不随站点配置变化 */
 const BROWSER_THEME_COLOR = '#1d1e20';

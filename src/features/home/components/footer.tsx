@@ -17,7 +17,7 @@ import {
   SITE_JOB_TITLE_EN,
   SITE_THEME_CREDIT,
   SITE_THEME_CREDIT_HOVER,
-} from '@/lib/site';
+} from '~/site.config';
 import Link from 'next/link';
 
 type IFooterProps = BasicsProps;

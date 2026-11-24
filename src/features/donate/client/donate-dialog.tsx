@@ -26,7 +26,7 @@ import type {
   WechatJsapiPaymentParams,
 } from '../types';
 import { cn } from '@/lib/utils';
-import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '@/lib/site';
+import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '~/site.config';
 import { captureException, trackEvent } from '@/lib/umami';
 
 const CHANNELS = [

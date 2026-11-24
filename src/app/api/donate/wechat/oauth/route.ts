@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL } from '~/site.config';
 import {
   buildWechatOAuthUrl,
   getWechatJsapiConfig,

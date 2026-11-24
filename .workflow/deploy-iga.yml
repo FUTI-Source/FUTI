@@ -1,0 +1,56 @@
+version: '1.0'
+# Gitee Go 流水线：push 到 main 后把源码交给火山引擎 IGA Pages，由平台侧构建部署。
+#
+# 为什么不在 CI 里 npm ci + npm run build：
+#   IGA Pages 只支持 GitHub 作为 Git 代码源，Gitee 仓库只能走「CLI 上传源码 ZIP →
+#   平台侧构建」这条链路，构建依赖安装与 next build 都在 IGA 侧执行，
+#   控制台能看到完整构建日志，也省掉 Gitee Go 的免费构建时长。
+#
+# 前置条件（只做一次）：
+#   1. 仓库「服务 → Gitee Go」开通流水线（账号需绑定手机号）。
+#   2. 火山引擎控制台「访问控制 → API 访问密钥」创建 AK/SK，
+#      建议用只授予 Pages 权限的独立 IAM 用户（建用户时勾选「编程访问」）。
+#   3. 在本流水线的「参数/变量」里新增（并勾选加密）：
+#        IGA_ACCESS_KEY   火山引擎 AccessKey Id
+#        IGA_SECRET_KEY   火山引擎 SecretAccess Key
+#        IGA_PROJECT      要部署的 Pages 项目名或项目 ID
+#      ⚠️ 切勿把密钥写进本文件的 variables 块，那会进 Git 历史；泄露后立刻在控制台禁用。
+#   4. IGA 控制台把项目「Node.js 版本」设为 24.x；密钥类环境变量（NOTIFY_*、WECHAT_*、
+#      ALIPAY_*、DONATION_ORDER_SECRET）在 IGA 的项目环境变量里配，
+#      域名/文案/分流等公开配置在仓库根目录 site.config.ts，见 README。
+name: deploy-iga
+displayName: 火山引擎 IGA Pages 生产部署
+triggers:
+  # 代码推送后自动执行，不需要在控制台手动点「运行」
+  trigger: auto
+  push:
+    branches:
+      # 精确匹配，只有 main 分支的推送才发布生产环境
+      precise:
+        - main
+stages:
+  - name: stage-deploy-iga
+    displayName: 发布到 IGA Pages
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@nodejs
+        name: deploy_iga
+        displayName: IGA CLI 登录并上传源码
+        # IGA CLI 要求 Node >= 20；这里与平台侧构建环境保持同一大版本，
+        # 避免「CI 能装、平台装不上」的偏差（Vercel 那条流水线才跟最新 LTS）。
+        nodeVersion: 24.22.3
+        commands:
+          - 'if [ -z "${IGA_ACCESS_KEY}" ] || [ -z "${IGA_SECRET_KEY}" ] || [ -z "${IGA_PROJECT}" ]; then echo "缺少流水线变量 IGA_ACCESS_KEY / IGA_SECRET_KEY / IGA_PROJECT，无法部署" >&2; exit 1; fi'
+          - 'npm install -g @iga-pages/cli'
+          # AK/SK 是非交互登录方式，专为 CI 设计；不要用 iga login 的浏览器授权
+          - 'iga login --accessKey="${IGA_ACCESS_KEY}" --secretKey="${IGA_SECRET_KEY}"'
+          # 每次构建都是干净工作区，本地没有项目关联记录，必须显式指定项目
+          - 'iga pages link --project="${IGA_PROJECT}" --yes'
+          # -l 串流初始化/构建/部署日志，构建失败时流水线日志里就能定位原因
+          - 'iga pages deploy -l'
+        caches:
+          - ~/.npm
+        notify: []
+        strategy:
+          retry: '0'

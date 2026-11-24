@@ -77,6 +77,8 @@ export const SitePreloader = () => {
         <style>{'#site-preloader{display:none}'}</style>
       </noscript>
       {/* 自动化环境直接隐藏遮罩，并跳过入场动画，让截图拿到最终态页面；正常用户不受影响 */}
+      {/* eslint-disable-next-line @next/next/no-sync-scripts --
+          必须同步：它给 <html> 打 preload-skip 标记，异步则遮罩会先闪一帧再隐藏 */}
       <script src="/scripts/preload-skip.js" />
       <style>
         {'html.preload-skip #site-preloader{display:none}html.preload-skip .profile-loading,html.preload-skip .avatar-loading{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}

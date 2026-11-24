@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '@/lib/site';
+import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '~/site.config';
 
 export const donateChannelSchema = z.enum(['alipay', 'wechat']);
 

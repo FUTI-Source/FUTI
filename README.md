@@ -1,17 +1,17 @@
 # 张文涛 · 个人主页
 
-基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
+基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages，并支持通过 Gitee Go 自动发布到 Vercel（见「部署到 Vercel」）。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
-- 站点名称、域名、联系方式、社交链接、打赏金额范围等集中在 `src/lib/site.ts`，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
+- 站点名称、域名、联系方式、社交链接、打赏金额范围、统计与 CDN 缓存、国内外分流等配置集中在仓库根目录的 `site.config.ts`，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
 
 ## 功能特性
 
 - **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、parallax-js 视差背景、打字机式自我介绍、全局自定义光标、首屏加载进度圈。
-- **联系表单**：react-hook-form + zod 校验，收集姓名、邮箱与内容，提交后 POST JSON Webhook 通知站长，并可选并行推送 Bark，带 IP 限流与蜜罐反滥用。
-- **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Bark + Webhook 通知站长。
+- **联系表单**：react-hook-form + zod 校验，收集姓名、邮箱与内容，提交后 POST JSON Webhook 通知站长，带 IP 限流与蜜罐反滥用。
+- **打赏**：微信支付（Native / H5 / JSAPI）与支付宝（当面付 / 手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后 Webhook 通知站长。
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕（含各机型启动图）与桌面 WCO 窗口控件覆盖。
-- **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报。
+- **统计**：Umami 自建统计，隐私友好，含打赏收入事件上报；部署在 Vercel 时额外注入 Vercel Analytics 与 Speed Insights（IGA 部署不加载）。
 - **SEO**：Metadata API、`robots.ts`、`sitemap.ts`、OG 分享图与结构化数据。
 
 ## 技术栈
@@ -23,11 +23,13 @@
 | 动画 / 交互 | motion · parallax-js · pixi.js（`@pixi/app`、`@pixi/core`、`@pixi/ticker`，Live2D 渲染） |
 | UI 组件 | Radix UI（Dialog / Label / Separator / Slot / Tooltip）· lucide-react · @icons-pack/react-simple-icons |
 | 表单 | react-hook-form · @hookform/resolvers · zod |
-| 通知 | 通用 HTTP Webhook（fetch，Node Runtime）· Bark（可选推送） |
+| 通知 | 通用 HTTP Webhook（fetch，Node Runtime）· 飞书 / 钉钉 / 企微机器人协议适配 |
 | 打赏 | qrcode（收款二维码，动态加载）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
+| 统计 | Umami（隐私友好）· Vercel Analytics + Speed Insights（仅 Vercel 部署注入） |
+| 部署 | 火山引擎 IGA Pages（standalone 产物）· Vercel（Gitee Go 自动发布） |
 
-运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`）。IGA Pages 构建环境支持 20 / 22 / 24，默认 20.x，本项目需在控制台选择 **24.x**。
+运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`）。IGA Pages 构建环境支持 20 / 22 / 24，默认 20.x，本项目需在控制台选择 **24.x**；Vercel 会把 `engines.node` 的区间解析为当前最新可用大版本（现为 **26.x**，官方支持 22/24/26，Node 20 已于 2026-10-01 停止接受新构建）。`.nvmrc` 为本地与 CI 固定在 26。
 
 ## 快速开始
 
@@ -37,14 +39,25 @@ cp .env.local.example .env.local   # 然后填入真实凭证（见下文「环�
 npm run dev                        # http://localhost:3000
 ```
 
-类型检查与生产构建：
+类型检查、代码检查与生产构建：
 
 ```bash
 npm run type:check        # tsc --noEmit（含 noUnusedLocals / noUnusedParameters）
+npm run lint              # eslint .（扁平配置在根目录 eslint.config.mjs）
+npm run lint:fix          # 可自动修复的部分（导入顺序、明显格式问题）就地改掉
 npm run build             # next build（standalone 输出）
 npm run start             # next start
 npm run start:standalone  # 按 standalone 产物启动（与线上入口一致）
 ```
+
+### 代码检查是怎么配的
+
+- 依赖只有 `eslint@^9` 与 `eslint-config-next@^16.4.6`（后者内部已带 `@next/eslint-plugin-next`、react、react-hooks、import、jsx-a11y、typescript-eslint），根目录不再手工注册插件。
+- `eslint` 锁 **9.x 而不是 10.x**：`eslint-config-next` 依赖的 `eslint-plugin-react` / `-import` / `-jsx-a11y` 的 peer 上限都写到 `^9`，装 10 会在每次 `npm install` 时报 ERESOLVE overriding 警告。
+- 命令是 `eslint .`：扁平配置里 `ignores` 与 `files` 已经决定哪些文件参与检查，不再传 `--ext`。ESLint 9 仍认识 `--ext`（含义是「在配置之外追加后缀」），留着它只会让「改配置还是改脚本」变成两处事实，所以直接去掉。
+- 不检查的内容写在配置的 `ignores` 里（构建产物、`public/`、`scripts/`、厂商代码 `src/features/avatar/live2d/**`、根目录配置文件），因此不会在 Live2D 运行时上刷警告。
+- 当前基线是 **0 error、约 34 warning**（`@typescript-eslint/no-explicit-any`、`react-hooks/exhaustive-deps`、`react-hooks/set-state-in-effect` 等），所以 `npm run lint` 退出码为 0，可以直接接进 CI。`react-hooks` v7 新增的 `set-state-in-effect` 与 `refs` 被显式降为 warn——`useLatest`、`useEventEmitter` 这类工具 Hook 就是在渲染期写 ref，属既定写法；存量清完后可删掉 [eslint.config.mjs](file:///C:/Users/Administrator/Documents/Qoder/2026-11-24/787906bf/eslint.config.mjs) 里那两行恢复默认 error。
+- 两处首帧同步脚本（`app-height.js`、`preload-skip.js`）用行内 `eslint-disable-next-line @next/next/no-sync-scripts` 说明原因，不全局关闭该规则：它们必须早于首帧执行，改成异步会先画错一帧。
 
 两个启动命令的区别：
 
@@ -57,7 +70,7 @@ npm run start:standalone  # 按 standalone 产物启动（与线上入口一致�
 src/
 ├── app/                          # App Router 入口
 │   ├── api/                      # Route Handlers（统一 nodejs runtime）
-│   │   ├── contact/route.ts      # 联系表单 → Webhook / Bark 通知
+│   │   ├── contact/route.ts      # 联系表单 → Webhook 通知
 │   │   └── donate/               # 打赏接口
 │   │       ├── config/route.ts           # 各渠道是否已配置
 │   │       ├── create/route.ts           # 下单
@@ -83,37 +96,67 @@ src/
 │   ├── donate/                   # 打赏（client / server / alipay / wechat）
 │   └── pwa/                      # Service Worker 注册
 ├── hooks/                        # 通用 React hooks（debounce / event-emitter / external / ...）
-├── lib/                          # 站点配置、日志、SEO、Bark、Umami、工具函数
+├── lib/                          # 站点工具：日志、SEO、通知 Webhook、Umami、限流、HTTP 辅助
+├── proxy.ts                        # 裸域自动补 www + 国内外兜底跳转（开关全在 site.config.ts）
 ├── styles/                       # 全局样式与 Tailwind 主题变量
 └── types/                        # 第三方模块类型声明（webp / parallax-js / react-css）
 public/                           # live2d 模型、字体、图标、iOS 启动图、文档配图
+site.config.ts                    # 站点全局配置（域名、分流、CDN、文案、打赏、统计）
+根目录配置                        # iga.json（IGA 构建）· vercel.json（Vercel 构建）· eslint.config.mjs（扁平 Lint 配置）· .workflow/（两条 Gitee Go 流水线）· .nvmrc
 ```
 
 ## 站点配置
 
-`src/lib/site.ts` 集中管理站点元信息，会被客户端组件引用，**切勿写入任何密钥**：
+**所有站点配置都在仓库根目录的 `site.config.ts`**，按分区注释组织，改这一处即可，不需要再配任何 `NEXT_PUBLIC_*` 环境变量：
 
-| 配置 | 说明 |
-| --- | --- |
-| `SITE_URL` / `SITE_DOMAIN` | 站点完整地址与根域名（`SITE_HOSTNAME` 为内部派生常量，不导出） |
-| `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_KEYWORDS` | 站点名称、描述、关键词 |
-| `SITE_AUTHOR_NAME` / `SITE_JOB_TITLE` / `SITE_JOB_TITLE_EN` | 作者与职位（中英文） |
-| `SITE_SIGNATURE` / `SITE_BRAND` | 首页副标题签名、左下角水印品牌字 |
-| `SITE_TWITTER_HANDLE` | Twitter/X 账号（不含 `@`），留空则不输出 twitter site/creator |
-| `SITE_SOCIAL_LINKS` | `{ blog, github }` 社交链接；**留空时对应入口置灰不可点**（Tooltip 提示「链接尚未配置」），且不写入结构化数据 `sameAs` |
-| `ICP_NUMBER` / `ICP_LINK` | 备案号与查询链接；优先读 `NEXT_PUBLIC_ICP_NUMBER`，未配置回退默认值，显式置空则隐藏 |
-| `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 打赏金额范围（默认 1–10000 元）与订单标题 |
-| `SITE_IMAGE_PATH` / `SITE_SOCIAL_IMAGE` / `SITE_NOTIFICATION_ICON` | 图标、OG 分享图（1200×630）、Bark 推送图标 |
-| `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 统计配置与需排除的域名 |
-| `SITE_LANG` / `SITE_LOCALE` | 站点语言（zh-CN）与区域设置（zh_CN），用于 metadata 与支付网关 |
-| `SITE_KNOWS_ABOUT` | 作者技能关键词数组，写入结构化数据 |
-| `SITE_ICON_PATH` | 站点 favicon 路径 |
-| `SITE_USER_AGENT` | 调用支付网关时使用的 User-Agent |
-| `SITE_COPYRIGHT_START` / `SITE_THEME_CREDIT` / `SITE_THEME_CREDIT_HOVER` | 页脚版权起始年份与主题署名（含 hover 文案） |
+```
+site.config.ts   ← 站点公开配置（域名、文案、分流、CDN、打赏、统计…）
+src/config/env.ts ← 服务端密钥读取（环境变量，不进 Git）
+```
+
+三条规则：
+
+1. **公开信息进文件，密钥进环境变量**。`site.config.ts` 同时被服务端和客户端组件引用，值会被内联进浏览器产物——写进去就等于公开。Webhook 地址、支付私钥、AppSecret 一律走环境变量（读取入口 `src/config/env.ts`）。
+2. **只在构建时求值**。文件顶层的派生计算（如从 `SITE_URL` 解析主机名）发生在构建阶段，改完必须重新部署，两条部署链路都要各自重新部署。
+3. **用 `~/site.config` 引入**。`tsconfig.json` 的 `paths` 里 `~/*` 指向仓库根目录（`@/*` 仍指向 `src/*`）：
+
+```ts
+import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
+```
+
+### 分区一览
+
+| 分区 | 导出 | 作用 |
+| --- | --- | --- |
+| 1 域名 | `SITE_URL` | 站点正式地址（带协议、带 www）。canonical、`metadataBase`、sitemap、robots、OG 图、支付回调默认地址、统计白名单全部由它派生 |
+| | `SITE_HOSTNAME` / `SITE_DOMAIN` | 自动派生的主机名（含 www）与裸域，**不要手改** |
+| | `SITE_WWW_REDIRECT` | 裸域是否自动补 www（默认开）、用 308 还是 301 |
+| 2 部署与分流 | `SITE_DEPLOY_TARGETS` | `cn`（火山 IGA Pages）与 `overseas`（Vercel）两个平台地址 |
+| | `SITE_GEO_ROUTING` | 应用内地域兜底跳转：开关、境内国家码、地域头名单、307、防回环 Cookie |
+| 3 文案 | `SITE_LANG` / `SITE_LOCALE` | `<html lang>` 与 OG locale |
+| | `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_KEYWORDS` / `SITE_SIGNATURE` / `SITE_BRAND` | 标题、描述、关键词、打字机副标题、水印品牌字 |
+| | `SITE_AUTHOR_NAME` / `SITE_JOB_TITLE` / `SITE_JOB_TITLE_EN` / `SITE_KNOWS_ABOUT` | 作者名、中英文职称、结构化数据 `knowsAbout` |
+| 4 SEO | `SITE_TWITTER_HANDLE` | 不含 `@`；留空则不输出 `twitter:site` / `twitter:creator` |
+| | `SITE_ICON_PATH` / `SITE_IMAGE_PATH` / `SITE_SOCIAL_IMAGE` | favicon、192 兜底图、1200×630 分享卡图 |
+| 5 备案 | `ICP_NUMBER` / `ICP_LINK` | 备案号与查询链接；`ICP_NUMBER` 置空字符串则页脚整块隐藏 |
+| 6 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 单笔金额上下限与订单标题 |
+| 7 页脚 | `SITE_COPYRIGHT_START` / `SITE_THEME_CREDIT` / `SITE_THEME_CREDIT_HOVER` | 版权起始年份与画师署名（含 hover 文案） |
+| 8 统计与 CDN | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 地址、站点 ID、**只统计这些域名**（自动含 www + 裸域，预览域名不在名单里） |
+| | `SITE_CDN_CACHE` | 三档缓存策略：`immutable`（字体/启动图）、`static`（Live2D 模型/文档配图）、`serviceWorker`（永不缓存）。由 `next.config.ts` 读取并写入响应头 |
+| 9 出站调用 | `SITE_USER_AGENT` | 调用微信/支付宝网关的 UA，便于商户后台日志识别 |
+| | `SITE_SOCIAL_LINKS` | `{ blog, github }`；留空时入口置灰不可点（Tooltip 提示未配置），且不写入结构化数据 `sameAs` |
+
+### 常见改法
+
+- **换域名**：只改 `SITE_URL` 一行。裸域补 www 的目标、统计白名单、canonical/sitemap/OG 地址、支付回调默认地址全部跟着变；`next.config.ts` 与 `src/proxy.ts` 不用动。
+- **不想让裸域跳 www**：`SITE_WWW_REDIRECT.enabled = false`（例如裸域另有用途，要做落地页）。
+- **换统计服务商/站点 ID**：改 `SITE_ANALYTICS_URL` 与 `SITE_ANALYTICS_WEBSITE_ID`；加了新域名要把主机名并进 `SITE_ANALYTICS_DOMAINS`（目前是自动派生的两条）。
+- **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。
+- **改打赏上下限**：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 同时作用于前端 zod 校验与下单接口，改完注意支付渠道自身的单笔限额。
 
 ## 环境变量
 
-在 `.env.local`（本地）或 IGA Pages 的环境变量设置（线上）配置，**修改后需重新部署**。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
+这里**只放密钥与环境差异项**：`.env.local`（本地）、IGA Pages 或 Vercel 的环境变量设置（线上），**修改后需重新部署**。两个平台的变量相互独立，需要分别维护。站点本身的公开配置在根目录 `site.config.ts`，不要用环境变量覆盖。真实密钥切勿提交到 Git，`.env.local` 已在 `.gitignore` 中。
 
 ### 通知 Webhook（联系表单 / 打赏）
 
@@ -184,15 +227,6 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 **飞书 / 钉钉 / 企业微信群机器人**：会按 webhook 域名自动识别，并把通用 JSON 转换成对应协议的消息体（飞书 `interactive` 卡片、钉钉 / 企微 `markdown`），无需额外配置。这类机器人在 payload 格式错误、签名校验失败或关键词不匹配时，通常仍返回 HTTP 200 但 body 中 `code` / `errcode` 非 0；现在会被判定为投递失败（触发失败 Webhook 或返回 `502`），真实原因写入服务端日志（`iga pages logs --since 1h`），不再静默误报成功。如果机器人开启了「签名校验」，需在机器人前加一层转换服务处理签名，或暂时关闭签名校验。
 
-### Bark 推送（收到留言 / 打赏时通知 iPhone，可选）
-
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `BARK_DEVICE_KEY` | 否 | Bark App 中的设备 key，留空则不推送 |
-| `BARK_SERVER_URL` | 否 | 自建 Bark 服务端，留空用官方 `https://api.day.app` |
-
-实现见 `src/lib/bark.ts`。未配置 `BARK_DEVICE_KEY` 时直接跳过；推送失败只记日志，不影响业务流程。推送内容包含标题、副标题、正文、分组与站点图标，**不携带跳转链接**（点击通知仅停留在 Bark）。
-
 ### 打赏（微信支付 / 支付宝 / 订单签名）
 
 见下文「打赏」章节的完整环境变量表与获取方式（含官方配图）。核心变量：`DONATION_ORDER_SECRET`、`WECHAT_*`、`ALIPAY_*`。
@@ -201,19 +235,16 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
-| `NEXT_PUBLIC_ICP_NUMBER` | 否 | 页脚备案号；不配置时用 `site.ts` 默认值，显式置空则隐藏 |
-| `NEXT_PUBLIC_ICP_LINK` | 否 | 备案查询链接，默认工信部备案系统 |
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
 
-> `NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署。
+> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`）配在 Gitee Go 流水线的加密变量里，不进 `.env.local`，见「部署到 Vercel」与「部署到 IGA Pages」。
 
 ## 联系表单（Webhook）
 
 提交表单后，`src/app/api/contact/route.ts` 会：
 
 1. 校验姓名、邮箱与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；主 Webhook 失败时自动投递失败事件到 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才返回 `502`。
-2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
-3. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
+2. 不再向访客发送确认邮件，访客只会看到页面内的成功提示。
 
 反滥用：每个来源 IP 10 分钟最多提交 5 次，超限返回 `429` 与 `Retry-After`；含隐藏蜜罐字段，请求体限制 24 KiB。速率记录保存在 Node 进程内存中，多实例间不共享；如需全局精确限流，应接入共享存储（如 Redis）或部署平台 WAF。
 
@@ -234,7 +265,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 前端 <──statusToken + (codeUrl|redirectUrl|payment)── 服务端
 前端 ──轮询 GET /api/donate/status?token──> 服务端 ──查单──> 网关
 前端 <──{ status: pending|paid|closed }── 服务端
-网关 ──异步回调──> /api/donate/notify/[channel] ──验签/解密──> Bark + Webhook 通知站长
+网关 ──异步回调──> /api/donate/notify/[channel] ──验签/解密──> Webhook 通知站长
 ```
 
 关键决策：
@@ -389,10 +420,9 @@ openssl rand -hex 32
 
 ### 回调后的站长通知
 
-回调验签通过后，`src/features/donate/server/notify.ts` 的 `notifyDonationSuccess` 并行执行：
+回调验签通过后，`src/features/donate/server/notice.ts` 的 `notifyDonationSuccess` 按「渠道:订单号」在 24 小时窗口内去重，随后投递一次通知：
 
-- **Bark 推送**（`src/lib/bark.ts`）：需 `BARK_DEVICE_KEY`，推送渠道、金额与订单号；失败只记日志。
-- **Webhook 通知**（`src/features/contact/server/webhook.ts`）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`，主 Webhook 失败时尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`。
+- **Webhook 通知**（`src/lib/notify`）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`，主 Webhook 失败时尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`。
 
 任一通知失败只记日志，不影响回调返回成功，避免支付平台重复投递；未配置时自动跳过。
 
@@ -430,7 +460,7 @@ openssl rand -hex 32
 
 IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 Next.js 框架并套用默认构建配置。本项目已做如下适配：
 
-- `next.config.ts` 使用 `output: 'standalone'`，`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
+- `next.config.ts` 在非 Vercel 环境下使用 `output: 'standalone'`（Vercel 用自己的产物模型，构建时自动跳过），`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
 - 根目录 `iga.json` 固定安装与构建命令，优先级高于控制台构建配置。
 - 构建产物不需要手动填写输出目录，由平台按 Next.js 模式处理。
 
@@ -439,7 +469,7 @@ IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 
 1. 登录[全站加速控制台](https://console.volcengine.com/dcdn) → **服务概览** → **Pages** → **创建项目**。
 2. 代码源选择 GitHub 仓库（需先完成 GitHub 授权）或直接上传 ZIP；平台会自动识别为 Next.js。
 3. 进入 **项目设置** → **Node.js 版本**，选择 `24.x`。平台默认是 `20.x`，而 `package.json` 要求 Node ≥ 24。
-4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加。`NEXT_PUBLIC_*` 会在构建时内联，修改后必须重新部署才生效。
+4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`）。站点配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
 5. **构建配置**保持默认即可（`npm run build`），或由 `iga.json` 覆盖；不要额外指定输出目录。
 6. 首次部署完成后会生成 `xxx.preview.iga-pages.com` 预览域名，**仅 3 小时有效**，不适合正式对外。
 
@@ -464,11 +494,37 @@ iga pages preview                      # 获取带访问凭证的预览地址
 - 关联了 GitHub 仓库的项目，`iga pages deploy` 会优先从仓库拉取代码构建；未授权时会退化为上传 ZIP（上限 1024 MB）。
 - 单项目最多保留 10 个部署版本，超出后自动删除最早版本。
 
+### 用 Gitee Go 自动发布
+
+IGA Pages 的 Git 自动构建**只支持 GitHub**，所以 Gitee 仓库走 `.workflow/deploy-iga.yml`：流水线用 CLI 把源码打成 ZIP 上传，依赖安装与 `next build` 都在 IGA 平台侧执行（控制台能看到完整构建日志，Gitee Go 只花几秒）。
+
+```bash
+git push origin main          # 触发 deploy-iga 流水线
+```
+
+首次接入只做四件事：
+
+1. 仓库 **服务 → Gitee Go** 开通流水线（账号需绑定手机号，个人仓库有免费构建时长）。
+2. 火山引擎控制台 **访问控制 → API 访问密钥** 创建 AK/SK。建议单独建一个 IAM 用户并勾选「编程访问」，只授予 Pages 相关权限，不要用主账号密钥。
+3. 在流水线的 **参数/变量** 里新增三个**加密**变量：`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`（Pages 项目名或项目 ID）。⚠️ 不要写进 YAML 的 `variables:` 块——那等于把密钥提交进 Git 历史；一旦泄露立刻在控制台禁用该密钥。
+4. 每次构建都是干净工作区，没有本地项目关联记录，所以流水线里必须 `iga pages link --project=... --yes` 显式指定项目（已在 YAML 里写好）。
+
+流水线命令与本机调试用的命令完全一致，本地跑一遍就能提前发现问题：
+
+```bash
+npm install -g @iga-pages/cli
+iga login --accessKey="<AK>" --secretKey="<SK>"   # CI 专用非交互登录，不要用浏览器授权
+iga pages link --project="<项目名或 ID>" --yes
+iga pages deploy -l                               # -l 串流初始化/构建/部署日志
+```
+
+`deploy-iga.yml` 与 `deploy-vercel.yml` 是两条独立流水线，同一次 push 会各自跑一次；任一平台失败不影响另一条，便于把 Vercel 当作 IGA 的备用出口。只想手动发 IGA 时，把该流水线的触发方式在控制台改成手动即可。
+
 ### 自定义域名与加速
 
 1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**。
 2. 中国大陆加速区域要求域名完成 ICP 备案；HTTPS 证书可在平台申请或上传。
-3. 建议同时绑定根域与 `www`：`next.config.ts` 会把根域 308 重定向到 `SITE_URL`（当前为 `https://www.zhang-wentao.tech`）。
+3. 建议同时绑定根域与 `www`：`src/proxy.ts` 会把站点裸域 308 到 `SITE_URL` 的 www 版本（域名从 `site.config.ts` 自动派生，不用写第二条规则）。
 4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
 
 ### 用 AI 编程客户端对接（可选）
@@ -488,11 +544,142 @@ iga pages preview                      # 获取带访问凭证的预览地址
 
 Plugin 与 MCP 只负责查询/操作 IGA Pages 项目、环境变量、部署与日志；本地构建、`dev`、`deploy` 仍需安装 IGA CLI。CLI 登录（`iga login`）与 MCP OAuth 授权相互独立。
 
+## 部署到 Vercel（Gitee Go 自动发布）
+
+Vercel 只能直接导入 GitHub / GitLab / Bitbucket / Azure DevOps 仓库，**无法绑定 Gitee**，因此发布链路是「Gitee Go 上传源码 → Vercel 远端构建」：push 到 `main` 触发 `.workflow/deploy-vercel.yml`，流水线跑 `vercel deploy --prod`，依赖安装与构建都在 Vercel 侧完成。构建日志看 Vercel 控制台，Gitee Go 只做上传，几十秒内结束，免费构建时长几乎不占用。
+
+### 已做的适配
+
+| 文件 | 适配内容 |
+| --- | --- |
+| `next.config.ts` | `VERCEL === '1'` 时不设置 `output: 'standalone'`。Vercel **明确不支持** `output` 配置，构建期会直接报 `Invalid Next.js configuration: "output" should be set to "standalone"`，所以必须按平台跳过；IGA 链路仍然要 standalone。 |
+| `next.config.ts` | CSP 的 `script-src` / `connect-src` 放行 `https://va.vercel-scripts.com`（Vercel 统计的调试/预览链路域名，即 `mode: 'development'`）。生产走同源 `/_vercel/insights/*`，由 `'self'` 覆盖；漏配不报错，只会让统计静默归零。 |
+| `next.config.ts` | 缓存策略与裸域跳转不再写死在这里：缓存读 `site.config.ts` 的 `SITE_CDN_CACHE`，裸域补 www 移到 `src/proxy.ts`（`redirects` 只能按写死的 host 精确匹配，做不到「不带 www 就自动加」）。 |
+| `vercel.json` | 显式声明 `framework: nextjs`、`buildCommand: npm run build`（与 `package.json` 共用一个入口，改构建标志只需改一处），并用 `npm ci --registry=https://registry.npmjs.org` 覆盖仓库 `.npmrc` 里的 npmmirror —— Vercel 构建机在海外，走国内镜像只会更慢甚至超时。 |
+| `package.json` | 新增 `@vercel/analytics`、`@vercel/speed-insights`（运行时按需注入，不进首屏关键路径）。 |
+| `src/app/layout.tsx` | `<Analytics />` 与 `<SpeedInsights />` 只在 `VERCEL === '1'` 时挂载，IGA 部署不会平白多一次境外请求；预览部署 `mode` 记为 `development`，PR/预览流量不进生产数据。 |
+| `.workflow/deploy-vercel.yml` | Gitee Go 流水线定义（push 到 `main` 精确触发）。 |
+| `.gitignore` | 忽略 `.vercel/`，避免把项目 ID 等本地 link 信息提交上去。 |
+
+### 构建器与 Node 版本
+
+Next 16 起 `next build` **默认使用 Turbopack**，构建命令保持 `npm run build` 即可，不需要额外标志；本地 `npm run dev` 与 Vercel 构建行为一致。需要回退 webpack 时改 `package.json` 的 `build` 脚本为 `next build --webpack`，两个平台会同步生效。
+
+Node 版本按「Vercel 跟最新 LTS、IGA 保持平台可用上限」处理：
+
+| 位置 | 值 | 说明 |
+| --- | --- | --- |
+| `package.json` `engines.node` | `>=24.0.0` | Vercel 会把它解析成**当前最新可用的大版本**（现为 26.x），同时 IGA 构建环境的 24.x 仍然满足，一条声明兼容两个平台 |
+| `.nvmrc` | `26` | 本地与 CI 的开发版本；Vercel 官方未声明读取 `.nvmrc`，不要指望它决定线上版本 |
+| `.workflow/deploy-vercel.yml` | `nodeVersion: 26.13.1` | 该步骤只跑 Vercel CLI，不参与编译，用最新 LTS 即可 |
+| `.workflow/deploy-iga.yml` | `nodeVersion: 24.22.3` | 与 IGA 平台侧构建环境同大版本，避免「CI 能装、平台装不上」 |
+
+要锁死 Vercel 的 Node 大版本，在项目 **Settings → Build & Development Environment → Node.js Version** 里选；`vercel.json` **没有** Node 版本字段，别去那里找。Vercel 不支持版本区间共存，且 Node 20 自 2026-10-01 起已停止接受新的构建与函数请求，落到 20 会直接报错而不是回退。
+
+### 首次接入
+
+1. **建 Vercel 项目**：首次 `vercel deploy --yes` 会在 token 所属账号下自动创建项目（名称取自仓库目录名，之后可在 **Settings → General** 改名）。想让项目名与归属一开始就确定，先在 [vercel.com/new](https://vercel.com/new) 建好项目，再在流水线变量里补 `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`，CLI 会自动读取，命令无需改动。
+2. **填环境变量**：项目 **Settings → Environment Variables** 按上文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`），Production / Preview / Development 三个环境都要覆盖到。站点公开配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
+3. **开通 Web Analytics**：项目侧栏 **Analytics → Enable**（Speed Insights 同理）。未开通时 Vercel 不会注册 `/_vercel/insights/*` 同源路由，页面正常但数据为 0。
+4. **生成 Token**：Vercel → **Account Settings → Tokens** 新建，作用域只选要部署的那个 Team/项目。
+5. **开通 Gitee Go**：仓库 **服务 → Gitee Go**（账号需绑定手机号；个人仓库每月有免费构建时长额度）。推送本仓库的 `.workflow/deploy-vercel.yml` 后新建流水线，或直接在控制台导入。
+6. **加流水线变量**：在流水线 **参数/变量** 里新增 `VERCEL_TOKEN` 并勾选**加密**。⚠️ 切勿写进 YAML 的 `variables:` 块——那等于把 token 提交进 Git 历史。
+7. push 到 `main`，等待流水线跑完，在 Vercel 部署页查看构建日志与生产域名。
+
+CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动构建」与流水线重复发布的情况；若以后把同一份代码再镜像到 GitHub 并导入 Vercel，记得只保留一条发布链路。
+
+### 验证部署是否生效
+
+- Vercel 部署详情页状态为 `Ready`，构建日志的版本行带有 Turbopack，且 Node 版本是 26.x（与本地 `npm run build` 一致）。
+- 浏览器 Network 面板应看到同源的路径以 `/view` 结尾的页面浏览请求，以及 `/_vercel/speed-insights/vitals`（Web Vitals）；预览部署（`mode: 'development'`）这些请求发往 `va.vercel-scripts.com`。
+- 响应头 `Content-Security-Policy` 中保留了 `va.vercel-scripts.com`；若浏览器控制台报 CSP violation，说明 `next.config.ts` 的名单被改动过。
+- 自建统计不受影响：生产域名仍会加载 `https://cloud.umami.is/script.js`，域名白名单见 `site.config.ts` 的 `SITE_ANALYTICS_DOMAINS`。
+
+### 双平台并存的注意点
+
+- 站点公开配置来自同一份 `site.config.ts`，但**密钥变量各平台独立保存**：IGA 与 Vercel 要分别配一遍，改一边不会影响另一边。
+- 支付回调 `WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL` 未显式配置时按 `SITE_URL` 拼接。两条链路共用同一个对外域名时没问题；如果两个平台各自对外，回调地址必须指向**实际承接订单的那一侧**，否则验签与通知会丢。
+- 限流是**单进程内存**实现（见 `src/lib/http/rate-limit.ts`），多实例之间不共享计数；Vercel Serverless 天然横向扩容且冷启动频繁，实际防护强度低于 IGA 上的长驻进程，需要精确限流请接共享存储或平台 WAF。
+- Umami 侧行为不变：`initUmami` 只在 `NODE_ENV=production` 且 hostname 命中白名单时注入脚本，Vercel 的 `*.vercel.app` 预览域名不在名单里，不会污染自建统计。
+- 免费套餐对构建时长、函数最长执行时间、上传体积都有上限（本项目源码含 `public/` 约 8.5 MB，远低于限制），细节以 [Vercel 使用限制](https://vercel.com/docs/limits) 为准。
+- Service Worker 与 iOS 启动图在两个平台表现一致：`/sw.js` 的禁缓存策略来自 `site.config.ts` 的 `SITE_CDN_CACHE.serviceWorker`，由 `next.config.ts` 统一写入响应头。
+
+## 域名归一化与国内外分流
+
+### 裸域自动补 www
+
+`src/proxy.ts` 读取 `site.config.ts` 里由 `SITE_URL` 派生的两个主机名（www 版与裸域版）：请求命中裸域且不带 `www.` 时返回 **308**，路径、查询串、方法、请求体全部保留。
+
+- 规则是「**不带 www 就自动加**」，不是写死 `zhang-wentao.tech → www.zhang-wentao.tech`。换域名只改 `SITE_URL`，裸域跳转跟着变，不需要再补一条规则。
+- 主机名大小写不敏感（`Zhang-WENTAO.tech` 同样归一化）。
+- 只作用于站点自身的两个主机名：`localhost`、`*.vercel.app`、`*.preview.iga-pages.com` 一律不改写，否则预览环境会被甩到一个根本不存在的 `www.` 子域上。
+- 用 308 而不是 301：301 会被浏览器永久缓存，误配后清不掉；改成 301 只需把 `SITE_WWW_REDIRECT.statusCode` 改掉。
+- 不想跳转（例如裸域另有落地页）：`SITE_WWW_REDIRECT.enabled = false`。
+
+### 首选方案：DNS 智能解析（零跳转）
+
+同一套代码部署在两个平台，正确的分流位置是 **DNS**：境内解析到 IGA Pages 的 CNAME，境外解析到 Vercel。访客从始至终只访问一个域名，没有跳转、没有额外延迟、也不存在两个平台互相甩流量的可能。
+
+火山引擎「云解析 DNS」的功能名叫**智能解析**，线路在**添加解析记录**时选择：
+
+1. 控制台进入云解析 DNS → 选中域名 → **添加记录**。
+2. 主机记录填 `www`，记录类型 CNAME，记录值填 IGA Pages 分配的加速域名，**线路选「中国内地」**。
+3. 再加一条同名记录，记录值填 Vercel 提供的域名（或 Vercel 的 A 记录 `76.76.21.21`），**线路选「全球（不含中国内地）」**。
+4. 裸域 `@` 保持 URL 显性/隐性转发或 A 记录指向境内一侧，由站点的 308 归一化到 www。
+
+线路粒度取决于 DNS 版本：免费版只有 `中国内地` / `全球(不含中国内地)` 两档（对本项目足够）；专业版可按国内大区，企业版及以上可细到省份与境外国家/地区（线路代号是拼音，如 `cn_e` 中国华东、`cn_anhui` 中国安徽、`oversea` 全球不含中国内地、`default` 默认）。用 Cloudflare 托管时等价做法是给记录加 `geo` 分地区解析或按 PoP 出不同值。
+
+备案口径：加速区域**包含中国大陆**时域名必须已完成 ICP 备案，否则报「域名未备案校验错误」；只走全球（不含中国大陆）时不需要大陆备案。Vercel 节点在境外，其自定义域名不要求大陆备案，但境内访问质量不保证——这正是境内一侧继续用 IGA 的原因。
+
+### 兜底方案：应用内地域跳转
+
+`SITE_GEO_ROUTING` 处理「DNS 出错/访客走到了另一侧」的情况，**默认 `enabled: false`**。打开后 `src/proxy.ts` 按 `countryHeaders` 顺序取第一个非空值判定地域，命中境内就送 `SITE_DEPLOY_TARGETS.cn`，否则送 `overseas`，用 **307**（临时，随时可回滚）。
+
+能生效的方向是不对称的，这一点必须清楚：
+
+| 方向 | 有没有信号 | 结果 |
+| --- | --- | --- |
+| 境内访客落到 Vercel | Vercel 官方注入 `x-vercel-ip-country`（ISO 3166-1 alpha-2） | ✅ 307 送回 cn 目标 |
+| 境外访客落到 IGA Pages | 火山 DCDN「配置回源 HTTP 请求头」只能带 `uri`、`host`、`client_ip`、`remote_addr`、`remote_port`、`msec`、`scheme`、`args` 等 11 个变量，**没有国家/省份字段** | ❌ 判为未知地域，就地服务（不会跳错，只是慢） |
+
+要让第二个方向也生效，只能自己在边缘按 `client_ip` 查库判定后注入一个自定义头，再把头名加进 `countryHeaders`；在此之前不要往名单里填不存在的头——不会报错，只会让该方向永远静默失效。
+
+三层防回环设计：
+
+1. **fail-open**：拿不到可信地域头 → 判为未知 → 不动作。任何一侧缺信号都不会跳。
+2. **同主机跳过**：目标主机等于当前主机（例如两平台共用同一域名的 DNS 分线路场景）→ 不动作。
+3. **会话 Cookie**：跳转时写 `site-region`（默认 10 分钟）。Cookie 跨域带不过去，但同一平台会记住上次判定，足以打断 `A → B → A`，最多多一跳后就地服务。
+
+Next 16 起这个文件叫 `proxy.ts`（旧的 `middleware.ts` 仍能工作，但构建时会提示已弃用），且**固定跑在 Node.js 运行时**——不再支持 `export const runtime`，写了会在构建期直接报错。判定依据只来自请求头和 `site.config.ts` 这份构建期常量，好处是两个平台各自构建时算出的规则完全一致，不需要在 Vercel 和 IGA 两边各配一遍环境变量、也不会出现「一边配了另一边漏了」。代价是它不是边缘脚本：每个命中的请求都要过一次 Node 函数，跨境访问时这一跳的延迟由访客落到哪一侧决定——这也是把 DNS 智能解析列为首选、应用内跳转只当兜底的原因。
+
+### 本地验证
+
+```bash
+# 裸域 → www：期望 308
+curl -sI -H "Host: zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTTP\|^location"
+
+# 开启 SITE_GEO_ROUTING 后：境内信号期望 307 + Set-Cookie: site-region
+curl -sI -H "Host: www.zhang-wentao.tech" -H "x-vercel-ip-country: US" http://127.0.0.1:3000/ | grep -i "^HTTP\|^location\|^set-cookie"
+
+# 无地域头：期望 200，就地服务
+curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTTP"
+```
+
+`/api/*` 与带扩展名的静态资源被 `config.matcher` 排除在外：微信/支付宝的异步回调绝不能被跨域重定向，静态资源则应该直接命中 CDN。
+
 ## 常见问题
 
 - **留言/打赏通知返回 502**：检查 `NOTIFY_WEBHOOK_URL` 是否可访问、接收端是否返回 2xx、是否在 8 秒内响应；如设置了密钥，确认接收端校验了 `Authorization: Bearer`。若配置了 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才会返回 502。若接收端是飞书 / 钉钉 / 企微机器人，执行 `iga pages logs --since 1h` 查看日志中的 `code` / `errcode`，据此判断是消息格式、签名校验还是自定义关键词问题。
-- **Bark 没收到推送**：检查 `BARK_DEVICE_KEY` 与 `BARK_SERVER_URL`；Bark 失败不会影响留言提交。
 - **Live2D 不显示**：确认 `public/live2d/` 目录（含 `live2dcubismcore.min.js` 与 `character/` 模型）已完整部署，且浏览器支持 WebGL。
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。
 - **打赏查单返回 501**：`GATEWAY_NOT_IMPLEMENTED`，对应渠道/模式的查单能力暂未实现，检查所选渠道与模式是否匹配。
+- **Gitee Go 流水线报「缺少流水线变量 VERCEL_TOKEN」或 Vercel 返回 401**：变量没在流水线的 **参数/变量** 里新增、没加密、token 已过期，或 token 的 Team 作用域与目标项目不一致。token 出现在 Git 历史里必须立刻在 Vercel 吊销重发。
+- **Vercel 构建卡在依赖安装**：多为 `.npmrc` 的国内镜像被构建机继承导致超时，`vercel.json` 的 `installCommand` 已强制切到 `registry.npmjs.org`；自行改坏该命令时构建会明显变慢。
+- **部署到 Vercel 后 Analytics 面板没数据**：先在项目 **Analytics** 里点 Enable（否则同源 `/_vercel/insights/*` 路由不存在）；预览部署被标记为 `development`，不会计入生产数据；控制台若出现 CSP violation，检查 `next.config.ts` 是否还放行 `va.vercel-scripts.com`。
+- **两个平台表现不一致**：先比密钥变量。站点公开配置来自同一份 `site.config.ts`，但 IGA 与 Vercel 的环境变量各存一份、各建一次，改一边不会影响另一边；`standalone` 产物只在 IGA 链路生成，属预期差异。
+- **改了 `site.config.ts` 不生效**：配置在构建期求值，两条部署链路各自构建，需要分别重新部署；`SITE_HOSTNAME` / `SITE_DOMAIN` / `SITE_ANALYTICS_DOMAINS` 是从 `SITE_URL` 派生的，不要手动改。
+- **裸域没有跳 www**：只有等于 `SITE_URL` 派生出的 www 版与裸域版才会被改写，`localhost`、`*.vercel.app`、`*.preview.iga-pages.com` 有意不参与；另外 `/api/*` 与带扩展名的静态资源被 matcher 排除。
+- **开了 `SITE_GEO_ROUTING` 却不跳**：四种正常情况——`SITE_DEPLOY_TARGETS.overseas` 留空、拿不到 `countryHeaders` 里的任何头（火山 DCDN 不回传地域字段）、目标主机就是当前主机、会话内已有 `site-region` Cookie。
+- **IGA 流水线报未登录或项目不存在**：`IGA_ACCESS_KEY` / `IGA_SECRET_KEY` / `IGA_PROJECT` 三个流水线变量缺任一个，或密钥对应的 IAM 用户没有 Pages 权限；每次构建都是干净工作区，必须靠 `iga pages link --project=... --yes` 显式关联。
+- **`npm run lint` 一堆 warning 不代表坏了**：判定看退出码——当前基线 0 error / 约 34 warning，进程退出码 0。这些是存量代码欠账（`no-explicit-any`、`exhaustive-deps` 等），不是配置错误；想逐条清就 `npm run lint:fix` 先修可自动修复的，再按文件处理剩下的。真出现 `command not found` 或 `could not find plugin "@typescript-eslint"`，说明 `eslint` / `eslint-config-next` 没装进 devDependencies，或 `eslint.config.mjs` 被改回了 FlatCompat 旧写法。

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG } from '@/lib/site';
+import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG } from '~/site.config';
 
 /** PWA 主题色固定，不随站点配置变化 */
 const THEME_COLOR = '#15161a';

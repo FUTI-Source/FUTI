@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BasicsProps } from '@/components/types';
-import { SITE_BRAND } from '@/lib/site';
+import { SITE_BRAND } from '~/site.config';
 
 type IBrandMarkProps = BasicsProps<'svg'>;
 export const BrandMark: React.FC<IBrandMarkProps> = (props) => (
