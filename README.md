@@ -548,7 +548,7 @@ openssl rand -hex 32
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 `src/styles/index.css` 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/scripts/app-height.js` 在首帧写入 `--app-height`：首帧用 `screen.height` 兜底 iOS 冷启动偏小视口；稳定后 PWA 以 `visualViewport.height` 为真实可视高度（原生状态栏显隐只改变它，不能再取 `innerHeight` 的较大值），变高立即生效、变低延迟 120ms 确认，避免把冷启动瞬态值当成真实高度。
-- standalone / fullscreen / WCO 下 `html/body` 锁定不滚动，滚动交给内部 ScrollArea。WCO 用 `height: 100%` 让浏览器自动跟随窗口与原生标题栏（不用 `dvh`：切换标题栏时它可能不更新，会让页面高于可视区域）。
+- standalone / fullscreen / WCO 下 `html/body` 锁定不滚动，滚动交给内部 ScrollArea。WCO 用 `--app-height: 100% !important` 让浏览器自动跟随窗口与原生标题栏：不用 `dvh` 是因为切换标题栏时它可能不更新；必须带 `!important` 才能压过脚本写在 `<html>` 上的内联像素值，否则切回原生标题栏时页面仍沿用全屏的大高度、底部会被遮挡。
 - `public/launch/` 内置各机型 iOS 启动图。
 
 </details>

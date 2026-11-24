@@ -56,9 +56,11 @@ window.addEventListener('orientationchange',update);
 window.addEventListener('pageshow',update);
 if(window.visualViewport)window.visualViewport.addEventListener('resize',update);
 // 隐藏/恢复原生标题栏会切换 display-mode，resize 可能晚于媒体查询变化。
-standaloneQuery.addEventListener('change',update);
-wcoQuery.addEventListener('change',update);
-// 桌面 WCO 进出全屏会切换原生标题栏与视口，事件可能早于窗口尺寸稳定，补一次复查。
-document.addEventListener('fullscreenchange',function(){update();setTimeout(function(){pending=0;update();},300)});
+// 桌面 WCO 切换原生标题栏/进出全屏时，媒体查询与 fullscreenchange 可能早于窗口尺寸稳定，
+// 因此都补一次延迟复查；退出 WCO 后脚本值重新生效，这一步保证不会沿用旧高度。
+var recheck=function(){update();setTimeout(function(){pending=0;update();},300)};
+standaloneQuery.addEventListener('change',recheck);
+wcoQuery.addEventListener('change',recheck);
+document.addEventListener('fullscreenchange',recheck);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
 }catch(e){console.error(e)}})();
