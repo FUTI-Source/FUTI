@@ -53,7 +53,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
         onAnimationComplete={() => setReady(true)}
         className={cn(
           // 基础排版
-          'header-no-drag header-time text-shadow-soft font-geometos my-0 select-none text-[color:var(--text-time-color)]',
+          'header-no-drag header-time text-shadow-soft font-playful my-0 select-none text-[color:var(--text-time-color)]',
           'tabular-nums inline-block whitespace-nowrap',
           // 桌面：左内边距、最小宽度、左对齐
           'pl-10 min-w-[19ch] text-left',

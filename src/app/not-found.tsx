@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function NotFound() {
   return (
     <div className="flex-center min-h-dvh flex-col gap-4 bg-[#15161a] px-6 text-center text-white">
-      <h1 className="font-geometos text-5xl tracking-wide text-white/90">404</h1>
+      <h1 className="font-playful text-5xl tracking-wide text-white/90">404</h1>
       <p className="text-sm text-white/60">你访问的页面不存在或已被移动。</p>
       <Link
         href="/"

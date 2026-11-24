@@ -29,7 +29,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('flex-center font-ubuntu relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+            className={cn('flex-center font-playful relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
@@ -46,7 +46,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       </m.div>
       <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
-        <div className="footer-text flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_p]:text-[color:var(--text-footer-color)]">
+        <div className="footer-text font-playful flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_p]:text-[color:var(--text-footer-color)]">
           <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; {SITE_COPYRIGHT_START} - {new Date().getFullYear()}
             <Tooltip>

@@ -467,7 +467,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
         <div className="h-px w-full shrink-0 bg-gradient-to-r from-transparent via-[#0295e5]/50 to-transparent" />
         <div className="site-dialog-body">
           <DialogHeader>
-            <DialogTitle className="font-geometos text-xl tracking-wide text-white/90">
+            <DialogTitle className="font-playful text-xl tracking-wide text-white/90">
               打赏支持
             </DialogTitle>
             <DialogDescription className="text-white/45">

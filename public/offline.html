@@ -10,11 +10,32 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <title>暂时离线 · 张文涛</title>
     <style>
+      /* 离线页是独立 HTML，拿不到主站的 CSS 变量，字体声明需自带一份。
+         两个字体文件已由 sw.js 预缓存，离线时也能加载。 */
+      @font-face {
+        font-family: 'Nunito Variable';
+        font-style: normal;
+        font-weight: 200 1000;
+        font-display: swap;
+        src: url('/fonts/nunito-latin-variable.woff2') format('woff2-variations');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+          U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+2215, U+FEFF, U+FFFD;
+      }
+      @font-face {
+        font-family: 'ZCOOL KuaiLe';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/zcool-kuaile-sc.woff2') format('woff2');
+        unicode-range: U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3400-4DBF, U+4E00-9FFF,
+          U+F900-FAFF, U+FF00-FFEF;
+      }
       :root {
         color-scheme: dark;
         background: #15161a;
         color: #f2f4f8;
-        font-family: system-ui, sans-serif;
+        font-family: 'Nunito Variable', 'ZCOOL KuaiLe', 'PingFang SC', 'Hiragino Sans GB',
+          'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
       }
 
       body {

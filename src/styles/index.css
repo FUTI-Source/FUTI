@@ -8,9 +8,6 @@
 
   --font-sans: var(--font-playful);
   --font-mono: var(--font-playful);
-  --font-geometos: var(--font-playful);
-  --font-kanit: var(--font-playful);
-  --font-ubuntu: var(--font-playful);
 }
 
 /* 拉丁文字：Nunito 可变字体，圆润无衬线，字重 200-1000 连续可调 */
@@ -148,7 +145,7 @@ main {
     position: relative;
     z-index: 1;
     color: rgba(255, 255, 255, 0.68);
-    font-family: system-ui, sans-serif;
+    font-family: var(--font-playful);
     letter-spacing: 0.02em;
     text-shadow: none;
     -webkit-app-region: no-drag;
