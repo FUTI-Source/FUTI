@@ -11,5 +11,5 @@ var p=window.location&&window.location.pathname||'';
 if(p.indexOf('/browser-unsupported')===0)return;
 var ok=false;
 try{ok=new Function('var o={a:1};o||={};class C{static s=1};return (o.a??0)+(C&&C.s||0);')()===2;}catch(e){ok=false;}
-if(!ok&&window.location)window.location.replace('/browser-unsupported?from=runtime-check');
+if(!ok&&window.location)window.location.replace('/browser-unsupported.html?from=runtime-check');
 }catch(e){}})();
