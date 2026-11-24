@@ -69,15 +69,28 @@ main {
   flex-direction: column;
 }
 
+/* PWA 独立窗口：页面本身不滚动，滚动交给内部 ScrollArea。
+   原生状态栏显隐切换视口高度时，也不会冒出页面级滚动条。 */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    overflow: hidden;
+  }
+}
+
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
 @media (display-mode: window-controls-overlay) {
   :root {
     --safe-top: 0px;
-    /* WCO 没有浏览器工具栏，直接让 dvh 跟随原生窗口，避免等待 resize 事件。 */
-    --app-height: 100dvh !important;
+    /* WCO 没有浏览器工具栏，让浏览器用 100% 自动跟随窗口和原生标题栏。
+       不用 dvh：切换标题栏时 dvh 可能不更新，页面会比可视区域高而产生滚动；
+       脚本写入的像素值在这里也会被覆盖，因此统一交给布局引擎计算。 */
+    --app-height: 100%;
   }
   html,
   body {
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
   }
   [data-slot='scroll-area'] {

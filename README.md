@@ -547,7 +547,8 @@ openssl rand -hex 32
 - **版本切换**：软刷新（`router.refresh()`）只换 RSC 数据，不会替换已加载的客户端 JS bundle。`next.config.ts` 的 `generateBuildId` 每次构建写入唯一 `.next/BUILD_ID`（可用 `BUILD_ID` 环境变量指定）；Next.js 在 RSC 响应里发现 buildId 与当前页面不一致时会自动降级为 MPA 导航，从而加载新 bundle。`prepare-standalone.mjs` 会把它同步进 standalone 产物，本地验证时行为与线上一致。
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 `src/styles/index.css` 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
-- `public/scripts/app-height.js` 在首帧写入 `--app-height`：首帧用 `screen.height` 兜底 iOS 冷启动偏小视口，之后持续跟随 `innerHeight` / `visualViewport.height`（含原生状态栏显隐、横竖屏与 WCO 切换）；变高立即生效，变低延迟 120ms 确认后生效，以免把冷启动瞬态值当成真实高度。
+- `public/scripts/app-height.js` 在首帧写入 `--app-height`：首帧用 `screen.height` 兜底 iOS 冷启动偏小视口；稳定后 PWA 以 `visualViewport.height` 为真实可视高度（原生状态栏显隐只改变它，不能再取 `innerHeight` 的较大值），变高立即生效、变低延迟 120ms 确认，避免把冷启动瞬态值当成真实高度。
+- standalone / fullscreen / WCO 下 `html/body` 锁定不滚动，滚动交给内部 ScrollArea。WCO 用 `height: 100%` 让浏览器自动跟随窗口与原生标题栏（不用 `dvh`：切换标题栏时它可能不更新，会让页面高于可视区域）。
 - `public/launch/` 内置各机型 iOS 启动图。
 
 </details>
