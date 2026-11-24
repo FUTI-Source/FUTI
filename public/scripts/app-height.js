@@ -23,6 +23,9 @@ if(sh>h&&sh-h<=200)h=sh;
 // 稳定后 PWA 没有浏览器工具栏，visualViewport.height 就是真实可视区域。
 // 原生状态栏显隐只会改变它；若继续取 innerHeight 的较大值，页面会比视口高而产生滚动。
 h=vv.height;
+// 软键盘弹出时 visualViewport.height 会缩短（与 innerHeight 差值远大于状态栏）。
+// 此时不能把 --app-height 压小，否则键盘收起后页面比画布矮，底部留下黑色间隔。
+if(inner-h>140)h=lastHeight||inner;
 }
 }
 return {w:w,h:h};
@@ -54,7 +57,31 @@ update();
 window.addEventListener('resize',update);
 window.addEventListener('orientationchange',update);
 window.addEventListener('pageshow',update);
-if(window.visualViewport)window.visualViewport.addEventListener('resize',update);
+// iOS 软键盘收起后文档可能停留在被上推的位置，底部露出一段黑色画布。
+// 收起过程会持续调整视口，因此分两次复查：先归零文档滚动，再校正画布高度。
+var keyboardTimers=[];
+var scheduleKeyboardReset=function(){
+keyboardTimers.forEach(clearTimeout);
+keyboardTimers=[];
+[120,400].forEach(function(delay){
+keyboardTimers.push(setTimeout(function(){
+if(window.scrollY)window.scrollTo(0,0);
+var scroller=document.querySelector('[data-slot="scroll-area"]');
+if(scroller)scroller.scrollTop=0;
+update();
+},delay));
+});
+};
+if(window.visualViewport){
+var lastVvHeight=window.visualViewport.height;
+window.visualViewport.addEventListener('resize',function(){
+var h=window.visualViewport.height;
+// 视觉视口明显变高即软键盘收起，同样归零滚动并复查高度
+if(h-lastVvHeight>140)scheduleKeyboardReset();
+lastVvHeight=h;
+update();
+});
+}
 // 隐藏/恢复原生标题栏会切换 display-mode，resize 可能晚于媒体查询变化。
 // 桌面 WCO 切换原生标题栏/进出全屏时，媒体查询与 fullscreenchange 可能早于窗口尺寸稳定，
 // 因此都补一次延迟复查；退出 WCO 后脚本值重新生效，这一步保证不会沿用旧高度。
@@ -63,4 +90,9 @@ standaloneQuery.addEventListener('change',recheck);
 wcoQuery.addEventListener('change',recheck);
 document.addEventListener('fullscreenchange',recheck);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
+document.addEventListener('focusout',function(event){
+var tag=event.target&&event.target.tagName;
+if(tag!=='INPUT'&&tag!=='TEXTAREA'&&tag!=='SELECT')return;
+scheduleKeyboardReset();
+},true);
 }catch(e){console.error(e)}})();

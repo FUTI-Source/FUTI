@@ -85,14 +85,8 @@ main {
   flex-direction: column;
 }
 
-/* PWA 独立窗口：页面本身不滚动，滚动交给内部 ScrollArea。
-   原生状态栏显隐切换视口高度时，也不会冒出页面级滚动条。 */
-@media (display-mode: standalone), (display-mode: fullscreen) {
-  html,
-  body {
-    overflow: hidden;
-  }
-}
+/* PWA 独立窗口：滚动已在 base 层全局交给内部 ScrollArea，
+   这里无需重复设置；原生状态栏显隐切换视口高度由 app-height.js 处理。 */
 
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
 @media (display-mode: window-controls-overlay) {
@@ -106,10 +100,6 @@ main {
     /* 各终端标题栏高度不同（Windows 较高、macOS 较矮），统一成变量供高度与字号共用 */
     --wco-titlebar-height: max(env(titlebar-area-height, 0px), 2rem);
     --wco-titlebar-x: env(titlebar-area-x, 0px);
-  }
-  html,
-  body {
-    overflow: hidden;
   }
   [data-slot='scroll-area'] {
     overscroll-behavior: contain;
@@ -176,6 +166,15 @@ main {
     min-height: var(--app-height);
     margin: 0;
     padding: 0;
+  }
+
+  /* 页面固定为一屏，滚动只发生在内部 ScrollArea。
+     iOS 软键盘弹出/收起时 Safari 会把整个文档往上顶，收起后若停留在偏移位置，
+     底部就会露出一段黑色画布间隔；禁止文档级滚动可从根本上避免。 */
+  html,
+  body {
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   /* 关闭 iOS Safari 横屏文字自动放大，避免同一字号在不同终端大小不一 */
