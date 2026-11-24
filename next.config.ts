@@ -54,9 +54,9 @@ const nextConfig: NextConfig = {
     deviceSizes: [448, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     remotePatterns: [],
   },
-  // 裸域自动补 www、国内外兜底分流都放在 src/proxy.ts：
-  // 主机名需要「不带 www 就加 www」的通用判断，next.config 的 redirects
-  // 只能按写死的 host 精确匹配，换域名就得改规则，故不在这里配置。
+  // 裸域自动补 www 放在 src/proxy.ts：主机名需要「不带 www 就加 www」的
+  // 通用判断，next.config 的 redirects 只能按写死的 host 精确匹配，换域名
+  // 就得改规则。单域名分流在 DNS 层完成，这里不配置平台/地域跳转。
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
 

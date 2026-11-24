@@ -3,7 +3,7 @@
 基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，境内走火山引擎 IGA Pages，境外走 Vercel（push 到 GitHub 镜像仓库 `main` 自动构建）。
 
 - 线上地址：<https://www.zhang-wentao.tech>
-- CDN 缓存与国内外分流的完整配置、验证与排障：[CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)
+- 单域名 CDN 缓存与 DNS 分流的完整配置、验证与排障：[CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)
 
 ## 功能特性
 
@@ -68,7 +68,7 @@ src/
 │   └── pwa/                      # Service Worker 注册
 ├── hooks/                        # 通用 React hooks
 ├── lib/                          # 站点工具（日志、通知、限流）
-├── proxy.ts                      # 裸域自动补 www + 国内外分流
+├── proxy.ts                      # 裸域自动补 www（单域名，无地域跳转）
 └── styles/                       # 全局样式与 Tailwind 主题
 public/                           # Live2D 模型、字体、图标、iOS 启动图、文档配图
 site.config.ts                    # 站点全局配置
@@ -79,17 +79,17 @@ site.config.ts                    # 站点全局配置
 所有站点配置集中在 `site.config.ts`：
 
 ```ts
-import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
+import { SITE_URL } from '~/site.config';
 ```
 
 | 分区 | 导出 | 作用 |
 |------|------|------|
-| 域名 | `SITE_URL` | 站点正式地址，canonical、metadataBase、sitemap 等派生 |
-| 部署与分流 | `SITE_DEPLOY_TARGETS` | IGA Pages 与 Vercel 平台地址 |
+| 域名 | `SITE_URL` | 唯一对外域名，canonical、metadataBase、sitemap 等派生；IGA 与 Vercel 共用 |
+| 部署与分流 | — | 两平台共用同一域名，分流在 DNS 分线路配置；代码里无平台地址或地域跳转 |
 | 文案 | `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_SIGNATURE` | 标题、描述、打字机副标题 |
 | 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` | 单笔金额上下限 |
 | 统计 | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` | Umami 配置 |
-| CDN | `SITE_CDN_CACHE` | 四档缓存策略（immutable/static/serviceWorker/api），详见 [CDN 与分流配置指南](CDN-AND-GEO-ROUTING.md) |
+| CDN | `SITE_CDN_CACHE` | 四档缓存策略（immutable/static/serviceWorker/api），详见 [单域名 CDN 与分流配置指南](CDN-AND-GEO-ROUTING.md) |
 
 **公开信息进文件，密钥进环境变量**。`site.config.ts` 被客户端组件引用，切勿写入任何密钥。
 
@@ -144,15 +144,15 @@ npx vercel deploy --prod --yes
 
 项目已接入 GitHub 镜像仓库的 Git 集成，`main` 分支每次 push 自动触发构建；上面的 CLI 命令用于本地验证或手动补发，两条路径不要同时用。
 
-### DNS 智能解析（推荐）
+### DNS 智能解析（单域名分流）
 
-同一套代码部署在两个平台，正确的分流位置是 DNS：
+同一套代码部署在两个平台，两个平台共用同一个对外域名，分流位置是 DNS：
 
 1. **境内**：解析到 IGA Pages 加速域名
 2. **境外**：解析到 Vercel
 3. **默认**：解析到 Vercel（兜底）
 
-境内解析需完成 ICP 备案。完整步骤见文末「域名归一化与国内外分流」。
+访客全程只访问同一个域名，代码不参与地域判定或跨域跳转。境内解析需完成 ICP 备案。完整步骤见文末「域名归一化与单域名分流」。
 
 ## 常见问题
 
@@ -173,7 +173,7 @@ npx vercel deploy --prod --yes
 **所有站点配置都在仓库根目录的 `site.config.ts`**，按分区注释组织，改这一处即可，不需要再配任何 `NEXT_PUBLIC_*` 环境变量：
 
 ```
-site.config.ts   ← 站点公开配置（域名、文案、分流、CDN、打赏、统计…）
+site.config.ts   ← 站点公开配置（域名、文案、CDN、打赏、统计…）
 src/config/env.ts ← 服务端密钥读取（环境变量，不进 Git）
 ```
 
@@ -184,7 +184,7 @@ src/config/env.ts ← 服务端密钥读取（环境变量，不进 Git）
 3. **用 `~/site.config` 引入**。`tsconfig.json` 的 `paths` 里 `~/*` 指向仓库根目录（`@/*` 仍指向 `src/*`）：
 
 ```ts
-import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
+import { SITE_URL } from '~/site.config';
 ```
 
 #### 分区一览
@@ -194,8 +194,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | 1 域名 | `SITE_URL` | 站点正式地址（带协议、带 www）。canonical、`metadataBase`、sitemap、robots、OG 图、支付回调默认地址、统计白名单全部由它派生 |
 | | `SITE_HOSTNAME` / `SITE_DOMAIN` | 自动派生的主机名（含 www）与裸域，**不要手改** |
 | | `SITE_WWW_REDIRECT` | 裸域是否自动补 www（默认开）、用 308 还是 301 |
-| 2 部署与分流 | `SITE_DEPLOY_TARGETS` | `cn`（火山 IGA Pages）与 `overseas`（Vercel）两个平台地址 |
-| | `SITE_GEO_ROUTING` | 应用内地域兜底跳转：开关、境内国家码、地域头名单、307、防回环 Cookie、`debug` 响应头 |
+| 2 部署与分流 | — | 单域名架构：IGA 与 Vercel 共用 `SITE_URL`，分流只在 DNS 分线路配置，代码里无平台地址/地域跳转 |
 | 3 文案 | `SITE_LANG` / `SITE_LOCALE` | `<html lang>` 与 OG locale |
 | | `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_KEYWORDS` / `SITE_SIGNATURE` / `SITE_BRAND` | 标题、描述、关键词、打字机副标题、水印品牌字 |
 | | `SITE_AUTHOR_NAME` / `SITE_JOB_TITLE` / `SITE_JOB_TITLE_EN` / `SITE_KNOWS_ABOUT` | 作者名、中英文职称、结构化数据 `knowsAbout` |
@@ -211,7 +210,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 
 #### 常见改法
 
-- **换域名**：只改 `SITE_URL` 一行。裸域补 www 的目标、统计白名单、canonical/sitemap/OG 地址、支付回调默认地址全部跟着变；`next.config.ts` 与 `src/proxy.ts` 不用动。
+- **换域名**：只改 `SITE_URL` 一行。裸域补 www 的目标、统计白名单、canonical/sitemap/OG 地址、支付回调默认地址全部跟着变；`next.config.ts` 与 `src/proxy.ts` 不用动。DNS 分线路记录与两个平台的域名绑定要同步改到新域名。
 - **不想让裸域跳 www**：`SITE_WWW_REDIRECT.enabled = false`（例如裸域另有用途，要做落地页）。
 - **换统计服务商/站点 ID**：改 `SITE_ANALYTICS_URL` 与 `SITE_ANALYTICS_WEBSITE_ID`；加了新域名要把主机名并进 `SITE_ANALYTICS_DOMAINS`（目前是自动派生的两条）。
 - **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。完整的缓存头解释、平台配置清单与验证命令见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
@@ -304,7 +303,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
 | `BUILD_ID` | 否 | 构建标识，写入 `.next/BUILD_ID`；留空则每次构建自动生成（见「PWA 与 iOS 主屏幕」） |
 
-> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY` / `IGA_SECRET_KEY`）只存在于本机环境变量或密码管理器中：运行时密钥分别配在 Vercel 与 IGA 的项目后台里，发布用 token / AK / SK 不落仓库。见「部署到 Vercel」与「部署到 IGA Pages」。
+> 站点公开配置（域名、备案、打赏档位、统计、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；单域名分流在 DNS 控制台配置，不在代码或环境变量里。只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY` / `IGA_SECRET_KEY`）只存在于本机环境变量或密码管理器中：运行时密钥分别配在 Vercel 与 IGA 的项目后台里，发布用 token / AK / SK 不落仓库。见「部署到 Vercel」与「部署到 IGA Pages」。
 
 </details>
 
@@ -601,7 +600,7 @@ IGA Pages 的 Git 自动构建**只支持 GitHub**，因此不论 Vercel 还是 
 首次接入只做三件事：
 
 1. 火山引擎控制台 → 头像 → **访问控制 → 用户管理** 新建用户，登录设置勾选「通过密钥进行编程访问」，在该用户的 **密钥** Tab 创建 AK/SK（SecretKey 只展示一次，每个 IAM 用户默认最多 2 把）。官方没有 Pages 专属系统策略，先挂 `DCDNFullAccess`，部署报权限错再按报错补自定义策略；不要用主账号密钥。AK / SK 留本机环境变量或密码管理器，不要写进仓库。
-2. 在 IGA 控制台把项目「Node.js 版本」设为 24.x（可只有 20.x/22.x/24.x，默认 20.x）；密钥类环境变量在 IGA 的「项目设置 → 环境变量」里配（项目级单套，每个值 ≤2000 字符），域名 / 文案 / 分流等公开配置在 `site.config.ts`，见站点配置一节。
+2. 在 IGA 控制台把项目「Node.js 版本」设为 24.x（可只有 20.x/22.x/24.x，默认 20.x）；密钥类环境变量在 IGA 的「项目设置 → 环境变量」里配（项目级单套，每个值 ≤2000 字符），域名 / 文案 / CDN 等公开配置在 `site.config.ts`，单域名分流在 DNS 控制台，见站点配置一节。
 3. 同样在各自的后台给项目加上运行时密钥（Vercel：Settings → Environment Variables；IGA：项目设置 → 环境变量）。
 
 ```bash
@@ -704,7 +703,7 @@ CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动
 #### 双平台并存的注意点
 
 - 站点公开配置来自同一份 `site.config.ts`，但**密钥变量各平台独立保存**：IGA 与 Vercel 要分别配一遍，改一边不会影响另一边。
-- 支付回调 `WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL` 未显式配置时按 `SITE_URL` 拼接。两条链路共用同一个对外域名时没问题；如果两个平台各自对外，回调地址必须指向**实际承接订单的那一侧**，否则验签与通知会丢。
+- 支付回调 `WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL` 未显式配置时按 `SITE_URL` 拼接。单域名下两条链路对外地址一致，回调地址不按平台区分；两侧密钥保持一致即可由实际承接订单的一侧完成验签与通知。
 - 限流是**单进程内存**实现（见 `src/lib/http/rate-limit.ts`），多实例之间不共享计数；Vercel Serverless 天然横向扩容且冷启动频繁，实际防护强度低于 IGA 上的长驻进程，需要精确限流请接共享存储或平台 WAF。
 - Umami 侧行为不变：`initUmami` 只在 `NODE_ENV=production` 且 hostname 命中白名单时注入脚本，Vercel 的 `*.vercel.app` 预览域名不在名单里，不会污染自建统计。
 - 免费套餐对构建时长、函数最长执行时间、上传体积都有上限（本项目源码含 `public/` 约 8.5 MB，远低于限制），细节以 [Vercel 使用限制](https://vercel.com/docs/limits) 为准。
@@ -713,7 +712,7 @@ CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动
 </details>
 
 <details>
-<summary><strong>域名归一化与国内外分流</strong></summary>
+<summary><strong>域名归一化与单域名分流</strong></summary>
 
 #### 裸域自动补 www
 
@@ -734,7 +733,7 @@ CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动
 1. 控制台进入云解析 DNS → 选中域名 → **添加记录**。线路在**添加记录**时按「线路」字段选择，免费版同样提供「中国内地」「全球（不含中国内地）」两档。
 2. 主机记录填 `www`，记录类型 CNAME，记录值填 IGA Pages 分配的加速域名（形如 `xxx.app.example.com.c.vedcdnlb.com`，以控制台给出的值为准），**线路选「中国内地」**。
 3. 再加一条同名记录，记录值填 **Vercel 项目后台 Domains 页面给出的值**（A/AAAA 或 CNAME，以该项目的实际记录为准），**线路选「全球（不含中国内地）」**。⚠️ 不要照抄网上通用的 `76.76.21.21` / `cname.vercel-dns.com`：Vercel 的记录值按项目与账号下发，写错会导致验证失败或解析到别人的站点。
-4. **加一条兜底记录**：再加一条同名记录，记录值同样指向 Vercel，**线路选「默认」**。默认线路是匹配顺序的最后一档，任何没命中「中国内地」「全球（不含中国内地）」的查询都会落到这里 → 走 Vercel。有了这条记录，DNS 层兜底就完整了，**不需要**应用层的地域跳转（见下文「兜底方案」），`SITE_GEO_ROUTING` 可以一直保持关闭。
+4. **加一条兜底记录**：再加一条同名记录，记录值同样指向 Vercel，**线路选「默认」**。默认线路是匹配顺序的最后一档，任何没命中「中国内地」「全球（不含中国内地）」的查询都会落到这里 → 走 Vercel。有了这条记录，DNS 层兜底就完整了，访客不会因未命中线路而解析失败。
 5. 裸域 `@` 不要用「URL 转发」：转发走默认线路、需要备案，且无法配合分线路。正确做法是给 `@` 也加分线路记录（中国内地线路指向 IGA 的加速域名，默认线路指向 Vercel），再由站点的 308 把裸域请求归一化到 www。
 6. 同一线路内可以加多条 CNAME，那会变成按权重轮询，**不要**在同一条线路里同时放 IGA 与 Vercel 的值。
 
@@ -751,28 +750,11 @@ dig +subnet=114.114.114.114 www.example.com @ns1.volcengine-dns.com +short  # �
 
 备案口径：加速区域**包含中国大陆**时域名必须已完成 ICP 备案，否则报「域名未备案校验错误」；只走全球（不含中国大陆）时不需要大陆备案。Vercel 节点在境外，其自定义域名不要求大陆备案，但境内访问质量不保证——这正是境内一侧继续用 IGA 的原因。另外注意免费版 TTL 最小 600 秒，改记录后至少等 10 分钟再判定结果；更换 NS 服务器的生效时间约 48 小时。
 
-#### 兜底方案：DNS 默认线路（首选）与应用内地域跳转（下策）
+#### 不再有应用内地域跳转
 
-**有了上文的「默认线路 → Vercel」记录，DNS 层兜底已经完整。** `SITE_GEO_ROUTING` 只是下策，建议永远不打开；它处理的是 DNS 完全不可控时的极端情况。
+旧版本的 `SITE_DEPLOY_TARGETS` / `SITE_GEO_ROUTING` 只适用于「两个平台各有独立域名」的部署方式。改为单域名后它们已被移除：`proxy.ts` 只做裸域补 www，不读取地域头、不写 `site-region` Cookie、不返回 307 跨域跳转。DNS 已按线路把访客送到对应平台，落到平台后就地服务；单域名下也不存在第二个可跳转的主机名。
 
-如果非要用，`src/proxy.ts` 按 `countryHeaders` 顺序取第一个非空值判定地域，命中境内就送 `SITE_DEPLOY_TARGETS.cn`，否则送 `overseas`，用 **307**（临时，随时可回滚）。
-
-能生效的方向是不对称的，这一点必须清楚：
-
-| 方向 | 有没有信号 | 结果 |
-| --- | --- | --- |
-| 境内访客落到 Vercel | Vercel 官方注入 `x-vercel-ip-country`（ISO 3166-1 alpha-2） | ✅ 307 送回 cn 目标 |
-| 境外访客落到 IGA Pages | 火山 DCDN「配置回源 HTTP 请求头」只能带 `uri`、`host`、`client_ip`、`remote_addr`、`remote_port`、`msec`、`scheme`、`args` 等 11 个变量，**没有国家/省份字段** | ❌ 判为未知地域，就地服务（不会跳错，只是慢） |
-
-要让第二个方向也生效，只能自己在边缘按 `client_ip` 查库判定后注入一个自定义头，再把头名加进 `countryHeaders`；在此之前不要往名单里填不存在的头——不会报错，只会让该方向永远静默失效。
-
-三层防回环设计：
-
-1. **fail-open**：拿不到可信地域头 → 判为未知 → 不动作。任何一侧缺信号都不会跳。
-2. **同主机跳过**：目标主机等于当前主机（例如两平台共用同一域名的 DNS 分线路场景）→ 不动作。
-3. **会话 Cookie**：跳转时写 `site-region`（默认 10 分钟）。Cookie 跨域带不过去，但同一平台会记住上次判定，足以打断 `A → B → A`，最多多一跳后就地服务。
-
-Next 16 起这个文件叫 `proxy.ts`（旧的 `middleware.ts` 仍能工作，但构建时会提示已弃用），且**固定跑在 Node.js 运行时**——不再支持 `export const runtime`，写了会在构建期直接报错。判定依据只来自请求头和 `site.config.ts` 这份构建期常量，好处是两个平台各自构建时算出的规则完全一致，不需要在 Vercel 和 IGA 两边各配一遍环境变量、也不会出现「一边配了另一边漏了」。代价是它不是边缘脚本：每个命中的请求都要过一次 Node 函数，跨境访问时这一跳的延迟由访客落到哪一侧决定——这也是把 DNS 智能解析列为首选、应用内跳转只当兜底的原因。
+Next 16 起这个文件叫 `proxy.ts`（旧的 `middleware.ts` 仍能工作，但构建时会提示已弃用），且**固定跑在 Node.js 运行时**——不再支持 `export const runtime`，写了会在构建期直接报错。它只依赖 `site.config.ts` 的构建期常量，两个平台构建出的规则一致，不需要各自配环境变量。`/api/*` 与带扩展名的静态资源被 `config.matcher` 排除：支付回调不能被重定向，静态资源直接命中 CDN。
 
 #### 本地验证
 
@@ -780,14 +762,16 @@ Next 16 起这个文件叫 `proxy.ts`（旧的 `middleware.ts` 仍能工作，�
 # 裸域 → www：期望 308
 curl -sI -H "Host: zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTTP\|^location"
 
-# 开启 SITE_GEO_ROUTING 后：境内信号期望 307 + Set-Cookie: site-region
-curl -sI -H "Host: www.zhang-wentao.tech" -H "x-vercel-ip-country: US" http://127.0.0.1:3000/ | grep -i "^HTTP\|^location\|^set-cookie"
-
-# 无地域头：期望 200，就地服务
-curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTTP"
+# 单域名就地服务：带地域头也不应跳转，期望 200 且无 location
+curl -sI -H "Host: www.zhang-wentao.tech" -H "x-vercel-ip-country: US" http://127.0.0.1:3000/ | grep -i "^HTTP\|^location"
 ```
 
-`/api/*` 与带扩展名的静态资源被 `config.matcher` 排除在外：微信/支付宝的异步回调绝不能被跨域重定向，静态资源则应该直接命中 CDN。
+线上分流只看 DNS 线路，用 `dig +subnet` 从不同视角验证：
+
+```bash
+dig +subnet=8.8.8.8 www.example.com @ns1.volcengine-dns.com +short          # 境外视角
+dig +subnet=114.114.114.114 www.example.com @ns1.volcengine-dns.com +short  # 境内视角
+```
 
 </details>
 
@@ -805,7 +789,7 @@ curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTT
 - **两个平台表现不一致**：先比密钥变量。站点公开配置来自同一份 `site.config.ts`，但 IGA 与 Vercel 的环境变量各存一份、各建一次，改一边不会影响另一边；`standalone` 产物只在 IGA 链路生成，属预期差异。
 - **改了 `site.config.ts` 不生效**：配置在构建期求值，两条部署链路各自构建，需要分别重新部署；`SITE_HOSTNAME` / `SITE_DOMAIN` / `SITE_ANALYTICS_DOMAINS` 是从 `SITE_URL` 派生的，不要手动改。
 - **裸域没有跳 www**：只有等于 `SITE_URL` 派生出的 www 版与裸域版才会被改写，`localhost`、`*.vercel.app`、`*.preview.iga-pages.com` 有意不参与；另外 `/api/*` 与带扩展名的静态资源被 matcher 排除。
-- **开了 `SITE_GEO_ROUTING` 却不跳**：四种正常情况——`SITE_DEPLOY_TARGETS.overseas` 留空、拿不到 `countryHeaders` 里的有效值（火山 DCDN 不回传地域字段；`XX` / `-` 视为无效）、目标主机就是当前主机、会话内已有 `site-region` Cookie。临时打开 `SITE_GEO_ROUTING.debug` 看响应头 `X-Site-Geo` 即可定位，详情见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
+- **分流结果不对**：单域名分流只看 DNS 记录与线路匹配，用 `dig +subnet` 复核；代码里已无地域跳转，`proxy.ts` 只做裸域补 www，详情见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
 - **IGA 发布报未登录或项目不存在**：先 `iga login`（AK/SK 方式或浏览器授权），再 `iga pages link --project=... --yes` 显式关联项目——本地工作区不会记住关联，每次新目录都要重跑。AK/SK 对应的 IAM 用户要有 Pages 相关权限（先挂 `DCDNFullAccess`，再按报错补自定义策略）。
 - **`npm run lint` 一堆 warning 不代表坏了**：判定看退出码——当前基线 0 error / 约 34 warning，进程退出码 0。这些是存量代码欠账（`no-explicit-any`、`exhaustive-deps` 等），不是配置错误；想逐条清就 `npm run lint:fix` 先修可自动修复的，再按文件处理剩下的。真出现 `command not found` 或 `could not find plugin "@typescript-eslint"`，说明 `eslint` / `eslint-config-next` 没装进 devDependencies，或 `eslint.config.mjs` 被改回了 FlatCompat 旧写法。
 
