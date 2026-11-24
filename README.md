@@ -3,7 +3,7 @@
 基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
-- 站点名称、域名、联系方式、社交链接、打赏金额范围等集中在 [`src/lib/site.ts`](src/lib/site.ts)，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
+- 站点名称、域名、联系方式、社交链接、打赏金额范围等集中在 `src/lib/site.ts`，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
 
 ## 功能特性
 
@@ -49,7 +49,7 @@ npm run start:standalone  # 按 standalone 产物启动（与线上入口一致�
 两个启动命令的区别：
 
 - `npm run start` 会提示 `"next start" does not work with "output: standalone"`。这是入口与产物形式不匹配的提醒，**不是故障**：`next start` 直接读取常规 `.next/` 目录，静态资源齐全，日常本地验证用它即可。
-- `npm run start:standalone` 跑的是线上同款的 `node .next/standalone/server.js`。该入口只依赖 `.next/standalone/`，而 `next build` 不会把 `public/` 与 `.next/static/` 复制进去（部署平台会自动补齐），因此先由 [`prepare-standalone.mjs`](prepare-standalone.mjs) 补这两份目录再启动。需要验证「部署后真实表现」（如 Service Worker、字体、iOS 启动图能否取到）时用这条，缺资源会暴露成 404 而不是侥幸跑通。`next build` 每次会重建（清空）`.next/standalone`，上一次复制进去的 `public/` 与 `.next/static/` 不会残留，因此改完代码要重新验证时直接 `npm run build && npm run start:standalone` 即可。
+- `npm run start:standalone` 跑的是线上同款的 `node .next/standalone/server.js`。该入口只依赖 `.next/standalone/`，而 `next build` 不会把 `public/` 与 `.next/static/` 复制进去（部署平台会自动补齐），因此先由 `prepare-standalone.mjs` 补这两份目录再启动。需要验证「部署后真实表现」（如 Service Worker、字体、iOS 启动图能否取到）时用这条，缺资源会暴露成 404 而不是侥幸跑通。`next build` 每次会重建（清空）`.next/standalone`，上一次复制进去的 `public/` 与 `.next/static/` 不会残留，因此改完代码要重新验证时直接 `npm run build && npm run start:standalone` 即可。
 
 ## 项目结构
 
@@ -91,7 +91,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 ## 站点配置
 
-[`src/lib/site.ts`](src/lib/site.ts) 集中管理站点元信息，会被客户端组件引用，**切勿写入任何密钥**：
+`src/lib/site.ts` 集中管理站点元信息，会被客户端组件引用，**切勿写入任何密钥**：
 
 | 配置 | 说明 |
 | --- | --- |
@@ -191,7 +191,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 | `BARK_DEVICE_KEY` | 否 | Bark App 中的设备 key，留空则不推送 |
 | `BARK_SERVER_URL` | 否 | 自建 Bark 服务端，留空用官方 `https://api.day.app` |
 
-实现见 [`src/lib/bark.ts`](src/lib/bark.ts)。未配置 `BARK_DEVICE_KEY` 时直接跳过；推送失败只记日志，不影响业务流程。推送内容包含标题、副标题、正文、分组与站点图标，**不携带跳转链接**（点击通知仅停留在 Bark）。
+实现见 `src/lib/bark.ts`。未配置 `BARK_DEVICE_KEY` 时直接跳过；推送失败只记日志，不影响业务流程。推送内容包含标题、副标题、正文、分组与站点图标，**不携带跳转链接**（点击通知仅停留在 Bark）。
 
 ### 打赏（微信支付 / 支付宝 / 订单签名）
 
@@ -209,7 +209,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 ## 联系表单（Webhook）
 
-提交表单后，[`src/app/api/contact/route.ts`](src/app/api/contact/route.ts) 会：
+提交表单后，`src/app/api/contact/route.ts` 会：
 
 1. 校验姓名、邮箱与内容，POST JSON 到 `NOTIFY_WEBHOOK_URL`；主 Webhook 失败时自动投递失败事件到 `NOTIFY_WEBHOOK_FALLBACK_URL`，两者都失败才返回 `502`。
 2. 并行推送 Bark（可选），Bark 失败只记日志，不影响提交结果。
@@ -245,7 +245,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 ### 无状态订单令牌 `statusToken`
 
-实现见 [`server/token.ts`](src/features/donate/server/token.ts)。
+实现见 `src/features/donate/server/token.ts`。
 
 - 算法：HMAC-SHA256。密钥优先取 `DONATION_ORDER_SECRET`；未配置时从支付私钥（微信 `WECHAT_PRIVATE_KEY` 或支付宝 `ALIPAY_PRIVATE_KEY`）派生，派生源为稳定环境变量，跨实例一致，无需手动配置。
 - 结构：`<base64url(payload)>.<base64url(signature)>`。
@@ -255,7 +255,7 @@ public/                           # live2d 模型、字体、图标、iOS 启动
 
 ### 接口契约
 
-所有路由位于 [`src/app/api/donate/`](src/app/api/donate)，运行时 `nodejs`、`force-dynamic`。config / create / status 的错误响应统一为 `{ "error": { "code": "...", "message": "..." } }`；支付回调按平台协议返回：支付宝纯文本 `success` / `failure`，微信 `{ "code": "...", "message": "..." }`。
+所有路由位于 `src/app/api/donate/`，运行时 `nodejs`、`force-dynamic`。config / create / status 的错误响应统一为 `{ "error": { "code": "...", "message": "..." } }`；支付回调按平台协议返回：支付宝纯文本 `success` / `failure`，微信 `{ "code": "...", "message": "..." }`。
 
 | 路由 | 方法 | 说明 |
 | --- | --- | --- |
@@ -371,7 +371,7 @@ openssl rand -hex 32
 
 ### 微信支付接入详解
 
-实现见 [`server/wechat/`](src/features/donate/server/wechat)，请求发往 `https://api.mch.weixin.qq.com`，使用 APIv3。
+实现见 `src/features/donate/server/wechat/`，请求发往 `https://api.mch.weixin.qq.com`，使用 APIv3。
 
 - **请求签名**：每次请求带 `Authorization: WECHATPAY2-SHA256-RSA2048 mchid=...,nonce_str=...,signature=...,timestamp=...,serial_no=...`。签名串 `METHOD\nURL_PATH\nTIMESTAMP\nNONCE\nBODY\n`，用商户私钥做 RSA-SHA256 后 base64。
 - **下单**：Native 返回 `code_url`；H5 额外带 `scene_info`，返回 `h5_url` 并追加 `redirect_url` 回跳站点；JSAPI 返回 `prepay_id`，二次签名生成前端调起参数 `{ appId, timeStamp, nonceStr, package, signType:'RSA', paySign }`。
@@ -380,7 +380,7 @@ openssl rand -hex 32
 
 ### 支付宝接入详解
 
-实现见 [`server/alipay/`](src/features/donate/server/alipay)，走 `ALIPAY_GATEWAY`，RSA2 签名、表单提交。
+实现见 `src/features/donate/server/alipay/`，走 `ALIPAY_GATEWAY`，RSA2 签名、表单提交。
 
 - **签名**：公共参数 + `biz_content`，按键名 ASCII 升序拼接（剔除空值与 `sign`），用应用私钥 `SHA256withRSA` 后 base64 作为 `sign`。
 - **下单**：当面付 `alipay.trade.precreate` 返回 `qr_code`；手机网站 `alipay.trade.wap.pay` 构造签名后的完整网关 URL（含 `return_url` / `quit_url`）返回前端跳转。
@@ -389,16 +389,16 @@ openssl rand -hex 32
 
 ### 回调后的站长通知
 
-回调验签通过后，[`server/notify.ts`](src/features/donate/server/notify.ts) 的 `notifyDonationSuccess` 并行执行：
+回调验签通过后，`src/features/donate/server/notify.ts` 的 `notifyDonationSuccess` 并行执行：
 
-- **Bark 推送**（[`lib/bark.ts`](src/lib/bark.ts)）：需 `BARK_DEVICE_KEY`，推送渠道、金额与订单号；失败只记日志。
-- **Webhook 通知**（[`webhook.ts`](src/features/contact/server/webhook.ts)）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`，主 Webhook 失败时尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`。
+- **Bark 推送**（`src/lib/bark.ts`）：需 `BARK_DEVICE_KEY`，推送渠道、金额与订单号；失败只记日志。
+- **Webhook 通知**（`src/features/contact/server/webhook.ts`）：POST 渠道、金额、订单号到 `NOTIFY_WEBHOOK_URL`，主 Webhook 失败时尝试 `NOTIFY_WEBHOOK_FALLBACK_URL`。
 
 任一通知失败只记日志，不影响回调返回成功，避免支付平台重复投递；未配置时自动跳过。
 
 ### 前端支付流程
 
-见 [`client/donate-dialog.tsx`](src/features/donate/client/donate-dialog.tsx) 与 [`client/revenue.ts`](src/features/donate/client/revenue.ts)：
+见 `src/features/donate/client/donate-dialog.tsx` 与 `src/features/donate/client/revenue.ts`：
 
 1. 打开弹窗 → `GET /api/donate/config` 决定可用渠道。
 2. 输入金额 → `POST /api/donate/create`：扫码用 `codeUrl` 渲染二维码并每 3 秒轮询查单（最长 5 分钟）；跳转打开 `redirectUrl`，支付后回跳 `/?donate=success&token=...` 再查单确认；JSAPI 用 `payment` 调起收银台后轮询确认。
@@ -421,9 +421,9 @@ openssl rand -hex 32
 
 ## PWA 与 iOS 主屏幕
 
-- manifest 由 [`src/app/manifest.ts`](src/app/manifest.ts) 生成，Service Worker 由 [`features/pwa/service-worker-registration.tsx`](src/features/pwa/service-worker-registration.tsx) 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
+- manifest 由 `src/app/manifest.ts` 生成，Service Worker 由 `src/features/pwa/service-worker-registration.tsx` 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
-- `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 [`src/styles/index.css`](src/styles/index.css) 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
+- `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 `src/styles/index.css` 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - `public/launch/` 内置各机型 iOS 启动图。
 
 ## 部署到 IGA Pages
@@ -431,7 +431,7 @@ openssl rand -hex 32
 IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 Next.js 框架并套用默认构建配置。本项目已做如下适配：
 
 - `next.config.ts` 使用 `output: 'standalone'`，`images.unoptimized: true`（FaaS 运行时无法持久化图片优化缓存）。
-- 根目录 [`iga.json`](iga.json) 固定安装与构建命令，优先级高于控制台构建配置。
+- 根目录 `iga.json` 固定安装与构建命令，优先级高于控制台构建配置。
 - 构建产物不需要手动填写输出目录，由平台按 Next.js 模式处理。
 
 ### 控制台方式（首次使用推荐）
