@@ -58,6 +58,15 @@ export const ServiceWorkerRegistration = () => {
       window.dispatchEvent(new CustomEvent(SOFT_REFRESH_EVENT));
     };
 
+    // SW 发现旧页面引用了不存在的 chunk 时会清空缓存并通知这里；
+    // 每个会话只自动重载一次，源站真的缺 chunk 时不至于无限刷新。
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'stale-cache') return;
+      if (sessionStorage.getItem('sw-stale-reloaded') === '1') return;
+      sessionStorage.setItem('sw-stale-reloaded', '1');
+      window.location.reload();
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkForUpdates();
@@ -69,6 +78,7 @@ export const ServiceWorkerRegistration = () => {
     window.addEventListener('online', checkForUpdates);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    navigator.serviceWorker.addEventListener('message', handleMessage);
 
     navigator.serviceWorker
       .register('/sw.js', { scope: '/', updateViaCache: 'none' })
@@ -112,6 +122,7 @@ export const ServiceWorkerRegistration = () => {
       window.removeEventListener('online', checkForUpdates);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
     };
   }, []);
 

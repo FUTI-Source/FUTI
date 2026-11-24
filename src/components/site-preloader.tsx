@@ -46,6 +46,25 @@ export const SitePreloader = () => {
       );
     };
 
+    // 手机长时间锁屏后切回来，浏览器可能从 bfcache 恢复：此时字体/图片的 Promise
+    // 不会重新触发，而遮罩还停在 loading。恢复可见或 bfcache 命中时直接放行。
+    let wasHidden = document.hidden;
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        wasHidden = true;
+        return;
+      }
+      if (wasHidden) {
+        wasHidden = false;
+        reveal();
+      }
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) reveal();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pageshow', onPageShow);
+
     // 不直接等 window load：它还会算上统计脚本、Service Worker 等与首屏无关的资源，
     // 慢网下会把加载页拖到兜底时间。字体与首屏图片就绪即可交还页面。
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
@@ -65,6 +84,8 @@ export const SitePreloader = () => {
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pageshow', onPageShow);
     };
   }, []);
 
@@ -82,6 +103,10 @@ export const SitePreloader = () => {
       <script src="/scripts/preload-skip.js" />
       <style>
         {'html.preload-skip #site-preloader{display:none}html.preload-skip .profile-loading,html.preload-skip .avatar-loading{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}
+      </style>
+      {/* 纯 CSS 兜底：JS chunk 404 时 React 不会 hydrate，遮罩不能永远盖住 SSR 内容 */}
+      <style>
+        {'@keyframes site-preloader-failsafe{to{opacity:0;visibility:hidden}}#site-preloader{animation:site-preloader-failsafe 0s linear 12s forwards}'}
       </style>
       <div
         id="site-preloader"

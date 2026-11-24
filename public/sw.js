@@ -1,5 +1,5 @@
 // 每次发布都要递增：旧页面缓存里可能引用已被新构建删除的 chunk，必须整体清掉
-const CACHE_VERSION = 'vmwuzzwkc-5c926061';
+const CACHE_VERSION = 'vmwv08p8o-da0d8f12';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
 /** 导航请求最长等待时间；超时后用缓存兜底，避免弱网下白屏等待 */
 const NAVIGATION_TIMEOUT = 8000;
@@ -166,6 +166,16 @@ self.addEventListener('fetch', (event) => {
       if (response.ok && canCache) {
         const copy = response.clone();
         event.waitUntil(cache.put(request, copy));
+      } else if (!response.ok && url.pathname.startsWith('/_next/static/')) {
+        // 旧 HTML 缓存引用了已被新构建删除的 chunk：清掉整站缓存并通知页面重载，
+        // 避免长时间挂后台后切回来卡在白屏 / 半加载状态。
+        event.waitUntil(
+          (async () => {
+            await caches.delete(CACHE_NAME);
+            const clients = await self.clients.matchAll({ type: 'window' });
+            clients.forEach((client) => client.postMessage({ type: 'stale-cache' }));
+          })(),
+        );
       }
       return response;
     })(),
