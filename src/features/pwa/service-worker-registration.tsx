@@ -48,65 +48,68 @@ export const ServiceWorkerRegistration = () => {
         };
 
         const handleControllerChange = () => {
-            // 首次安装的 claim 不算更新，无需刷新
-            // 只在后台静默刷新；前台可见时不打断用户
-            if (
-                !hadController ||
-                reloadedForUpdate ||
-                document.visibilityState !== 'hidden'
-            ) {
-                return;
-            }
-            reloadedForUpdate = true;
+            const handleControllerChange = () => {
+                // 首次安装的 claim 不算更新，无需刷新
+                // 只在后台静默刷新；前台可见时不打断用户
+                if (
+                    !hadController ||
+                    reloadedForUpdate ||
+                    document.visibilityState !== 'hidden'
+                ) {
+                    return;
+                }
+                reloadedForUpdate = true;
 
-            // ✅ 修复：使用同源导航代替 reload，避免 PWA standalone 模式退出全屏
-            window.location.href = window.location.href;
-            // 或更推荐：window.location.replace(window.location.href); // 不增加浏览器历史记录
-        };
+                // ✅ 最终修复：使用 replace 替代 href 赋值
+                // 1. 避免增加浏览器历史记录，减少“新导航”判定
+                // 2. 部分浏览器对 replace 的上下文保持更友好，不易丢失 PWA 状态
+                // 3. 注意：iOS PWA 更新时显示启动图是系统级行为，无法避免
+                window.location.replace(window.location.href);
+            };
 
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                checkForUpdates();
-            } else {
-                applyWaitingWorker();
-            }
-        };
-
-        window.addEventListener('online', checkForUpdates);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-        navigator.serviceWorker
-            .register('/sw.js', { scope: '/', updateViaCache: 'none' })
-            .then((serviceWorkerRegistration) => {
-                if (disposed) return;
-
-                registration = serviceWorkerRegistration;
-                updateCheckInterval = window.setInterval(
-                    checkForUpdates,
-                    UPDATE_CHECK_INTERVAL,
-                );
-
-                // 注册前已有页面处于 SW 控制时，本次才存在“更新”语义；
-                // 首次安装无需处理，activate 里的 clients.claim 会接管。
-                if (serviceWorkerRegistration.waiting && navigator.serviceWorker.controller) {
+            const handleVisibilityChange = () => {
+                if (document.visibilityState === 'visible') {
+                    checkForUpdates();
+                } else {
                     applyWaitingWorker();
                 }
-            })
-            .catch((error: unknown) => {
-                console.error('Service worker registration failed', error);
-            });
+            };
 
-        return () => {
-            disposed = true;
-            if (updateCheckInterval !== undefined) {
-                window.clearInterval(updateCheckInterval);
-            }
-            window.removeEventListener('online', checkForUpdates);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-        };
-    }, []);
+            window.addEventListener('online', checkForUpdates);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+            navigator.serviceWorker
+                .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+                .then((serviceWorkerRegistration) => {
+                    if (disposed) return;
+
+                    registration = serviceWorkerRegistration;
+                    updateCheckInterval = window.setInterval(
+                        checkForUpdates,
+                        UPDATE_CHECK_INTERVAL,
+                    );
+
+                    // 注册前已有页面处于 SW 控制时，本次才存在“更新”语义；
+                    // 首次安装无需处理，activate 里的 clients.claim 会接管。
+                    if (serviceWorkerRegistration.waiting && navigator.serviceWorker.controller) {
+                        applyWaitingWorker();
+                    }
+                })
+                .catch((error: unknown) => {
+                    console.error('Service worker registration failed', error);
+                });
+
+            return () => {
+                disposed = true;
+                if (updateCheckInterval !== undefined) {
+                    window.clearInterval(updateCheckInterval);
+                }
+                window.removeEventListener('online', checkForUpdates);
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+            };
+        }, []);
 
     return null;
 };
