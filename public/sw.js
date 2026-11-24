@@ -1,4 +1,5 @@
-const CACHE_VERSION = 'v12';
+// 每次发布都要递增：旧页面缓存里可能引用已被新构建删除的 chunk，必须整体清掉
+const CACHE_VERSION = 'v13';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
 /** 导航请求最长等待时间；超时后用缓存兜底，避免弱网下白屏等待 */
 const NAVIGATION_TIMEOUT = 8000;
