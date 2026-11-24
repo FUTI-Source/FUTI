@@ -208,13 +208,8 @@ export const SITE_CDN_CACHE = {
 /** 调用微信 / 支付宝网关时携带的 User-Agent，便于在商户后台日志里识别来源 */
 export const SITE_USER_AGENT = 'zhang-wentao-site/1.0';
 
-interface SiteSocialLinks {
-  blog: string;
-  github: string;
-}
-
 /** 社交链接，留空时对应入口不跳转，也不会写入结构化数据 */
-export const SITE_SOCIAL_LINKS: SiteSocialLinks = {
+export const SITE_SOCIAL_LINKS = {
   blog: '',
   github: '',
-};
+} as const;
