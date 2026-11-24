@@ -10,7 +10,7 @@ export const BrandMark: React.FC<IBrandMarkProps> = (props) => (
       x="44"
       y="25"
       fill="#fff"
-      fontFamily="Ubuntu, sans-serif"
+      style={{ fontFamily: 'var(--font-playful)' }}
       fontSize="26"
       fontWeight="700"
       letterSpacing="2"

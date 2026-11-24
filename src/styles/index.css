@@ -1,17 +1,42 @@
 @theme {
   --color-brand: oklch(0.63 0.15 252.19);
 
-  --font-sans: ui-sans-serif, system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
+  /* 全站统一的圆润活泼字体：拉丁用 Nunito Variable，中文用站酷快乐体。
+     两套字体各自声明 unicode-range，互不抢字；末尾系统字体与内置子集只作兜底。 */
+  --font-playful: 'Nunito Variable', 'ZCOOL KuaiLe', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
 
-  /* 品牌字体只有拉丁字形，中文必须显式补苹方，否则 Safari 会回退到宋体；
-     末尾的 CJK Subset 是内置中文子集，兜底无系统中文字体的环境（如部署截图服务） */
-  --font-geometos: 'Geometos', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
-  --font-kanit: 'Kanit', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
-  --font-ubuntu: 'Ubuntu', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
+  --font-sans: var(--font-playful);
+  --font-mono: var(--font-playful);
+  --font-geometos: var(--font-playful);
+  --font-kanit: var(--font-playful);
+  --font-ubuntu: var(--font-playful);
 }
 
-/* 中文子集（仅含站点实际用到的汉字与标点）：系统有中文字体时不会被下载，
-   只有无系统中文字体的运行环境才会回退到这里，避免出现方框字。 */
+/* 拉丁文字：Nunito 可变字体，圆润无衬线，字重 200-1000 连续可调 */
+@font-face {
+  font-family: 'Nunito Variable';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/fonts/nunito-latin-variable.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+20AC, U+2122, U+2190-21FF, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* 中文字形：站酷快乐体（SIL OFL），只接管 CJK 区段，拉丁仍由 Nunito 渲染 */
+@font-face {
+  font-family: 'ZCOOL KuaiLe';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/zcool-kuaile-sc.woff2') format('woff2');
+  unicode-range: U+2E80-2FFF, U+3000-303F, U+3040-30FF, U+3400-4DBF, U+4E00-9FFF,
+    U+F900-FAFF, U+FF00-FFEF;
+}
+
+/* 最终兜底：仅含站点实际用到的汉字与标点。站酷快乐体已覆盖全量中文，
+   这里只在字体加载失败或特殊运行环境才可能命中，避免方框字。 */
 @font-face {
   font-family: 'CJK Subset';
   font-style: normal;
@@ -19,12 +44,6 @@
   font-display: swap;
   src: url('/fonts/cjk-subset.woff2') format('woff2');
   unicode-range: U+00A9, U+00B7, U+2018-201D, U+2026, U+2122, U+2E80-2FFF, U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
-}
-
-/* next/font 在 body 上注入的 --font-geometos 只含 geometos 与其度量回退字体，
-   不含中文字形，这里在工具类后追加中文字体，保证中文仍使用苹方。 */
-.font-geometos {
-  font-family: var(--font-geometos), 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'CJK Subset', sans-serif;
 }
 
 /* 首帧前的兜底值；真实的像素高度由 layout 中的内联脚本按 visualViewport 写入 */
@@ -449,28 +468,4 @@ body [contenteditable=''] {
   100% {
     opacity: 0;
   }
-}
-
-@font-face {
-  font-family: Kanit;
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('/fonts/Kanit-300.woff2') format("woff2");
-}
-
-@font-face {
-  font-family: Kanit;
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/Kanit-400.woff2') format("woff2");
-}
-
-@font-face {
-  font-family: Ubuntu;
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('/fonts/Ubuntu.woff2') format("woff2");
 }

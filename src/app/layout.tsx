@@ -1,7 +1,5 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import localFont from 'next/font/local';
-
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
@@ -9,13 +7,6 @@ import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib
 import { SITE_ANALYTICS_URL, SITE_LANG } from '~/site.config';
 
 import './globals.css';
-
-const geometos = localFont({
-  src: '../../public/fonts/Geometos.woff',
-  display: 'swap',
-  variable: '--font-geometos',
-  preload: true,
-});
 
 export const metadata = siteMetadata;
 export const viewport = siteViewport;
@@ -44,14 +35,14 @@ export default function RootLayout({
           rel="preconnect"
           href={SITE_ANALYTICS_URL}
         />
-        {/* Kanit/Ubuntu 只用于首屏外或延迟淡入的文字，预加载反而会触发
-            “preloaded but not used” 警告；交给 @font-face 按需加载即可 */}
+        {/* 新字体由 index.css 的 @font-face 按需加载，font-display: swap
+            保证首屏先用回退字体绘制，不做预加载以免拖慢关键资源 */}
         {/* QQ Sharing 专用元标签（使用绝对路径更保险） */}
         <meta itemProp="name" content={qqSharingMeta.name} />
         <meta itemProp="image" content={qqSharingMeta.image} />
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
       </head>
-      <body className={geometos.variable}>
+      <body>
         <SitePreloader />
         <script
           id="structured-data"

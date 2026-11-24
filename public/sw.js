@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
 /** 导航请求最长等待时间；超时后用缓存兜底，避免弱网下白屏等待 */
 const NAVIGATION_TIMEOUT = 8000;
@@ -9,10 +9,8 @@ const PRECACHE_URLS = [
   '/icon-192x192.png',
   '/icon-512x512.png',
   '/apple-touch-icon.png',
-  '/fonts/Geometos.woff',
-  '/fonts/Kanit-300.woff2',
-  '/fonts/Kanit-400.woff2',
-  '/fonts/Ubuntu.woff2',
+  '/fonts/nunito-latin-variable.woff2',
+  '/fonts/zcool-kuaile-sc.woff2',
   '/offline.html',
 ];
 const STATIC_DESTINATIONS = new Set(['font', 'image', 'script', 'style', 'worker']);
