@@ -100,15 +100,14 @@ export const SITE_DEPLOY_TARGETS = {
  * 能做到什么，取决于平台回传什么（已按官方能力核实）：
  *  - Vercel 侧：官方注入 `x-vercel-ip-country`（ISO 3166-1 alpha-2），
  *    因此「境内访客落到 Vercel」可以 307 送回 cn 目标，这条方向是真实可用的。
+ *  - Cloudflare 侧：`cf-ipcountry`，未知地域返回 `XX`（代码会当作无信号处理）。
  *  - 火山 DCDN / IGA Pages 侧：回源请求头只能带 uri、host、client_ip、
- *    remote_addr、remote_port、msec、scheme、args 等 11 个变量，
- *    **没有任何国家/省份字段**。所以「境外访客落到 IGA」这一方向拿不到信号，
- *    会按「未知地域」就地服务（不会跳错，只是慢）。要这一方向也生效，
- *    只能自己在边缘按 client_ip 判定后注入一个自定义头，再把它加进 countryHeaders。
+ *    remote_addr、remote_port、msec、scheme、args 等 11 个变量，**没有任何国家字段**。
+ *    若需要这一方向生效，可在边缘按 client_ip 查库后注入自定义头（见 countryHeaders）。
  *
  * 判定依据只信 CDN/平台回传的地域头：
- *  - 头缺失或取值不在名单里 → 判为「未知」→ 不动作。
- *    这条 fail-open 规则是防死循环的关键：任何一侧拿不到可信信号都不跳转。
+ *  - 头缺失、`XX` / `-`、或逗号列表里没有有效值 → 判为「未知」→ 不动作。
+ *    fail-open 是防死循环的关键：任何一侧拿不到可信信号都不跳转。
  *  - 跳转时写入短期 Cookie（见 redirectCookie）作为第二道闸门。
  */
 export const SITE_GEO_ROUTING = {
@@ -120,15 +119,27 @@ export const SITE_GEO_ROUTING = {
    */
   cnCountryCodes: ['CN'],
   /**
-   * 读取地域信号的请求头，按数组顺序取第一个非空值。
+   * 读取地域信号的请求头，按数组顺序取第一个有效值。
+   * 每个头的值支持逗号分隔列表（常见于多层代理叠加），只取首个有效项。
    * 只填**确实会回传**的头：填了不存在的头不会报错，只会让该方向永远不生效。
    *  - x-vercel-ip-country：Vercel 官方，生产环境一定有。
-   *  - cf-ipcountry：仅当站点套了 Cloudflare。
-   *  - x-forwarded-country / x-geo-country：自己边缘脚本注入时才填。
+   *  - cf-ipcountry：仅当站点套了 Cloudflare；未知地域返回 XX，按无信号处理。
+   *  - x-geo-country / x-forwarded-country：自建边缘脚本注入时才填。
    */
-  countryHeaders: ['x-vercel-ip-country', 'cf-ipcountry'],
+  countryHeaders: [
+    'x-vercel-ip-country',
+    'cf-ipcountry',
+    'x-geo-country',
+    'x-forwarded-country',
+  ],
   /** 跨平台跳转用 307：临时重定向，不被浏览器永久缓存，随时可回滚 */
   statusCode: 307 as const,
+  /**
+   * 调试模式：在每个经过分流判断的响应上写入 `X-Site-Geo` 头，
+   * 值为最终决策（cn / overseas / 跳过的具体原因）。平时保持 false，
+   * 排查「为什么没跳 / 跳错」时临时打开即可，不输出任何用户隐私。
+   */
+  debug: false,
   /**
    * 防回环 Cookie。10 分钟足够覆盖一次跳转往返；
    * 值是最终落地平台标识，只用于「同会话不二次跳转」判断与排障。
@@ -241,16 +252,26 @@ export const SITE_ANALYTICS_DOMAINS = `${SITE_HOSTNAME},${SITE_DOMAIN}`;
 /**
  * 静态资源缓存策略，由 next.config.ts 读取并写入响应头，交给 DCDN / Vercel Edge 缓存。
  *
- * - immutable：public/ 下带版本或确定不再变更的文件（字体、启动图），浏览器与 CDN 存一年。
- * - static：可能随版本更新的文件（Live2D 模型、文档配图），一周，避免模型更新后长期命中旧文件。
+ * 所有值都同时给出浏览器缓存（max-age）与共享缓存（s-maxage）时长：
+ * s-maxage 优先级高于 max-age，且只作用于 CDN / 反向代理，便于让 CDN 缓存更久、
+ * 浏览器按各自的短周期回源校验，互不牵制。
  *
- * 换模型或改字体文件名后想立即生效，调小 staticTtl 或在 CDN 侧主动刷新。
+ * - immutable：带内容哈希或确定不再变更的文件（字体、启动图），浏览器与 CDN 都存一年。
+ * - static：可能随版本更新的文件（Live2D 模型、文档配图）。一周强缓存 + 一天
+ *   stale-while-revalidate（过期后先返回旧副本、后台异步刷新）+ 一周 stale-if-error
+ *   （源站故障时继续用旧副本），既不牺牲首屏速度也避免模型更新后长期命中旧文件。
+ * - api：接口一律不缓存。支付回调、订单查询、Webhook 都不能被 CDN 复用响应。
+ *
+ * 换模型或改字体文件名后想立即生效，调小 static 的 max-age 或在 CDN 侧主动刷新。
  */
 export const SITE_CDN_CACHE = {
-  immutable: 'public, max-age=31536000, immutable',
-  static: 'public, max-age=604800',
-  /** Service Worker 必须永不缓存，否则更新推不下去 */
-  serviceWorker: 'no-cache, no-store, must-revalidate',
+  immutable: 'public, max-age=31536000, s-maxage=31536000, immutable',
+  static:
+    'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, stale-if-error=604800',
+  /** Service Worker 必须永不缓存，否则新版本推不下去；no-transform 防止 CDN 压缩/改写脚本 */
+  serviceWorker: 'no-cache, no-store, must-revalidate, no-transform',
+  /** 接口一律不缓存：支付回调、订单状态与 Webhook 响应不允许被共享缓存复用 */
+  api: 'no-store, no-cache, must-revalidate, private',
 } as const;
 
 /* ══════════════════════════════════════════════════════════════════

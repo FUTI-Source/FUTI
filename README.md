@@ -3,6 +3,7 @@
 基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，境内走火山引擎 IGA Pages，境外走 Vercel（push 到 GitHub 镜像仓库 `main` 自动构建）。
 
 - 线上地址：<https://www.zhang-wentao.tech>
+- CDN 缓存与国内外分流的完整配置、验证与排障：[CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)
 
 ## 功能特性
 
@@ -88,7 +89,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | 文案 | `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_SIGNATURE` | 标题、描述、打字机副标题 |
 | 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` | 单笔金额上下限 |
 | 统计 | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` | Umami 配置 |
-| CDN | `SITE_CDN_CACHE` | 缓存策略（immutable/static/serviceWorker） |
+| CDN | `SITE_CDN_CACHE` | 四档缓存策略（immutable/static/serviceWorker/api），详见 [CDN 与分流配置指南](CDN-AND-GEO-ROUTING.md) |
 
 **公开信息进文件，密钥进环境变量**。`site.config.ts` 被客户端组件引用，切勿写入任何密钥。
 
@@ -194,7 +195,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | | `SITE_HOSTNAME` / `SITE_DOMAIN` | 自动派生的主机名（含 www）与裸域，**不要手改** |
 | | `SITE_WWW_REDIRECT` | 裸域是否自动补 www（默认开）、用 308 还是 301 |
 | 2 部署与分流 | `SITE_DEPLOY_TARGETS` | `cn`（火山 IGA Pages）与 `overseas`（Vercel）两个平台地址 |
-| | `SITE_GEO_ROUTING` | 应用内地域兜底跳转：开关、境内国家码、地域头名单、307、防回环 Cookie |
+| | `SITE_GEO_ROUTING` | 应用内地域兜底跳转：开关、境内国家码、地域头名单、307、防回环 Cookie、`debug` 响应头 |
 | 3 文案 | `SITE_LANG` / `SITE_LOCALE` | `<html lang>` 与 OG locale |
 | | `SITE_NAME` / `SITE_DESCRIPTION` / `SITE_KEYWORDS` / `SITE_SIGNATURE` / `SITE_BRAND` | 标题、描述、关键词、打字机副标题、水印品牌字 |
 | | `SITE_AUTHOR_NAME` / `SITE_JOB_TITLE` / `SITE_JOB_TITLE_EN` / `SITE_KNOWS_ABOUT` | 作者名、中英文职称、结构化数据 `knowsAbout` |
@@ -204,7 +205,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | 6 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 单笔金额上下限与订单标题 |
 | 7 页脚 | `SITE_COPYRIGHT_START` / `SITE_THEME_CREDIT` / `SITE_THEME_CREDIT_HOVER` | 版权起始年份与画师署名（含 hover 文案） |
 | 8 统计与 CDN | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 地址、站点 ID、**只统计这些域名**（自动含 www + 裸域，预览域名不在名单里） |
-| | `SITE_CDN_CACHE` | 三档缓存策略：`immutable`（字体/启动图）、`static`（Live2D 模型/文档配图）、`serviceWorker`（永不缓存）。由 `next.config.ts` 读取并写入响应头 |
+| | `SITE_CDN_CACHE` | 四档缓存策略：`immutable`（字体/启动图，一年）、`static`（模型/配图，含 stale-while-revalidate 与 stale-if-error）、`serviceWorker`（永不缓存）、`api`（no-store）。由 `next.config.ts` 写入响应头 |
 | 9 出站调用 | `SITE_USER_AGENT` | 调用微信/支付宝网关的 UA，便于商户后台日志识别 |
 | | `SITE_SOCIAL_LINKS` | `{ blog, github }`；留空时入口置灰不可点（Tooltip 提示未配置），且不写入结构化数据 `sameAs` |
 
@@ -213,7 +214,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 - **换域名**：只改 `SITE_URL` 一行。裸域补 www 的目标、统计白名单、canonical/sitemap/OG 地址、支付回调默认地址全部跟着变；`next.config.ts` 与 `src/proxy.ts` 不用动。
 - **不想让裸域跳 www**：`SITE_WWW_REDIRECT.enabled = false`（例如裸域另有用途，要做落地页）。
 - **换统计服务商/站点 ID**：改 `SITE_ANALYTICS_URL` 与 `SITE_ANALYTICS_WEBSITE_ID`；加了新域名要把主机名并进 `SITE_ANALYTICS_DOMAINS`（目前是自动派生的两条）。
-- **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。
+- **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。完整的缓存头解释、平台配置清单与验证命令见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
 - **改打赏上下限**：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 同时作用于前端 zod 校验与下单接口，改完注意支付渠道自身的单笔限额。
 
 </details>
@@ -803,7 +804,7 @@ curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTT
 - **两个平台表现不一致**：先比密钥变量。站点公开配置来自同一份 `site.config.ts`，但 IGA 与 Vercel 的环境变量各存一份、各建一次，改一边不会影响另一边；`standalone` 产物只在 IGA 链路生成，属预期差异。
 - **改了 `site.config.ts` 不生效**：配置在构建期求值，两条部署链路各自构建，需要分别重新部署；`SITE_HOSTNAME` / `SITE_DOMAIN` / `SITE_ANALYTICS_DOMAINS` 是从 `SITE_URL` 派生的，不要手动改。
 - **裸域没有跳 www**：只有等于 `SITE_URL` 派生出的 www 版与裸域版才会被改写，`localhost`、`*.vercel.app`、`*.preview.iga-pages.com` 有意不参与；另外 `/api/*` 与带扩展名的静态资源被 matcher 排除。
-- **开了 `SITE_GEO_ROUTING` 却不跳**：四种正常情况——`SITE_DEPLOY_TARGETS.overseas` 留空、拿不到 `countryHeaders` 里的任何头（火山 DCDN 不回传地域字段）、目标主机就是当前主机、会话内已有 `site-region` Cookie。
+- **开了 `SITE_GEO_ROUTING` 却不跳**：四种正常情况——`SITE_DEPLOY_TARGETS.overseas` 留空、拿不到 `countryHeaders` 里的有效值（火山 DCDN 不回传地域字段；`XX` / `-` 视为无效）、目标主机就是当前主机、会话内已有 `site-region` Cookie。临时打开 `SITE_GEO_ROUTING.debug` 看响应头 `X-Site-Geo` 即可定位，详情见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
 - **IGA 发布报未登录或项目不存在**：先 `iga login`（AK/SK 方式或浏览器授权），再 `iga pages link --project=... --yes` 显式关联项目——本地工作区不会记住关联，每次新目录都要重跑。AK/SK 对应的 IAM 用户要有 Pages 相关权限（先挂 `DCDNFullAccess`，再按报错补自定义策略）。
 - **`npm run lint` 一堆 warning 不代表坏了**：判定看退出码——当前基线 0 error / 约 34 warning，进程退出码 0。这些是存量代码欠账（`no-explicit-any`、`exhaustive-deps` 等），不是配置错误；想逐条清就 `npm run lint:fix` 先修可自动修复的，再按文件处理剩下的。真出现 `command not found` 或 `could not find plugin "@typescript-eslint"`，说明 `eslint` / `eslint-config-next` 没装进 devDependencies，或 `eslint.config.mjs` 被改回了 FlatCompat 旧写法。
 

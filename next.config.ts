@@ -20,6 +20,8 @@ const IMMUTABLE_CACHE = SITE_CDN_CACHE.immutable;
 const STATIC_CACHE = SITE_CDN_CACHE.static;
 /** Service Worker 必须永不缓存，否则新版本推不下去 */
 const SW_CACHE = SITE_CDN_CACHE.serviceWorker;
+/** 接口一律 no-store：支付回调、订单状态与 Webhook 不能被 CDN 复用 */
+const API_CACHE = SITE_CDN_CACHE.api;
 
 // 软刷新走 router.refresh()，只换 RSC 数据，不会重新加载客户端 JS bundle。
 // Next.js 会在 RSC 响应里比对 buildId，不一致才降级为 MPA 导航去取新 bundle；
@@ -90,6 +92,11 @@ const nextConfig: NextConfig = {
             value: SW_CACHE,
           },
         ],
+      },
+      {
+        // 接口响应与支付回调必须实时，CDN/浏览器都不能缓存
+        source: '/api/:path*',
+        headers: [{ key: 'Cache-Control', value: API_CACHE }],
       },
       {
         source: '/:path*',

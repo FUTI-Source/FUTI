@@ -1,5 +1,7 @@
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
+/** 导航请求最长等待时间；超时后用缓存兜底，避免弱网下白屏等待 */
+const NAVIGATION_TIMEOUT = 8000;
 const PRECACHE_URLS = [
   '/',
   '/manifest.webmanifest',
@@ -14,6 +16,8 @@ const PRECACHE_URLS = [
   '/offline.html',
 ];
 const STATIC_DESTINATIONS = new Set(['font', 'image', 'script', 'style', 'worker']);
+/** 这些目录的文件会随版本更新，命中缓存后仍需后台刷新（stale-while-revalidate） */
+const MUTABLE_PREFIXES = ['/live2d/', '/docs/'];
 
 // 宿主页面发来 SKIP_WAITING 时立即接管，避免更新卡在 waiting 状态、
 // 必须关闭所有标签页才能生效。配合注册端的空闲触发使用。
@@ -40,7 +44,6 @@ self.addEventListener('install', (event) => {
           }
         }),
       );
-
     })(),
   );
 });
@@ -89,17 +92,29 @@ self.addEventListener('fetch', (event) => {
           integrity: request.integrity,
         });
 
+        // 网络优先，但设超时：弱网下不要把白屏时间无限拉长
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = controller
+          ? setTimeout(() => controller.abort(), NAVIGATION_TIMEOUT)
+          : null;
+
         try {
-          const response = await fetch(request);
+          const response = await fetch(
+            request,
+            controller ? { signal: controller.signal } : undefined,
+          );
+          if (timer) clearTimeout(timer);
           if (response.ok) {
-            try {
-              await cache.put(cacheRequest, response.clone());
-            } catch (error) {
-              console.warn('Unable to cache page navigation', error);
-            }
+            const copy = response.clone();
+            event.waitUntil(
+              cache.put(cacheRequest, copy).catch((error) => {
+                console.warn('Unable to cache page navigation', error);
+              }),
+            );
           }
           return response;
-        } catch {
+        } catch (error) {
+          if (timer) clearTimeout(timer);
           return (
             (await cache.match(cacheRequest)) ||
             (await cache.match('/')) ||
@@ -114,27 +129,44 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (
-    !STATIC_DESTINATIONS.has(request.destination) &&
-    !url.pathname.startsWith('/_next/static/') &&
-    !url.pathname.startsWith('/live2d/')
-  ) {
+  const isStatic =
+    STATIC_DESTINATIONS.has(request.destination) ||
+    url.pathname.startsWith('/_next/static/') ||
+    MUTABLE_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
+  if (!isStatic) {
     return;
   }
+
+  // 范围请求（如 Live2D 模型分段加载）只能拿到部分响应，写入缓存会污染后续完整请求
+  const canCache = !request.headers.has('range');
+  const shouldRevalidate = MUTABLE_PREFIXES.some((prefix) =>
+    url.pathname.startsWith(prefix),
+  );
 
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       const cachedResponse = await cache.match(request);
+
+      // stale-while-revalidate：可变资源先返回缓存，后台异步拉取新版本写回缓存
+      if (cachedResponse && shouldRevalidate) {
+        event.waitUntil(
+          fetch(request)
+            .then((response) => {
+              if (response.ok && canCache) return cache.put(request, response.clone());
+            })
+            .catch(() => {}),
+        );
+        return cachedResponse;
+      }
+
+      // 带内容哈希的静态资源与首次命中的资源：直接用缓存，避免多余回源
       if (cachedResponse) return cachedResponse;
 
       const response = await fetch(request);
-      if (response.ok) {
-        try {
-          await cache.put(request, response.clone());
-        } catch (error) {
-          console.warn(`Unable to cache ${url.pathname}`, error);
-        }
+      if (response.ok && canCache) {
+        const copy = response.clone();
+        event.waitUntil(cache.put(request, copy));
       }
       return response;
     })(),

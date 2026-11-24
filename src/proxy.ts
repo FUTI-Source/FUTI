@@ -18,6 +18,7 @@ import {
  * 两个开关都在根目录 site.config.ts：
  *  - SITE_WWW_REDIRECT：裸域 → www。主机名由 SITE_URL 派生，换域名不用改代码。
  *  - SITE_GEO_ROUTING：跨平台兜底跳转，默认关闭；只有拿到可信地域头时才动。
+ *    打开 debug 后，每个经过判断的响应会带 `X-Site-Geo` 头说明决策原因。
  *
  * 平台预览域名（*.vercel.app 之外的临时域名、*.preview.iga-pages.com）与
  * localhost 不参与裸域补 www，否则会被甩到一个根本不存在的 www 子域上。
@@ -40,20 +41,35 @@ const cnTargetHost = hostOf(SITE_DEPLOY_TARGETS.cn);
 const overseasTargetHost = hostOf(SITE_DEPLOY_TARGETS.overseas);
 
 /** 参与地域分流的主机名：站点域名 + 两个平台目标域名（境外目标独立域名时才生效） */
-const geoManagedHosts = new Set([
-  SITE_HOSTNAME,
-  SITE_DOMAIN,
-  cnTargetHost,
-  overseasTargetHost,
-]);
+const geoManagedHosts = new Set(
+  [SITE_HOSTNAME, SITE_DOMAIN, cnTargetHost, overseasTargetHost].filter(Boolean),
+);
 
-/** 按配置顺序取第一个非空地域头；拿不到就是「未知地域」 */
+/** 预计算，避免每个请求都重复 toUpperCase */
+const cnCountrySet = new Set(SITE_GEO_ROUTING.cnCountryCodes.map((code) => code.toUpperCase()));
+
+/** 代理叠加时一个头里可能出现逗号列表（如 "XX, CN"），跳过无效占位符 */
+const UNKNOWN_COUNTRY_CODES = new Set(['XX', '-']);
+
+/** 按配置顺序取第一个有效地域头；拿不到就是「未知地域」 */
 function readCountry(request: NextRequest): string {
   for (const header of SITE_GEO_ROUTING.countryHeaders) {
-    const value = request.headers.get(header)?.trim();
-    if (value) return value.toUpperCase();
+    const raw = request.headers.get(header);
+    if (!raw) continue;
+    for (const part of raw.split(',')) {
+      const value = part.trim().toUpperCase();
+      if (value && !UNKNOWN_COUNTRY_CODES.has(value)) return value;
+    }
   }
   return '';
+}
+
+/** 调试模式下把分流决策写进响应头，便于线上临时排查 */
+function withGeoDecision(response: NextResponse, decision: string): NextResponse {
+  if (SITE_GEO_ROUTING.debug) {
+    response.headers.set('X-Site-Geo', decision);
+  }
+  return response;
 }
 
 export function proxy(request: NextRequest) {
@@ -83,19 +99,20 @@ export function proxy(request: NextRequest) {
   // 已经跳过一次就不再跳：跨域时 Cookie 带不过去，但同一平台会记住上次判定，
   // 足以打断 A→B→A（最多多一跳后就地服务）。
   if (request.cookies.get(SITE_GEO_ROUTING.redirectCookie.name)?.value) {
-    return NextResponse.next();
+    return withGeoDecision(NextResponse.next(), 'skip:cookie');
   }
 
   const country = readCountry(request);
-  if (!country) return NextResponse.next();
+  if (!country) return withGeoDecision(NextResponse.next(), 'skip:no-country');
 
-  const isMainland = SITE_GEO_ROUTING.cnCountryCodes
-    .map((code) => code.toUpperCase())
-    .includes(country);
+  const isMainland = cnCountrySet.has(country);
   const target = hostOf(isMainland ? SITE_DEPLOY_TARGETS.cn : SITE_DEPLOY_TARGETS.overseas);
+  const region = isMainland ? 'cn' : 'overseas';
 
   // 目标就是当前主机（例如两平台共用同一域名的 DNS 分线路场景）→ 不动作
-  if (!target || target === hostname) return NextResponse.next();
+  if (!target || target === hostname) {
+    return withGeoDecision(NextResponse.next(), `skip:same-host:${region}:${country}`);
+  }
 
   const response = NextResponse.redirect(
     new URL(`https://${target}${pathname}${search}`),
@@ -103,13 +120,13 @@ export function proxy(request: NextRequest) {
   );
   response.cookies.set({
     name: SITE_GEO_ROUTING.redirectCookie.name,
-    value: isMainland ? 'cn' : 'overseas',
+    value: region,
     path: '/',
     maxAge: SITE_GEO_ROUTING.redirectCookie.maxAgeSeconds,
     sameSite: 'lax',
     secure: true,
   });
-  return response;
+  return withGeoDecision(response, `redirect:${region}:${country}`);
 }
 
 export const config = {
