@@ -7,16 +7,23 @@ version: '1.0'
 #   控制台能看到完整构建日志，也省掉 Gitee Go 的免费构建时长。
 #
 # 前置条件（只做一次）：
-#   1. 仓库「服务 → Gitee Go」开通流水线（账号需绑定手机号）。
-#   2. 火山引擎控制台「访问控制 → API 访问密钥」创建 AK/SK，
-#      建议用只授予 Pages 权限的独立 IAM 用户（建用户时勾选「编程访问」）。
-#   3. 在本流水线的「参数/变量」里新增（并勾选加密）：
+#   1. 开通 Gitee Go：仓库页顶部「流水线」标签（未开通会跳 /gitee_go/open），账号需绑定手机号。
+#   2. 火山引擎控制台 → 头像 →「访问控制」→ 用户管理 → 新建用户，登录设置勾选
+#      「通过密钥进行编程访问」；在该用户的「密钥」Tab 创建 AK/SK（SecretKey 只返回一次，
+#      每个 IAM 用户默认只能有 2 把密钥）。策略：官方未提供 Pages 专属系统策略名，
+#      先挂 DCDNFullAccess，部署报权限错再按报错补自定义策略。
+#   3. 在本流水线的「参数设置」里新增：
 #        IGA_ACCESS_KEY   火山引擎 AccessKey Id
 #        IGA_SECRET_KEY   火山引擎 SecretAccess Key
 #        IGA_PROJECT      要部署的 Pages 项目名或项目 ID
-#      ⚠️ 切勿把密钥写进本文件的 variables 块，那会进 Git 历史；泄露后立刻在控制台禁用。
-#   4. IGA 控制台把项目「Node.js 版本」设为 24.x；密钥类环境变量（NOTIFY_*、WECHAT_*、
-#      ALIPAY_*、DONATION_ORDER_SECRET）在 IGA 的项目环境变量里配，
+#      ⚠️ Gitee Go **社区版没有「加密变量」**：官方《参数设置》只有系统级参数与流水线级参数、
+#      《高级设置》只有阻塞构建与任务超时，均无加密/私密字段（加密仅企业版「凭证管理」有）。
+#      参数值上限 256 字符（AK/SK 够用），但 SK 会以命令行参数形式出现在构建日志里，
+#      要彻底避免只能改用 GitHub Actions 或 deploy@agent + 主机组，见 README。
+#      切勿把密钥写进本文件的 variables 块，那会进 Git 历史；泄露后立刻在控制台「禁用」该密钥。
+#   4. IGA 控制台把项目「Node.js 版本」设为 24.x（可只有 20.x/22.x/24.x，默认 20.x）；
+#      密钥类环境变量（NOTIFY_*、WECHAT_*、ALIPAY_*、DONATION_ORDER_SECRET）在 IGA 的
+#      「项目设置 → 环境变量」里配（项目级单套、不分预览/生产、每个值 ≤2000 字符），
 #      域名/文案/分流等公开配置在仓库根目录 site.config.ts，见 README。
 name: deploy-iga
 displayName: 火山引擎 IGA Pages 生产部署
@@ -42,8 +49,14 @@ stages:
         nodeVersion: 24.22.3
         commands:
           - 'if [ -z "${IGA_ACCESS_KEY}" ] || [ -z "${IGA_SECRET_KEY}" ] || [ -z "${IGA_PROJECT}" ]; then echo "缺少流水线变量 IGA_ACCESS_KEY / IGA_SECRET_KEY / IGA_PROJECT，无法部署" >&2; exit 1; fi'
+          # 只打印计数、不打印值：确认参数是「环境变量注入」还是「文本替换」。
+          # 输出 3 → 三个都注入成了环境变量；输出 0 → Gitee Go 做的是文本替换，
+          # 密钥必然出现在构建日志的命令行里，此时应改用 GitHub Actions 或主机组部署。
+          - 'echo "IGA_* 已作为环境变量注入的数量：$(env | grep -c "^IGA_")"'
           - 'npm install -g @iga-pages/cli'
-          # AK/SK 是非交互登录方式，专为 CI 设计；不要用 iga login 的浏览器授权
+          # AK/SK 是非交互登录方式，专为 CI 设计；不要用 iga login 的浏览器授权。
+          # CLI 没有「从环境变量读凭证」的形式，只能以参数传入，因此密钥会出现在构建日志里
+          # ——这把 AK/SK 必须是最小权限、可随时禁用的专用密钥。
           - 'iga login --accessKey="${IGA_ACCESS_KEY}" --secretKey="${IGA_SECRET_KEY}"'
           # 每次构建都是干净工作区，本地没有项目关联记录，必须显式指定项目
           - 'iga pages link --project="${IGA_PROJECT}" --yes'

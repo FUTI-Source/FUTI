@@ -237,7 +237,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | --- | --- | --- |
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
 
-> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`）配在 Gitee Go 流水线的加密变量里，不进 `.env.local`，见「部署到 Vercel」与「部署到 IGA Pages」。
+> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`）配在 Gitee Go 流水线的参数里，不进 `.env.local`，也不写进 YAML，见「部署到 Vercel」与「部署到 IGA Pages」。⚠️ Gitee Go 社区版**没有加密变量**功能，明文风险与规避方式见该两节。
 
 ## 联系表单（Webhook）
 
@@ -469,7 +469,7 @@ IGA Pages 支持 Next.js 14+ 的 SSR / API Routes，会自动识别本项目的 
 1. 登录[全站加速控制台](https://console.volcengine.com/dcdn) → **服务概览** → **Pages** → **创建项目**。
 2. 代码源选择 GitHub 仓库（需先完成 GitHub 授权）或直接上传 ZIP；平台会自动识别为 Next.js。
 3. 进入 **项目设置** → **Node.js 版本**，选择 `24.x`。平台默认是 `20.x`，而 `package.json` 要求 Node ≥ 24。
-4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`）。站点配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
+4. **项目设置** → **环境变量**：按下文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`）。IGA 的环境变量是**项目级单套**、不区分预览/生产/开发，每个变量值上限 2000 字符、单项目最多 100 个，改动后要重新部署才生效。站点配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
 5. **构建配置**保持默认即可（`npm run build`），或由 `iga.json` 覆盖；不要额外指定输出目录。
 6. 首次部署完成后会生成 `xxx.preview.iga-pages.com` 预览域名，**仅 3 小时有效**，不适合正式对外。
 
@@ -504,9 +504,11 @@ git push origin main          # 触发 deploy-iga 流水线
 
 首次接入只做四件事：
 
-1. 仓库 **服务 → Gitee Go** 开通流水线（账号需绑定手机号，个人仓库有免费构建时长）。
-2. 火山引擎控制台 **访问控制 → API 访问密钥** 创建 AK/SK。建议单独建一个 IAM 用户并勾选「编程访问」，只授予 Pages 相关权限，不要用主账号密钥。
-3. 在流水线的 **参数/变量** 里新增三个**加密**变量：`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`（Pages 项目名或项目 ID）。⚠️ 不要写进 YAML 的 `variables:` 块——那等于把密钥提交进 Git 历史；一旦泄露立刻在控制台禁用该密钥。
+1. 仓库页顶部 **流水线** 标签开通 Gitee Go（未开通会跳 `/gitee_go/open`，账号需绑定手机号，个人仓库有免费构建时长）。
+2. 火山引擎控制台 → 头像 → **访问控制 → 用户管理** 新建用户，登录设置勾选「通过密钥进行编程访问」，在该用户的 **密钥** Tab 创建 AK/SK（SecretKey 只展示一次，每个 IAM 用户默认最多 2 把）。官方没有 Pages 专属系统策略，先挂 `DCDNFullAccess`，部署报权限错再按报错补自定义策略；不要用主账号密钥。
+3. 在流水线的 **参数设置 → 流水线级参数** 里新增三个变量：`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`（Pages 项目名或项目 ID），YAML 里用 `${名称}` 引用。
+   ⚠️ **Gitee Go 社区版没有「加密变量」**：官方《参数设置》只有系统级参数（`GITEE_*`）与流水线级参数，《高级设置》只有阻塞构建与任务超时，没有任何加密/私密字段（加密只在企业版「凭证管理」里）。参数值上限 256 字符（AK/SK 够用）。
+   不要写进 YAML 的 `variables:` 块——那等于把密钥提交进 Git 历史。风险与规避：`iga login` 只接受命令行参数，AK/SK 必然出现在构建日志里，所以流水线里先加了一行 `env | grep -c "^IGA_"` 探测——输出 `3` 说明是真环境变量注入，输出 `0` 说明 Gitee Go 做的是文本替换、密钥一定在日志里，这时应改用 GitHub Actions Secrets，或 Gitee Go 的 `deploy@agent` + 自建主机组（凭据留在主机组机器上）。一旦泄露立刻在控制台「禁用」该密钥。
 4. 每次构建都是干净工作区，没有本地项目关联记录，所以流水线里必须 `iga pages link --project=... --yes` 显式指定项目（已在 YAML 里写好）。
 
 流水线命令与本机调试用的命令完全一致，本地跑一遍就能提前发现问题：
@@ -522,9 +524,10 @@ iga pages deploy -l                               # -l 串流初始化/构建/�
 
 ### 自定义域名与加速
 
-1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**。
-2. 中国大陆加速区域要求域名完成 ICP 备案；HTTPS 证书可在平台申请或上传。
-3. 建议同时绑定根域与 `www`：`src/proxy.ts` 会把站点裸域 308 到 `SITE_URL` 的 www 版本（域名从 `site.config.ts` 自动派生，不用写第二条规则）。
+1. 控制台进入项目 → **域名管理** → 添加域名，按提示配置 **TXT 验证** 与 **CNAME 解析**（CNAME 目标是平台分配的三级域名，形如 `xxx.app.example.com.c.vedcdnlb.com`，以控制台给出的值为准）。
+2. 中国大陆加速区域要求域名完成 ICP 备案；TXT 验证只在中国大陆加速场景需要。
+3. **HTTPS 证书不会自动签发**：控制台不会替你申请证书，需要自己上传证书或按平台指引申请后上传；证书到期前要自行续期替换，别指望平台自动续。
+4. 建议同时绑定根域与 `www`：`src/proxy.ts` 会把站点裸域 308 到 `SITE_URL` 的 www 版本（域名从 `site.config.ts` 自动派生，不用写第二条规则）。
 4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
 
 ### 用 AI 编程客户端对接（可选）
@@ -574,16 +577,18 @@ Node 版本按「Vercel 跟最新 LTS、IGA 保持平台可用上限」处理：
 | `.workflow/deploy-vercel.yml` | `nodeVersion: 26.13.1` | 该步骤只跑 Vercel CLI，不参与编译，用最新 LTS 即可 |
 | `.workflow/deploy-iga.yml` | `nodeVersion: 24.22.3` | 与 IGA 平台侧构建环境同大版本，避免「CI 能装、平台装不上」 |
 
-要锁死 Vercel 的 Node 大版本，在项目 **Settings → Build & Development Environment → Node.js Version** 里选；`vercel.json` **没有** Node 版本字段，别去那里找。Vercel 不支持版本区间共存，且 Node 20 自 2026-10-01 起已停止接受新的构建与函数请求，落到 20 会直接报错而不是回退。
+要锁死 Vercel 的 Node 大版本，在项目 **Settings → Build and Deployment → Node.js Version** 里选（注意菜单名是 Build and Deployment，不是 Build & Development Environment；`vercel.json` **没有** Node 版本字段，别去那里找）。Vercel 不支持版本区间共存，且 Node 20 自 2026-10-01 起已停止接受新的构建与函数请求，落到 20 会直接报错而不是回退。
 
 ### 首次接入
 
-1. **建 Vercel 项目**：首次 `vercel deploy --yes` 会在 token 所属账号下自动创建项目（名称取自仓库目录名，之后可在 **Settings → General** 改名）。想让项目名与归属一开始就确定，先在 [vercel.com/new](https://vercel.com/new) 建好项目，再在流水线变量里补 `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`，CLI 会自动读取，命令无需改动。
-2. **填环境变量**：项目 **Settings → Environment Variables** 按上文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`），Production / Preview / Development 三个环境都要覆盖到。站点公开配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
+1. **建 Vercel 项目**：首次 `vercel deploy --yes` 会在 token 所属账号下自动创建项目（名称取自仓库目录名，之后可在 **Settings → General** 改名）。想让项目名与归属一开始就确定，先在 [vercel.com/new](https://vercel.com/new) 建好项目，再在流水线变量里补 `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`（两个必须成对出现，CLI 会自动读取，命令无需改动）；也可以用 `vercel project create` 手动建、`vercel project list --json` / `vercel project inspect <name>` 查归属，**没有** `vercel project add` 这个子命令。
+2. **填环境变量**：项目 **Settings → Environment Variables** 按上文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`），Production / Preview / Development 三个环境都要覆盖到。值按敏感度选类型：**Secret**（加密存储、不回显）用于真正的密钥，**Config**（明文）用于不敏感值；同一变量名在三个环境各配一份。站点公开配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
 3. **开通 Web Analytics**：项目侧栏 **Analytics → Enable**（Speed Insights 同理）。未开通时 Vercel 不会注册 `/_vercel/insights/*` 同源路由，页面正常但数据为 0。
-4. **生成 Token**：Vercel → **Account Settings → Tokens** 新建，作用域只选要部署的那个 Team/项目。
-5. **开通 Gitee Go**：仓库 **服务 → Gitee Go**（账号需绑定手机号；个人仓库每月有免费构建时长额度）。推送本仓库的 `.workflow/deploy-vercel.yml` 后新建流水线，或直接在控制台导入。
-6. **加流水线变量**：在流水线 **参数/变量** 里新增 `VERCEL_TOKEN` 并勾选**加密**。⚠️ 切勿写进 YAML 的 `variables:` 块——那等于把 token 提交进 Git 历史。
+4. **生成 Token**：Vercel → **Account Settings → Tokens** 新建，作用域只选要部署的那个 Team/项目，并设过期时间。
+5. **开通 Gitee Go**：仓库页顶部 **流水线** 标签（未开通会跳 `/gitee_go/open`，账号需绑定手机号；个人仓库每月有免费构建时长额度）。推送本仓库的 `.workflow/deploy-vercel.yml` 后新建流水线，或直接在控制台导入。
+6. **加流水线变量**：在流水线 **参数设置 → 流水线级参数** 里新增 `VERCEL_TOKEN`，YAML 里用 `${VERCEL_TOKEN}` 引用。
+   ⚠️ **Gitee Go 社区版没有「加密变量」**：官方《参数设置》只有系统级参数（`GITEE_*`）与流水线级参数，《高级设置》只有阻塞构建与任务超时，没有加密/私密字段（加密只在企业版「凭证管理」里）。参数值上限 256 字符，Vercel token 够用。
+   切勿写进 YAML 的 `variables:` 块——那等于把 token 提交进 Git 历史。流水线里已改成**只用环境变量**传 token（不用 `--token=` 参数：命令行参数会进进程列表，且官方规定 `--token` 优先级高于 `VERCEL_TOKEN`），并加了一行 `env | grep -c "^VERCEL_TOKEN="` 探测：输出 `1` 说明是真环境变量注入，输出 `0` 说明 Gitee Go 做的是文本替换、token 一定出现在构建日志里，此时应改用 GitHub Actions Secrets 或 `deploy@agent` + 主机组。泄露后立刻在 Vercel 吊销 token。
 7. push 到 `main`，等待流水线跑完，在 Vercel 部署页查看构建日志与生产域名。
 
 CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动构建」与流水线重复发布的情况；若以后把同一份代码再镜像到 GitHub 并导入 Vercel，记得只保留一条发布链路。
@@ -622,14 +627,24 @@ CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动
 
 火山引擎「云解析 DNS」的功能名叫**智能解析**，线路在**添加解析记录**时选择：
 
-1. 控制台进入云解析 DNS → 选中域名 → **添加记录**。
-2. 主机记录填 `www`，记录类型 CNAME，记录值填 IGA Pages 分配的加速域名，**线路选「中国内地」**。
-3. 再加一条同名记录，记录值填 Vercel 提供的域名（或 Vercel 的 A 记录 `76.76.21.21`），**线路选「全球（不含中国内地）」**。
-4. 裸域 `@` 保持 URL 显性/隐性转发或 A 记录指向境内一侧，由站点的 308 归一化到 www。
+1. 控制台进入云解析 DNS → 选中域名 → **添加记录**。线路在**添加记录**时按「线路」字段选择，免费版同样提供「中国内地」「全球（不含中国内地）」两档。
+2. 主机记录填 `www`，记录类型 CNAME，记录值填 IGA Pages 分配的加速域名（形如 `xxx.app.example.com.c.vedcdnlb.com`，以控制台给出的值为准），**线路选「中国内地」**。
+3. 再加一条同名记录，记录值填 **Vercel 项目后台 Domains 页面给出的值**（A/AAAA 或 CNAME，以该项目的实际记录为准），**线路选「全球（不含中国内地）」**。⚠️ 不要照抄网上通用的 `76.76.21.21` / `cname.vercel-dns.com`：Vercel 的记录值按项目与账号下发，写错会导致验证失败或解析到别人的站点。
+4. 裸域 `@` 不要用「URL 转发」：转发走默认线路、需要备案，且无法配合分线路。正确做法是给 `@` 单独加一条记录（默认线路指向境内一侧，或直接指向 Vercel 的 A 记录），再由站点的 308 把裸域请求归一化到 www。
+5. 同一线路内可以加多条 CNAME，那会变成按权重轮询，**不要**在同一条线路里同时放 IGA 与 Vercel 的值。
 
-线路粒度取决于 DNS 版本：免费版只有 `中国内地` / `全球(不含中国内地)` 两档（对本项目足够）；专业版可按国内大区，企业版及以上可细到省份与境外国家/地区（线路代号是拼音，如 `cn_e` 中国华东、`cn_anhui` 中国安徽、`oversea` 全球不含中国内地、`default` 默认）。用 Cloudflare 托管时等价做法是给记录加 `geo` 分地区解析或按 PoP 出不同值。
+线路代号：`domestic`（中国内地）、`oversea`（全球不含中国内地）、`default`（默认）。免费版另有「电信/联通/移动」等运营商线路；专业版可按国内大区，企业版及以上可细到省份与境外国家/地区。**匹配优先级：自定义 > 运营商 > 中国内地 > 全球 > 默认**，所以自定义线路一旦命中就会盖掉下面几档。
 
-备案口径：加速区域**包含中国大陆**时域名必须已完成 ICP 备案，否则报「域名未备案校验错误」；只走全球（不含中国大陆）时不需要大陆备案。Vercel 节点在境外，其自定义域名不要求大陆备案，但境内访问质量不保证——这正是境内一侧继续用 IGA 的原因。
+⚠️ **免费版的 DNS 节点在境内**（境外 NS `intl.volcengine-dns.com` 属付费能力），意味着免费版上「全球（不含中国内地）」这条线路虽然能配，但境外访客递归到境内的 NS，ECS 判定容易仍落在境内线路，分流效果打折。要让境外访客稳定拿到 Vercel，需要付费版的境外 DNS 节点，或把域名托管到支持境外节点的 DNS 服务商。
+
+线路是否生效以实际解析结果为准，用 EDNS Client Subnet 指定客户端位置验证：
+
+```bash
+dig +subnet=8.8.8.8 www.example.com @ns1.volcengine-dns.com +short   # 境外视角
+dig +subnet=114.114.114.114 www.example.com @ns1.volcengine-dns.com +short  # 境内视角
+```
+
+备案口径：加速区域**包含中国大陆**时域名必须已完成 ICP 备案，否则报「域名未备案校验错误」；只走全球（不含中国大陆）时不需要大陆备案。Vercel 节点在境外，其自定义域名不要求大陆备案，但境内访问质量不保证——这正是境内一侧继续用 IGA 的原因。另外注意免费版 TTL 最小 600 秒，改记录后至少等 10 分钟再判定结果；更换 NS 服务器的生效时间约 48 小时。
 
 ### 兜底方案：应用内地域跳转
 
@@ -674,7 +689,7 @@ curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTT
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。
 - **打赏查单返回 501**：`GATEWAY_NOT_IMPLEMENTED`，对应渠道/模式的查单能力暂未实现，检查所选渠道与模式是否匹配。
-- **Gitee Go 流水线报「缺少流水线变量 VERCEL_TOKEN」或 Vercel 返回 401**：变量没在流水线的 **参数/变量** 里新增、没加密、token 已过期，或 token 的 Team 作用域与目标项目不一致。token 出现在 Git 历史里必须立刻在 Vercel 吊销重发。
+- **Gitee Go 流水线报「缺少流水线变量 VERCEL_TOKEN」或 Vercel 返回 401**：`VERCEL_TOKEN` 没在流水线 **参数设置 → 流水线级参数** 里新增（Gitee Go 社区版无「加密」选项，直接明文存参数），或 token 已过期、token 的 Team 作用域与目标项目不一致。若流水线里那行 `env | grep -c "^VERCEL_TOKEN="` 输出 `0`，说明参数是文本替换而非环境变量注入，token 已出现在构建日志里——先在 Vercel 吊销该 token，再改用 GitHub Actions Secrets 或 `deploy@agent` + 主机组。
 - **Vercel 构建卡在依赖安装**：多为 `.npmrc` 的国内镜像被构建机继承导致超时，`vercel.json` 的 `installCommand` 已强制切到 `registry.npmjs.org`；自行改坏该命令时构建会明显变慢。
 - **部署到 Vercel 后 Analytics 面板没数据**：先在项目 **Analytics** 里点 Enable（否则同源 `/_vercel/insights/*` 路由不存在）；预览部署被标记为 `development`，不会计入生产数据；控制台若出现 CSP violation，检查 `next.config.ts` 是否还放行 `va.vercel-scripts.com`。
 - **两个平台表现不一致**：先比密钥变量。站点公开配置来自同一份 `site.config.ts`，但 IGA 与 Vercel 的环境变量各存一份、各建一次，改一边不会影响另一边；`standalone` 产物只在 IGA 链路生成，属预期差异。
