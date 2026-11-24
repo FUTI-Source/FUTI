@@ -37,7 +37,7 @@ export async function notifyDonationSuccess(input: DonationNoticeInput): Promise
     return;
   }
 
-  const { webhookError, barkError } = await notifyOwner({
+  const { webhookError } = await notifyOwner({
     event: {
       type: 'donation',
       title: '收到一笔新打赏',
@@ -47,21 +47,7 @@ export async function notifyDonationSuccess(input: DonationNoticeInput): Promise
       orderId: input.orderId,
       timestamp: new Date().toISOString(),
     },
-    bark: {
-      title: '收到一笔打赏',
-      subtitle: channelLabel,
-      body: [
-        input.amountYuan ? `金额：¥${input.amountYuan}` : null,
-        `订单：${input.orderId}`,
-      ]
-        .filter((line): line is string => line !== null)
-        .join('\n'),
-      group: '打赏收入',
-      level: 'timeSensitive',
-    },
   });
-
-  if (barkError) logger.warn('[donate] Bark 推送失败', barkError);
 
   if (webhookError) {
     if (isWebhookConfigured()) logger.warn('[donate] Webhook 通知失败', webhookError);

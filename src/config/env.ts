@@ -23,8 +23,6 @@ export interface NotifyEnv {
   webhookSecret: string;
   fallbackUrl: string;
   fallbackSecret: string;
-  barkDeviceKey: string;
-  barkServerUrl: string;
 }
 
 export function getNotifyEnv(): NotifyEnv {
@@ -34,8 +32,6 @@ export function getNotifyEnv(): NotifyEnv {
     webhookSecret,
     fallbackUrl: envStr('NOTIFY_WEBHOOK_FALLBACK_URL'),
     fallbackSecret: envStr('NOTIFY_WEBHOOK_FALLBACK_SECRET') || webhookSecret,
-    barkDeviceKey: envStr('BARK_DEVICE_KEY'),
-    barkServerUrl: envStr('BARK_SERVER_URL'),
   };
 }
 
