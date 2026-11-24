@@ -18,6 +18,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/bump-sw-version.mjs",
+    "sw:version": "node scripts/bump-sw-version.mjs",
     "build": "next build",
     "start": "next start",
     "start:standalone": "node prepare-standalone.mjs && node .next/standalone/server.js",

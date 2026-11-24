@@ -66,7 +66,7 @@
 
 ## 3. Service Worker（代码侧）
 
-实现文件：`public/sw.js`。缓存名带版本号（`site-v13`），版本变化会在激活时清理旧缓存。SW 只缓存同源资源，与访客被分到哪个平台无关。
+实现文件：`public/sw.js`。缓存版本号由 `scripts/bump-sw-version.mjs` 在每次 `npm run build` 前自动生成（形如 `site-v<mz8kx3-ab12cd>`；若 CI 设置了 `BUILD_ID` 则复用它），版本变化会在激活时清理旧缓存。无需手改 `CACHE_VERSION`。SW 只缓存同源资源，与访客被分到哪个平台无关。
 
 ### 3.1 三类请求的处理
 
@@ -185,7 +185,7 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 
 浏览器侧再确认：
 
-- DevTools → Application → Cache Storage：`site-v13` 之外的旧缓存应在新 SW 激活后被清除；
+- DevTools → Application → Cache Storage：当前 `site-v…` 之外的旧缓存应在新 SW 激活后被清除（当前版本号见 `public/sw.js` 的 `CACHE_VERSION`）；
 - Network 面板：`/sw.js` 永远不是 from disk cache；
 - PWA 更新后软刷新能替换客户端 JS bundle（不再需要手动强刷）；
 - 境内/境外访问地址栏始终是同一个域名，没有 307 跨域跳转。

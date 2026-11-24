@@ -545,6 +545,7 @@ openssl rand -hex 32
 
 - manifest 由 `src/app/manifest.ts` 生成，Service Worker 由 `src/features/pwa/service-worker-registration.tsx` 注册，`next.config.ts` 对 `/sw.js` 禁缓存。
 - **版本切换**：软刷新（`router.refresh()`）只换 RSC 数据，不会替换已加载的客户端 JS bundle。`next.config.ts` 的 `generateBuildId` 每次构建写入唯一 `.next/BUILD_ID`（可用 `BUILD_ID` 环境变量指定）；Next.js 在 RSC 响应里发现 buildId 与当前页面不一致时会自动降级为 MPA 导航，从而加载新 bundle。`prepare-standalone.mjs` 会把它同步进 standalone 产物，本地验证时行为与线上一致。
+- **SW 缓存版本**：`scripts/bump-sw-version.mjs` 在每次 `npm run build` 前自动改写 `public/sw.js` 的 `CACHE_VERSION`（`npm run sw:version` 可单独触发），避免旧页面缓存引用已删除的 chunk 导致 `ChunkLoadError`；CI 若设置了 `BUILD_ID` 则复用它，保证 SW 与 Next 构建版本一致。无需手改版本号。
 - iOS 26 / iPadOS 26 起，添加到主屏幕的网站**默认以 Web 应用打开**；manifest 仍决定图标、名称、启动图、主题色等外观。旧系统（iOS 16.4–18）仍依赖 `display: standalone` 与 `apple-mobile-web-app-capable`，两者均保留。
 - `viewportFit: 'cover'` 配合 `env(safe-area-inset-*)` 使用，样式在 `src/styles/index.css` 定义 `--safe-top` / `--safe-bottom`，页头、页脚与弹窗据此留白；桌面 WCO 模式改用 `env(titlebar-area-*)`。
 - WCO 标题栏时钟字号按 `titlebar-area-height` 自适应（11–15px），兼容 Windows / macOS / Linux 不同标题栏高度与系统缩放；`--wco-titlebar-height` 同时驱动标题栏高度与字号，避免两者在不同终端失配。窄窗口下强制左对齐，防止被移动端居中规则推到窗口按钮上。
