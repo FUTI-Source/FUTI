@@ -82,7 +82,6 @@ self.addEventListener('fetch', (event) => {
         const cacheRequest = new Request(cacheKey.toString(), {
           method: 'GET',
           headers: request.headers,
-          mode: request.mode,
           credentials: request.credentials,
           cache: request.cache,
           redirect: request.redirect,
