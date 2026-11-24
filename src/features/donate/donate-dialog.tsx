@@ -429,7 +429,15 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       style: { color: 'gold', shape: 'pill', label: 'paypal', height: 42 },
       createOrder: async () => {
         const value = Number(amountRef.current);
-        if (!Number.isFinite(value) || value <= 0) {
+        if (
+          !Number.isFinite(value) ||
+          value < PAYPAL_MIN_AMOUNT ||
+          value > PAYPAL_MAX_AMOUNT ||
+          Math.abs(value * 100 - Math.round(value * 100)) > 1e-6
+        ) {
+          setMessage(
+            `请输入 ${PAYPAL_MIN_AMOUNT}–${PAYPAL_MAX_AMOUNT} ${PAYPAL_CURRENCY} 范围内的金额`,
+          );
           throw new Error('invalid-amount');
         }
         try {
@@ -810,14 +818,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                     PayPal 组件加载失败，请检查网络后重试
                   </p>
                 )}
-                {paypalSdkState === 'ready' && amountValid && (
-                  // PayPal Buttons 渲染容器；SDK 会替换内部内容
-                  <div ref={paypalHostRef} className="min-h-11" />
-                )}
-                {paypalSdkState === 'ready' && !amountValid && (
-                  <p className="text-xs text-white/40">
-                    请先输入 {minAmount}–{maxAmount} {PAYPAL_CURRENCY} 范围内的金额
-                  </p>
+                {paypalSdkState === 'ready' && (
+                  <>
+                    {!amountValid && (
+                      <p className="text-xs text-white/40">
+                        请先输入 {minAmount}–{maxAmount} {PAYPAL_CURRENCY} 范围内的金额
+                      </p>
+                    )}
+                    {/* PayPal Buttons 渲染容器；SDK 就绪后常驻，金额变化不重建按钮 */}
+                    <div ref={paypalHostRef} className="min-h-11" />
+                  </>
                 )}
               </div>
             )}
