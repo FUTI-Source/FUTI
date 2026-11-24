@@ -23,6 +23,12 @@ export default function RootLayout({
       <head>
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
         <meta name="google" content="notranslate" />
+        {/* 内核语法能力检测：360 等浏览器会伪造高版本 Chrome UA，服务端按 UA 放行后
+            旧内核解析 ES2022 产物会抛 SyntaxError 导致页面白屏，
+            这里在一切脚本之前实测语法能力，不达标立即跳转到版本过低页 */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts --
+            必须同步：不达标浏览器应在新语法代码执行前被重定向 */}
+        <script src="/scripts/browser-check.js" />
         {/* 首帧前用真实视口高度校正 --app-height：
             1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度，首帧用 screen.height 兜底；
             2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，

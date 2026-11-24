@@ -36,6 +36,11 @@ const MINIMUM_TEXT = [
 export default function BrowserUnsupportedPage() {
   return (
     <div className="flex-center min-h-dvh flex-col gap-6 bg-[#15161a] px-6 py-10 text-center text-white">
+      {/* 被重定向来的浏览器内核过旧，大概率无法 hydrate：
+          SitePreloader 的淡出依赖客户端 JS，这里直接用服务端渲染的样式隐藏它，
+          保证旧浏览器第一时间看到内容，不经历加载圈与 12s CSS 兜底 */}
+      <style>{'#site-preloader{display:none!important}'}</style>
+
       <svg
         className="size-14 text-[#0295e5]"
         viewBox="0 0 24 24"
