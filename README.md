@@ -109,7 +109,7 @@ import { SITE_URL } from '~/site.config';
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `DONATION_ORDER_SECRET` | 可选 | 订单令牌签名密钥，留空自动从支付私钥派生 |
+| `DONATION_ORDER_SECRET` | 可选 | 订单令牌签名密钥，留空自动从支付凭据（微信/支付宝私钥、PayPal Secret）派生 |
 | `WECHAT_MCH_ID` | 微信必填 | 商户号 |
 | `WECHAT_APP_ID` | 微信必填 | AppID |
 | `WECHAT_API_V3_KEY` | 微信必填 | 32 位 APIv3 密钥 |
@@ -373,7 +373,7 @@ import { SITE_URL } from '~/site.config';
 
 实现见 `src/features/donate/server/token.ts`。
 
-- 算法：HMAC-SHA256。密钥优先取 `DONATION_ORDER_SECRET`；未配置时从支付私钥（微信 `WECHAT_PRIVATE_KEY` 或支付宝 `ALIPAY_PRIVATE_KEY`）派生，派生源为稳定环境变量，跨实例一致，无需手动配置。
+- 算法：HMAC-SHA256。密钥优先取 `DONATION_ORDER_SECRET`；未配置时从支付凭据（微信 `WECHAT_PRIVATE_KEY`、支付宝 `ALIPAY_PRIVATE_KEY` 或 PayPal `PAYPAL_CLIENT_SECRET`）派生，派生源为稳定环境变量，跨实例一致，无需手动配置。仅配 PayPal 的部署没有微信/支付宝私钥，会退回用 PayPal Secret 派生。
 - 结构：`<base64url(payload)>.<base64url(signature)>`。
 - 载荷短字段：`v`（版本=1）、`e`（过期 Unix 秒，签发 +3600）、`o`（订单号）、`c`（渠道）、`a`（金额分）。
 - 校验：`timingSafeEqual` 防时序攻击，并校验版本、过期、渠道枚举、订单号非空、金额为正整数。
@@ -420,7 +420,7 @@ import { SITE_URL } from '~/site.config';
 
 | 变量 | 必填 | 说明 / 获取位置 |
 | --- | --- | --- |
-| `DONATION_ORDER_SECRET` | 可选 | 订单令牌签名密钥；留空自动从支付私钥派生，无需手动配置 |
+| `DONATION_ORDER_SECRET` | 可选 | 订单令牌签名密钥；留空自动从支付凭据派生（微信/支付宝私钥或 PayPal Secret），无需手动配置 |
 | `WECHAT_MCH_ID` | 微信必填 | 微信支付商户号 |
 | `WECHAT_APP_ID` | 微信必填 | 与商户号绑定的 AppID |
 | `WECHAT_API_V3_KEY` | 微信必填 | 32 位 APIv3 密钥，用于回调解密 |

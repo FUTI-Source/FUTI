@@ -149,15 +149,18 @@ export function getPaypalEnv(): PaypalEnv | null {
 const ORDER_SECRET_DERIVE_INFO = 'futi/donation-order-secret/v1';
 
 /**
- * 显式配置 DONATION_ORDER_SECRET 优先；否则从支付私钥派生。
+ * 显式配置 DONATION_ORDER_SECRET 优先；否则从任一支付凭据派生。
  * 派生源固定优先级（不随订单渠道变化），保证下单签名与查单验签同一密钥。
- * 私钥轮换会使未支付订单的令牌失效，因此长期部署建议显式配置。
+ * 仅配 PayPal 的部署（境外 Vercel 链路）没有微信/支付宝私钥，
+ * 退而用 PayPal Client Secret 派生——它是该部署唯一的服务端长期凭据。
+ * 凭据轮换会使未支付订单的令牌失效，因此长期部署建议显式配置。
  */
 export function getOrderTokenSecret(): string | null {
   const explicit = envStr('DONATION_ORDER_SECRET');
   if (explicit) return explicit;
 
-  const source = envStr('WECHAT_PRIVATE_KEY') || envStr('ALIPAY_PRIVATE_KEY');
+  const source =
+    envStr('WECHAT_PRIVATE_KEY') || envStr('ALIPAY_PRIVATE_KEY') || envStr('PAYPAL_CLIENT_SECRET');
   if (!source) return null;
 
   return deriveKey(source, ORDER_SECRET_DERIVE_INFO);
