@@ -8,9 +8,13 @@
  *  1. 机器人 / 空 UA 一律放行，避免误伤搜索引擎与自动化工具；
  *  2. Chromium 系优先读 Sec-CH-UA Client Hints（UA 被冻结后的更可靠来源）；
  *  3. 回退到 UA 解析：IE、旧版 Edge 直接判不支持；
- *     iOS 上所有第三方浏览器都走系统 WebKit，用 Version/（≈ Safari 版本）判定；
- *     Edge / Chrome / Firefox 各取自己的版本号，Opera 与国产壳浏览器
- *     的 UA 里带 Chrome/，会按 Chrome 内核版本判定；
+ *     iOS / iPadOS 上所有浏览器（Safari 及 CriOS、FxiOS、EdgiOS、微信/QQ/UC
+ *     等三方与内嵌 WebView）都走系统 WebKit，内核能力只随系统版本走：
+ *     优先读 Version/（≈ Safari 版本），微信等 WebView 不带该字段时
+ *     回退读 CPU iPhone OS 的系统版本号；
+ *     Edge / Chrome / Firefox 各取自己的版本号；Opera、QQ、UC、360、百度、
+ *     搜狗、三星等 Chromium 系三方浏览器（桌面与安卓）的 UA 里均带 Chrome/，
+ *     统一按 Chrome 内核版本判定；
  *  4. 未能识别的 UA 一律放行——宁可漏判，也不能把正常用户挡在门外。
  */
 
@@ -60,9 +64,17 @@ export function isBrowserSupported(ua: string, secChUa?: string | null): boolean
   if (/MSIE\s|Trident\//.test(ua)) return false;
   if (/\bEdge\/\d/.test(ua) && !/\bEdg\/\d/.test(ua)) return false;
 
-  // iOS / iPadOS：第三方浏览器统一使用系统 WebKit，按 Version/（≈ Safari 版本）判定
+  // iOS / iPadOS：所有浏览器（Safari 与 CriOS、FxiOS、EdgiOS、微信/QQ/UC 等
+  // 三方及内嵌 WebView）都强制使用系统 WebKit，内核版本跟随系统，因此
+  // 全部按同一基线（SITE_BROWSER_MINIMUMS.ios）判定。
+  // 1. 常规 UA 带 Version/（≈ Safari 版本），直接使用；
+  // 2. 微信、企业微信等 WebView 的 UA 不带 Version/，回退读
+  //    「CPU iPhone OS 17_5」里的系统版本号（17_5 → 17，主版本即可比较）；
+  // 3. 两者都拿不到时放行，避免误伤非标准 UA。
   if (/iPhone|iPad|iPod/i.test(ua)) {
-    const ios = parseMajor(ua, /\bVersion\/(\d+(?:\.\d+)?)/);
+    const ios =
+      parseMajor(ua, /\bVersion\/(\d+(?:\.\d+)?)/) ??
+      parseMajor(ua, /\biPhone OS (\d+(?:_\d+)*)/i);
     return ios === null ? true : ios >= SITE_BROWSER_MINIMUMS.ios;
   }
 
