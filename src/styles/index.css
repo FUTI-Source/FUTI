@@ -73,6 +73,15 @@ main {
 @media (display-mode: window-controls-overlay) {
   :root {
     --safe-top: 0px;
+    /* WCO 没有浏览器工具栏，直接让 dvh 跟随原生窗口，避免等待 resize 事件。 */
+    --app-height: 100dvh !important;
+  }
+  html,
+  body {
+    overflow: hidden;
+  }
+  [data-slot='scroll-area'] {
+    overscroll-behavior: contain;
   }
   .header-drag {
     width: 100%;
