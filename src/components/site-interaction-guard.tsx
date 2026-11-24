@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
+import { SOFT_REFRESH_EVENT } from '@/lib/app-events';
 import { initCustomCursor } from '@/features/home/utils/custom-cursor';
 
 const EDITABLE_SELECTOR =
@@ -31,7 +33,7 @@ const isFullscreenShortcut = (event: KeyboardEvent) => {
   return key === 'f11' || ((event.ctrlKey || event.metaKey) && event.shiftKey && key === 'f');
 };
 
-/** 刷新快捷键：Ctrl/Cmd+R、Ctrl/Cmd+Shift+R、F5、Shift+F5、Ctrl+F5 均放行 */
+/** 刷新快捷键：Ctrl/Cmd+R、Ctrl/Cmd+Shift+R、F5、Shift+F5、Ctrl+F5 均拦截为软刷新 */
 const isRefreshShortcut = (event: KeyboardEvent) => {
   const key = event.key?.toLowerCase();
   if (key === 'f5') return true;
@@ -83,8 +85,21 @@ const toggleFullscreen = () => {
 };
 
 export const SiteInteractionGuard = () => {
+  const router = useRouter();
+  const routerRef = useRef(router);
+
+  useEffect(() => {
+    routerRef.current = router;
+  }, [router]);
+
   useEffect(() => {
     const destroyCustomCursor = initCustomCursor();
+
+    // router.refresh() 只重新获取 RSC payload 并重新渲染，不卸载文档，
+    // 因此全屏状态、音频播放等页面级状态都能保留。
+    const softRefresh = () => {
+      routerRef.current.refresh();
+    };
 
     // 刷新后恢复全屏：浏览器会丢掉 DOM 全屏状态，只能靠 sessionStorage 里的意图还原。
     function cleanupRetry() {
@@ -163,8 +178,13 @@ export const SiteInteractionGuard = () => {
         return;
       }
 
-      // 刷新交给浏览器原生处理，不做拦截
-      if (isRefreshShortcut(event)) return;
+      // 拦截原生刷新：整页导航会销毁 DOM 全屏，改为不卸载文档的软刷新
+      if (isRefreshShortcut(event)) {
+        event.preventDefault();
+        event.stopPropagation();
+        softRefresh();
+        return;
+      }
 
       // Tab 会在页面控件上留下类似标签页的焦点框，全局禁用
       if (event.key === 'Tab') {
@@ -189,6 +209,7 @@ export const SiteInteractionGuard = () => {
     });
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener(SOFT_REFRESH_EVENT, softRefresh);
 
     // Ctrl/⌘ + 滚轮与触控板捏合会缩放页面，这里一并拦截；普通滚动不受影响。
     const handleWheel = (event: WheelEvent) => {
@@ -216,6 +237,7 @@ export const SiteInteractionGuard = () => {
       });
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener(SOFT_REFRESH_EVENT, softRefresh);
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('mousedown', handleMouseDown, true);
       cleanupRetry();

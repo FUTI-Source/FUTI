@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { SOFT_REFRESH_EVENT } from '@/lib/app-events';
+
 const UPDATE_CHECK_INTERVAL = 60 * 60 * 1000;
 
 /** 页面里有弹窗打开时不要应用新版本，避免打断填写中的表单 */
@@ -17,11 +19,21 @@ export const ServiceWorkerRegistration = () => {
     let registration: ServiceWorkerRegistration | undefined;
     let updateCheckInterval: number | undefined;
     let disposed = false;
-    // 本次加载周期内只允许静默刷新一次，刷新失败时不再反复重试
-    let reloadedForUpdate = false;
+    // 本次加载周期内只允许软刷新一次，避免 SW 反复激活造成刷新循环
+    let softRefreshedForUpdate = false;
     // 页面加载时是否已被 SW 控制：未控制 = 首次安装，activate 的 claim 会触发
-    // 一次 controllerchange，属于预期，不应刷新；已控制 = 版本更新，才需要静默刷新。
+    // 一次 controllerchange，属于预期，不应刷新；已控制 = 版本更新，才需要软刷新。
     const hadController = Boolean(navigator.serviceWorker.controller);
+
+    // 新 SW 进入 waiting 后立即接管，不像默认行为那样必须等所有标签页关闭。
+    // 接管后不整页 reload，而是走软刷新，避免打断当前会话与全屏状态。
+    const applyWaitingWorker = () => {
+      if (disposed) return;
+      const waitingWorker = registration?.waiting;
+      if (!waitingWorker || hasOpenDialog()) return;
+
+      waitingWorker.postMessage('SKIP_WAITING');
+    };
 
     const checkForUpdates = () => {
       if (
@@ -37,28 +49,13 @@ export const ServiceWorkerRegistration = () => {
       });
     };
 
-    // 新 SW 进入 waiting 后不立即接管（可能让在用的分块与新版 HTML 错位），
-    // 也不像默认行为那样必须等所有标签页关闭；
-    // 而是在页面切到后台的空闲时刻静默接管并刷新，用户回来时已是新版本。
-    const applyWaitingWorker = () => {
-      const waitingWorker = registration?.waiting;
-      if (!waitingWorker || hasOpenDialog()) return;
-
-      waitingWorker.postMessage('SKIP_WAITING');
-    };
-
     const handleControllerChange = () => {
-      // 首次安装的 claim 不算更新，无需刷新（当前页面已是新版 SW 服务）。
-      // 只在后台静默刷新；前台可见时不打断用户，新 SW 已接管，下次自然加载即是新版。
-      if (
-        !hadController ||
-        reloadedForUpdate ||
-        document.visibilityState !== 'hidden'
-      ) {
-        return;
-      }
-      reloadedForUpdate = true;
-      window.location.reload();
+      // 首次安装的 claim 不算更新，无需软刷新（当前页面已是新版 SW 服务）。
+      // 每个加载周期只触发一次，避免 SW 反复激活造成刷新循环。
+      if (!hadController || softRefreshedForUpdate) return;
+
+      softRefreshedForUpdate = true;
+      window.dispatchEvent(new CustomEvent(SOFT_REFRESH_EVENT));
     };
 
     const handleVisibilityChange = () => {
@@ -79,6 +76,19 @@ export const ServiceWorkerRegistration = () => {
         if (disposed) return;
 
         registration = serviceWorkerRegistration;
+
+        // update() 的 Promise 只保证检查完成，不等待新 SW 安装完毕；
+        // 新 worker 进入 installed（waiting）后立刻接管，不再等页面切后台。
+        serviceWorkerRegistration.addEventListener('updatefound', () => {
+          const newWorker = serviceWorkerRegistration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              applyWaitingWorker();
+            }
+          });
+        });
+
         updateCheckInterval = window.setInterval(
           checkForUpdates,
           UPDATE_CHECK_INTERVAL,
