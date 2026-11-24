@@ -206,7 +206,7 @@ import { SITE_URL } from '~/site.config';
 | 8 统计与 CDN | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 地址、站点 ID、**只统计这些域名**（自动含 www + 裸域，预览域名不在名单里） |
 | | `SITE_CDN_CACHE` | 四档缓存策略：`immutable`（字体/启动图，一年）、`static`（模型/配图，含 stale-while-revalidate 与 stale-if-error）、`serviceWorker`（永不缓存）、`api`（no-store）。由 `next.config.ts` 写入响应头 |
 | 9 出站调用 | `SITE_USER_AGENT` | 调用微信/支付宝网关的 UA，便于商户后台日志识别 |
-| | `SITE_SOCIAL_LINKS` | `{ blog, github }`；留空时入口置灰不可点（Tooltip 提示未配置），且不写入结构化数据 `sameAs` |
+| | `SITE_SOCIAL_LINKS` | `{ blog, github }`；只配置社交链接，留空时入口置灰不可点（Tooltip 提示未配置），且不写入结构化数据 `sameAs`。「打赏 / 留言」是固定必选按钮，不在此配置，隐藏或改名需改 `links-consts.tsx` |
 
 #### 常见改法
 
@@ -215,6 +215,7 @@ import { SITE_URL } from '~/site.config';
 - **换统计服务商/站点 ID**：改 `SITE_ANALYTICS_URL` 与 `SITE_ANALYTICS_WEBSITE_ID`；加了新域名要把主机名并进 `SITE_ANALYTICS_DOMAINS`（目前是自动派生的两条）。
 - **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。完整的缓存头解释、平台配置清单与验证命令见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
 - **改打赏上下限**：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 同时作用于前端 zod 校验与下单接口，改完注意支付渠道自身的单笔限额。
+- **改首页按钮列表**：社交链接改 `SITE_SOCIAL_LINKS`；「打赏 / 留言」是固定必选项，由 `src/features/profile/links-consts.tsx` 的 `ACTION_LINKS` 定义，不在站点配置里提供隐藏开关。
 
 </details>
 
