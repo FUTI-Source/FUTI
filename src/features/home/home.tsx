@@ -107,13 +107,17 @@ const Home: React.FC = () => {
       replays: false,
     });
 
+    const displayMode =
+      ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay', 'browser'].find(
+        (mode) => window.matchMedia(`(display-mode: ${mode})`).matches,
+      ) ?? 'browser';
+
     identifyUmami({
       locale: navigator.language,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      standalone: window.matchMedia('(display-mode: standalone)').matches ? 'yes' : 'no',
-      displayMode: ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay', 'browser'].find(
-        (mode) => window.matchMedia(`(display-mode: ${mode})`).matches,
-      ) ?? 'browser',
+      // WCO 也是安装态，不能只匹配 standalone，否则默认 WCO 会被统计成浏览器访问
+      standalone: displayMode === 'browser' ? 'no' : 'yes',
+      displayMode,
       screen: `${window.screen.width}x${window.screen.height}`,
     });
   }, []);

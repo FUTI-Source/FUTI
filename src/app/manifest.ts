@@ -12,6 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     id: '/',
     lang: SITE_LANG,
     description: SITE_DESCRIPTION,
+    // 桌面安装默认启用 WCO：display_override 优先于 display；
+    // Next 的 Manifest 类型里 display 不接受 window-controls-overlay，故保留 standalone 作回退值。
     display: 'standalone',
     display_override: ['window-controls-overlay', 'standalone'],
     scope: '/',
