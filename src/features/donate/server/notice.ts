@@ -8,6 +8,7 @@ import type { DonateChannel } from '../types';
 export const DONATE_CHANNEL_LABEL: Record<DonateChannel, string> = {
   alipay: '支付宝',
   wechat: '微信支付',
+  paypal: 'PayPal',
 };
 
 export interface DonationNoticeInput {

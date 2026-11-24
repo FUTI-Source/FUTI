@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import {
   getAlipayEnv,
+  getPaypalEnv,
   getWechatOAuthEnv,
   getWechatPayEnv,
   isAlipayEnvSet,
@@ -23,6 +24,13 @@ import {
   queryAlipayOrder,
 } from './alipay';
 import { createOrderToken, isOrderTokenConfigured, verifyOrderToken } from './token';
+import {
+  createPaypalOrder,
+  getPaypalCurrency,
+  isPaypalConfigured,
+  PayPalError,
+  queryPaypalOrder,
+} from './paypal';
 import {
   createWechatH5Order,
   createWechatJsapiOrder,
@@ -48,13 +56,23 @@ export class DonationGatewayError extends Error {
   }
 }
 
-const isDonateChannelConfigured = (channel: DonateChannel): boolean =>
-  channel === 'alipay' ? isAlipayEnvSet() : isWechatPayEnvSet();
+const isDonateChannelConfigured = (channel: DonateChannel): boolean => {
+  if (channel === 'alipay') return isAlipayEnvSet();
+  if (channel === 'paypal') return isPaypalConfigured();
+  return isWechatPayEnvSet();
+};
 
 export const getDonateChannelConfig = (): DonateChannelConfig => ({
   alipay: isDonateChannelConfigured('alipay'),
   wechat: isDonateChannelConfigured('wechat'),
+  paypal: isDonateChannelConfigured('paypal'),
 });
+
+/** PayPal 客户端 ID 是公开值，经 /api/donate/config 下发给前端加载 SDK */
+export const getPaypalClientId = (): string | null => {
+  if (!isPaypalConfigured()) return null;
+  return getPaypalEnv()?.clientId ?? null;
+};
 
 /** 微信内置浏览器走 JSAPI 还需要公众号 AppSecret */
 export const isWechatJsapiConfigured = (): boolean =>
@@ -104,10 +122,26 @@ export async function createDonation(
     // 金额以「分」提交给微信，支付宝按元换算；Math.round 避免浮点误差（如 0.29 * 100 = 28.999…）
     amountFen: Math.round(input.amount * 100),
   };
+
+  // PayPal 需要先在网关建单：查单与 capture 都用网关订单号，须一并签进令牌。
+  // Buttons 为内嵌收银台，return/cancel URL 仅作弹窗被拦截时的兜底跳转。
+  const paypalOrderId =
+    input.channel === 'paypal'
+      ? await createPaypalOrder({
+          orderId: order.orderId,
+          amount: input.amount,
+          currency: getPaypalCurrency(),
+          description: DONATION_SUBJECT,
+          returnUrl: `${SITE_URL}/`,
+          cancelUrl: `${SITE_URL}/`,
+        })
+      : undefined;
+
   const statusToken = createOrderToken({
     orderId: order.orderId,
     channel: order.channel,
     amountFen: order.amountFen,
+    ...(paypalOrderId ? { paypalOrderId } : {}),
   });
 
   try {
@@ -135,6 +169,12 @@ export async function createDonation(
         notifyUrl,
       });
       return { orderId: order.orderId, channel: 'alipay', codeUrl, statusToken };
+    }
+
+    // PayPal：网关订单已在上方建好，前端用 PayPal Buttons 拉起收银台，
+    // approve 后调 capture 接口扣款；回调冗余通知走 /api/donate/webhook/paypal
+    if (input.channel === 'paypal') {
+      return { orderId: order.orderId, channel: 'paypal', paypalOrderId, statusToken };
     }
 
     const wechatEnv = getWechatPayEnv(`${SITE_URL}/api/donate/notify/wechat`);
@@ -185,7 +225,7 @@ export async function createDonation(
     return { orderId: order.orderId, channel: 'wechat', codeUrl, statusToken };
   } catch (error) {
     logger.error('[donate] 下单失败', error);
-    if (error instanceof WechatPayError || error instanceof AlipayError) {
+    if (error instanceof WechatPayError || error instanceof AlipayError || error instanceof PayPalError) {
       // 透传网关返回的具体原因（不含敏感信息），便于定位配置/权限问题
       throw new DonationGatewayError('GATEWAY_FAILED', error.message || '下单失败，请稍后重试');
     }
@@ -205,6 +245,11 @@ export async function queryDonation(token: string): Promise<DonationStatusRespon
       const result = await queryAlipayOrder(payload.orderId);
       status = result.status;
       amountFen = result.amountFen;
+    } else if (payload.channel === 'paypal') {
+      // PayPal 用网关订单号查询；金额单位是其币种的分
+      const result = await queryPaypalOrder(payload.paypalOrderId!);
+      status = result.status;
+      amountFen = result.amountCents;
     } else {
       const result = await queryWechatOrder(payload.orderId);
       status = result.status;

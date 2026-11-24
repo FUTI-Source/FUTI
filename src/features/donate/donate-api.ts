@@ -4,6 +4,7 @@ import type {
   DonateConfig,
   DonateErrorBody,
   DonationStatusResponse,
+  PaypalCaptureResponse,
 } from './types';
 
 export class DonateError extends Error {
@@ -55,4 +56,13 @@ export function queryDonation(token: string): Promise<DonationStatusResponse> {
   return requestJson<DonationStatusResponse>(
     `/api/donate/status?token=${encodeURIComponent(token)}`,
   );
+}
+
+/** PayPal approve 后服务端扣款确认 */
+export function capturePaypalDonation(paypalOrderId: string): Promise<PaypalCaptureResponse> {
+  return requestJson<PaypalCaptureResponse>('/api/donate/paypal/capture', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paypalOrderId }),
+  });
 }

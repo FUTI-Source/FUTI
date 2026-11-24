@@ -119,8 +119,32 @@ export function getAlipayEnv(defaultNotifyUrl: string): AlipayEnv | null {
   };
 }
 
-/* ------------------------------ 订单签名密钥 ------------------------------ */
+/* -------------------------------- PayPal --------------------------------- */
 
+export interface PaypalEnv {
+  clientId: string;
+  clientSecret: string;
+  /** sandbox：开发者测试环境；live：生产环境 */
+  env: 'sandbox' | 'live';
+  /** Webhook ID：配置后才校验 PayPal 回调签名 */
+  webhookId: string;
+}
+
+export const isPaypalEnvSet = (): boolean =>
+  envSet('PAYPAL_CLIENT_ID') && envSet('PAYPAL_CLIENT_SECRET');
+
+export function getPaypalEnv(): PaypalEnv | null {
+  if (!isPaypalEnvSet()) return null;
+
+  return {
+    clientId: envStr('PAYPAL_CLIENT_ID'),
+    clientSecret: envStr('PAYPAL_CLIENT_SECRET'),
+    env: envStr('PAYPAL_ENV').toLowerCase() === 'live' ? 'live' : 'sandbox',
+    webhookId: envStr('PAYPAL_WEBHOOK_ID'),
+  };
+}
+
+/* ------------------------------ 订单签名密钥 ------------------------------ */
 /** 派生信息串：未显式配置时据此从支付私钥派生，与私钥本身用途隔离 */
 const ORDER_SECRET_DERIVE_INFO = 'futi/donation-order-secret/v1';
 

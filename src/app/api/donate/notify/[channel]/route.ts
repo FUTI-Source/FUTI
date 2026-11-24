@@ -33,6 +33,14 @@ export async function POST(
 
   const notifyChannel = parsedChannel.data;
 
+  // PayPal 回调走独立的 /api/donate/webhook/paypal（验签方式不同），此处只服务人民币渠道
+  if (notifyChannel === 'paypal') {
+    return NextResponse.json(
+      { error: { code: 'NOT_FOUND', message: '该渠道回调不存在' } },
+      { status: 404 },
+    );
+  }
+
   const rawBodyResult = await readRawBody(request, MAX_NOTIFY_BODY_BYTES);
   if (!rawBodyResult.ok) {
     // readRawBody returns a NextResponse; for alipay we need to return plain 'failure'

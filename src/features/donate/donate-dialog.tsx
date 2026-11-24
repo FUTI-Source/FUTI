@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-import { createDonation, DonateError, fetchDonateConfig, queryDonation } from './donate-api';
+import { capturePaypalDonation, createDonation, DonateError, fetchDonateConfig, queryDonation } from './donate-api';
 import { trackDonationRevenue } from './revenue';
 import type {
   CreateDonationResponse,
@@ -33,12 +33,19 @@ import type {
   WechatJsapiPaymentParams,
 } from './types';
 import { cn } from '@/lib/utils';
-import { DONATION_MAX_AMOUNT, DONATION_MIN_AMOUNT } from '~/site.config';
+import {
+  DONATION_MAX_AMOUNT,
+  DONATION_MIN_AMOUNT,
+  PAYPAL_CURRENCY,
+  PAYPAL_MAX_AMOUNT,
+  PAYPAL_MIN_AMOUNT,
+} from '~/site.config';
 import { captureException, trackEvent } from '@/lib/umami';
 
 const CHANNELS = [
   { id: 'alipay', label: '支付宝', hint: '使用支付宝扫码支付' },
   { id: 'wechat', label: '微信支付', hint: '使用微信扫码支付' },
+  { id: 'paypal', label: 'PayPal', hint: 'PayPal 余额 / 银行卡 / 信用卡支付' },
 ] as const satisfies ReadonlyArray<{
   id: DonateChannel;
   label: string;
@@ -47,6 +54,57 @@ const CHANNELS = [
 
 const PAYMENT_TIMEOUT_MS = 5 * 60_000;
 const DONATE_DRAFT_KEY = 'donate-draft';
+
+/* ── PayPal JS SDK：脚本加载与类型（仅声明用到的 Buttons 子集） ────── */
+
+interface PayPalButtonsConfig {
+  style?: Record<string, string | number>;
+  createOrder: () => Promise<string>;
+  onApprove: (data: { orderID: string }) => Promise<void>;
+  onCancel?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+interface PayPalButtons {
+  render(host: HTMLElement): Promise<void>;
+  close(): void;
+}
+
+interface PayPalSdk {
+  Buttons(config: PayPalButtonsConfig): PayPalButtons;
+}
+
+declare global {
+  interface Window {
+    paypal?: PayPalSdk;
+  }
+}
+
+const paypalSdkCache = new Map<string, Promise<PayPalSdk>>();
+
+/** 按需加载 PayPal JS SDK；同一 client-id + 币种只加载一次 */
+function loadPaypalSdk(clientId: string, currency: string): Promise<PayPalSdk> {
+  const key = `${clientId}|${currency}`;
+  const cached = paypalSdkCache.get(key);
+  if (cached) return cached;
+
+  const promise = new Promise<PayPalSdk>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src =
+      `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}` +
+      `&currency=${encodeURIComponent(currency)}&intent=capture&components=buttons&disable-funding=credit`;
+    script.async = true;
+    script.onload = () => {
+      if (window.paypal) resolve(window.paypal);
+      else reject(new Error('PayPal SDK 未初始化'));
+    };
+    script.onerror = () => reject(new Error('PayPal SDK 加载失败'));
+    document.head.appendChild(script);
+  });
+
+  paypalSdkCache.set(key, promise);
+  return promise;
+}
 
 interface WeixinJsBridge {
   invoke(
@@ -141,13 +199,28 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [qrFailed, setQrFailed] = useState(false);
   const [message, setMessage] = useState('');
+  /** PayPal JS SDK 状态：按钮渲染前的加载反馈 */
+  const [paypalSdk, setPaypalSdk] = useState<PayPalSdk | null>(null);
+  const [paypalSdkState, setPaypalSdkState] = useState<'loading' | 'ready' | 'error'>('loading');
   /** 用于丢弃切换渠道/关闭弹窗后返回的旧下单结果 */
   const requestSeq = useRef(0);
+  const paypalHostRef = useRef<HTMLDivElement | null>(null);
+  const paypalButtonsRef = useRef<PayPalButtons | null>(null);
+  /** PayPal Buttons 的 createOrder 闭包在渲染时固定，金额变化需经 ref 读取 */
+  const amountRef = useRef('');
 
   const amount = Number(customAmount);
-  const amountValid =
-    Number.isInteger(amount) && amount >= DONATION_MIN_AMOUNT && amount <= DONATION_MAX_AMOUNT;
+  const isPaypal = channel === 'paypal';
+  const minAmount = isPaypal ? PAYPAL_MIN_AMOUNT : DONATION_MIN_AMOUNT;
+  const maxAmount = isPaypal ? PAYPAL_MAX_AMOUNT : DONATION_MAX_AMOUNT;
+  const amountValid = isPaypal
+    ? Number.isFinite(amount) &&
+      amount >= minAmount &&
+      amount <= maxAmount &&
+      Math.abs(amount * 100 - Math.round(amount * 100)) < 1e-6
+    : Number.isInteger(amount) && amount >= minAmount && amount <= maxAmount;
   const configured = configState === 'ready' && (config?.channels[channel] ?? false);
+  const paypalClientId = config?.paypalClientId ?? null;
   const wechatJsapi = configState === 'ready' && (config?.wechatJsapi ?? false);
   /** 微信内置浏览器且已配置 AppSecret 时走 JSAPI，否则用扫码 */
   const useJsapi = channel === 'wechat' && isWechat && wechatJsapi;
@@ -252,12 +325,14 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       if (draft.channel && CHANNELS.some((item) => item.id === draft.channel)) {
         setChannel(draft.channel);
       }
-      if (
-        typeof draft.amount === 'number' &&
-        draft.amount >= DONATION_MIN_AMOUNT &&
-        draft.amount <= DONATION_MAX_AMOUNT
-      ) {
-        setCustomAmount(String(draft.amount));
+      if (typeof draft.amount === 'number') {
+        const bounds =
+          draft.channel === 'paypal'
+            ? [PAYPAL_MIN_AMOUNT, PAYPAL_MAX_AMOUNT]
+            : [DONATION_MIN_AMOUNT, DONATION_MAX_AMOUNT];
+        if (draft.amount >= bounds[0] && draft.amount <= bounds[1]) {
+          setCustomAmount(String(draft.amount));
+        }
       }
     } catch {
       // 隐私模式下存储不可用，忽略即可
@@ -291,7 +366,6 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       setQrDataUrl('');
       return;
     }
-
     let active = true;
     setQrFailed(false);
     void import('qrcode')
@@ -315,6 +389,110 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       active = false;
     };
   }, [order]);
+
+  // PayPal 金额经 ref 传给 SDK 闭包，避免按钮因金额输入频繁重建
+  useEffect(() => {
+    amountRef.current = customAmount;
+  }, [customAmount]);
+
+  // 选中 PayPal 且已配置时加载 JS SDK
+  useEffect(() => {
+    if (!open || !isPaypal || !paypalClientId) return;
+
+    let active = true;
+    setPaypalSdkState('loading');
+    loadPaypalSdk(paypalClientId, PAYPAL_CURRENCY)
+      .then((sdk) => {
+        if (!active) return;
+        setPaypalSdk(sdk);
+        setPaypalSdkState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setPaypalSdk(null);
+        setPaypalSdkState('error');
+        setMessage('PayPal 组件加载失败，请检查网络后重试');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [open, isPaypal, paypalClientId]);
+
+  // 渲染 PayPal Buttons：仅在待发起支付（idle）时挂载，切换渠道/重置后由 close() 清理
+  useEffect(() => {
+    const host = paypalHostRef.current;
+    if (!isPaypal || !paypalSdk || paypalSdkState !== 'ready' || phase !== 'idle' || !host) return;
+
+    host.innerHTML = '';
+    const buttons = paypalSdk.Buttons({
+      style: { color: 'gold', shape: 'pill', label: 'paypal', height: 42 },
+      createOrder: async () => {
+        const value = Number(amountRef.current);
+        if (!Number.isFinite(value) || value <= 0) {
+          throw new Error('invalid-amount');
+        }
+        try {
+          trackEvent('donate-create', { channel: 'paypal' });
+          const created = await createDonation({ channel: 'paypal', amount: value });
+          if (!created.paypalOrderId) {
+            throw new Error('missing-paypal-order');
+          }
+          return created.paypalOrderId;
+        } catch (error) {
+          // SDK 会吞掉 createOrder 的拒绝原因，这里先把具体错误展示出来
+          setMessage(error instanceof DonateError ? error.message : '下单失败，请稍后重试');
+          throw error;
+        }
+      },
+      onApprove: async (data) => {
+        setPhase('waiting');
+        try {
+          const captured = await capturePaypalDonation(data.orderID);
+          if (captured.status === 'paid') {
+            trackDonationRevenue({
+              orderId: captured.orderId,
+              amount: Number(amountRef.current),
+              channel: 'paypal',
+            });
+            setPhase('paid');
+            trackEvent('donate-result', { status: 'paid' });
+          } else {
+            setMessage('支付未完成，请更换支付方式后重试');
+            setPhase('idle');
+          }
+        } catch (error) {
+          captureException(error, { feature: 'donate-paypal-capture' });
+          setMessage(error instanceof DonateError ? error.message : '确认支付失败，请稍后重试');
+          setPhase('idle');
+        }
+      },
+      onCancel: () => {
+        setMessage('已取消支付');
+        setPhase('idle');
+      },
+      onError: (error) => {
+        captureException(error, { feature: 'donate-paypal-buttons' });
+        setMessage('PayPal 支付未完成，请稍后重试');
+        setPhase('idle');
+      },
+    });
+
+    void buttons.render(host).catch(() => {
+      setMessage('PayPal 组件渲染失败，请刷新后重试');
+    });
+    paypalButtonsRef.current = buttons;
+
+    return () => {
+      try {
+        paypalButtonsRef.current?.close();
+      } catch {
+        // SDK 内部状态异常时忽略，容器随后会被清空
+      }
+      paypalButtonsRef.current = null;
+      host.innerHTML = '';
+    };
+  }, [isPaypal, paypalSdk, paypalSdkState, phase, configured]);
 
   useEffect(() => {
     if (phase !== 'waiting' || !order) return;
@@ -517,7 +695,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
           <div className="mt-4 space-y-4">
             <div>
               <p className="mb-2 text-sm text-white/70">支付方式</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {CHANNELS.map(({ id, label, hint }) => {
                   const available = configState === 'ready' && (config?.channels[id] ?? false);
                   const selected = id === channel;
@@ -600,21 +778,49 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
             )}
 
             <div>
-              <p className="mb-2 text-sm text-white/70">打赏金额（元）</p>
+              <p className="mb-2 text-sm text-white/70">
+                打赏金额（{isPaypal ? PAYPAL_CURRENCY : '元'}）
+              </p>
               <Input
                 id="donation-amount"
                 name="amount"
                 type="number"
                 inputMode="numeric"
-                min={DONATION_MIN_AMOUNT}
-                max={DONATION_MAX_AMOUNT}
-                step={1}
+                min={minAmount}
+                max={maxAmount}
+                step={isPaypal ? 0.01 : 1}
                 value={customAmount}
                 onChange={(event) => setCustomAmount(event.target.value)}
-                placeholder={`输入金额（${DONATION_MIN_AMOUNT}–${DONATION_MAX_AMOUNT}）`}
+                placeholder={`输入金额（${minAmount}–${maxAmount}）`}
                 className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:border-[#0295e5] focus-visible:ring-[#0295e5]/20"
               />
             </div>
+
+            {isPaypal && configured && phase === 'idle' && (
+              <div className="space-y-2">
+                {paypalSdkState === 'loading' && (
+                  <p className="flex items-center gap-2 text-xs text-white/40">
+                    <IconLoader className="size-4 animate-spin" />
+                    正在加载 PayPal 支付组件…
+                  </p>
+                )}
+                {paypalSdkState === 'error' && (
+                  <p role="alert" className="flex items-center gap-2 text-xs text-[#ff8a8a]">
+                    <IconCircleAlert className="size-4 shrink-0" />
+                    PayPal 组件加载失败，请检查网络后重试
+                  </p>
+                )}
+                {paypalSdkState === 'ready' && amountValid && (
+                  // PayPal Buttons 渲染容器；SDK 会替换内部内容
+                  <div ref={paypalHostRef} className="min-h-11" />
+                )}
+                {paypalSdkState === 'ready' && !amountValid && (
+                  <p className="text-xs text-white/40">
+                    请先输入 {minAmount}–{maxAmount} {PAYPAL_CURRENCY} 范围内的金额
+                  </p>
+                )}
+              </div>
+            )}
 
             {phase === 'waiting' || phase === 'paid' ? (
               <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-4">
@@ -629,6 +835,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                     <p className="text-sm text-white/60">
                       支付完成后将自动确认，请稍候…
                     </p>
+                  </>
+                ) : isPaypal ? (
+                  <>
+                    <IconLoader className="size-8 animate-spin text-[#64c6f4]" />
+                    <p className="text-sm text-white/60">正在确认支付结果，请稍候…</p>
                   </>
                 ) : (
                   <>
@@ -696,6 +907,9 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                 <IconCircleCheck className="size-4" />
                 完成
               </Button>
+            ) : isPaypal ? (
+              // PayPal 渠道由内嵌 Buttons 发起支付，无独立提交按钮
+              <></>
             ) : (
               <Button
                 type="button"

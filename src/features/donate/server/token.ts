@@ -11,7 +11,10 @@ const TOKEN_VERSION = 1;
 interface OrderTokenPayload {
   orderId: string;
   channel: DonateChannel;
+  /** 金额的最小货币单位：人民币为分，PayPal 为其币种的分 */
   amountFen: number;
+  /** PayPal 网关订单号：查询 PayPal 订单时必需 */
+  paypalOrderId?: string;
 }
 
 /** 令牌内部用短字段序列化，减少 URL 长度 */
@@ -21,6 +24,7 @@ interface SignedPayload {
   o: string;
   c: DonateChannel;
   a: number;
+  p?: string;
 }
 
 export const isOrderTokenConfigured = (): boolean => Boolean(getOrderTokenSecret());
@@ -40,6 +44,7 @@ export function createOrderToken(payload: OrderTokenPayload): string {
     o: payload.orderId,
     c: payload.channel,
     a: payload.amountFen,
+    ...(payload.paypalOrderId ? { p: payload.paypalOrderId } : {}),
   };
   const encoded = Buffer.from(JSON.stringify(body)).toString('base64url');
   return `${encoded}.${sign(encoded, secret)}`;
@@ -73,11 +78,17 @@ export function verifyOrderToken(token: string): OrderTokenPayload | null {
 
     if (body.v !== TOKEN_VERSION) return null;
     if (!Number.isInteger(body.e) || body.e < Math.floor(Date.now() / 1000)) return null;
-    if (body.c !== 'alipay' && body.c !== 'wechat') return null;
+    if (body.c !== 'alipay' && body.c !== 'wechat' && body.c !== 'paypal') return null;
+    if (body.c === 'paypal' && typeof body.p !== 'string') return null;
     if (typeof body.o !== 'string' || !body.o) return null;
     if (!Number.isInteger(body.a) || body.a <= 0) return null;
 
-    return { orderId: body.o, channel: body.c, amountFen: body.a };
+    return {
+      orderId: body.o,
+      channel: body.c,
+      amountFen: body.a,
+      ...(body.p ? { paypalOrderId: body.p } : {}),
+    };
   } catch {
     return null;
   }

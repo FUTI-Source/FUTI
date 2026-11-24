@@ -9,7 +9,7 @@
 
 - **首页形象**：Live2D 看板形象（WebGL 检测 + SDK 动态加载）、视差背景、打字机式自我介绍、全局自定义光标、首屏加载进度圈
 - **联系表单**：react-hook-form + zod 校验，POST JSON Webhook 通知，带 IP 限流与蜜罐反滥用
-- **打赏**：微信支付（Native/H5/JSAPI）与支付宝（当面付/手机网站），无状态订单令牌，扫码二维码、轮询查单、回调验签后通知站长
+- **打赏**：微信支付（Native/H5/JSAPI）、支付宝（当面付/手机网站）与 PayPal（Orders API + Buttons + Webhook），无状态订单令牌，扫码二维码、轮询查单、回调验签后通知站长
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕与桌面 WCO
 - **统计**：Umami 自建统计（隐私友好），Vercel 部署时额外注入 Vercel Analytics 与 Speed Insights
 - **SEO**：Metadata API、robots.ts、sitemap.ts、OG 分享图与结构化数据
@@ -24,7 +24,7 @@
 | UI 组件 | Radix UI · lucide-react · @icons-pack/react-simple-icons |
 | 表单 | react-hook-form · @hookform/resolvers · zod |
 | 通知 | 通用 HTTP Webhook · 飞书/钉钉/企微机器人协议适配 |
-| 打赏 | qrcode · 微信 APIv3 / 支付宝 RSA2 |
+| 打赏 | qrcode · 微信 APIv3 / 支付宝 RSA2 / PayPal Orders API v2 |
 | 部署 | 火山引擎 IGA Pages（standalone）· Vercel（GitHub 镜像 Git 集成自动发布，CLI 可手动补发） |
 
 **运行环境要求 Node.js 24+**（见 `package.json` 的 `engines`）
@@ -121,6 +121,10 @@ import { SITE_URL } from '~/site.config';
 | `ALIPAY_APP_ID` | 支付宝必填 | 应用 AppID |
 | `ALIPAY_PRIVATE_KEY` | 支付宝必填 | 应用私钥（RSA2） |
 | `ALIPAY_PUBLIC_KEY` | 支付宝必填 | 支付宝公钥 |
+| `PAYPAL_CLIENT_ID` | PayPal 必填 | PayPal 开发者应用 Client ID（REST API 应用） |
+| `PAYPAL_CLIENT_SECRET` | PayPal 必填 | 对应 Secret |
+| `PAYPAL_ENV` | 可选 | `sandbox`（默认，测试）或 `live`（生产） |
+| `PAYPAL_WEBHOOK_ID` | 可选 | Webhook ID；配置后 `/api/donate/webhook/paypal` 才验签处理回调 |
 
 ## 部署
 
@@ -202,6 +206,7 @@ import { SITE_URL } from '~/site.config';
 | | `SITE_ICON_PATH` / `SITE_IMAGE_PATH` / `SITE_SOCIAL_IMAGE` | favicon、192 兜底图、1200×630 分享卡图 |
 | 5 备案 | `ICP_NUMBER` / `ICP_LINK` | 备案号与查询链接；`ICP_NUMBER` 置空字符串则页脚整块隐藏 |
 | 6 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` / `DONATION_SUBJECT` | 单笔金额上下限与订单标题 |
+| | `PAYPAL_CURRENCY` / `PAYPAL_MIN_AMOUNT` / `PAYPAL_MAX_AMOUNT` | PayPal 渠道的币种与金额档位，与人民币档位相互独立 |
 | 7 页脚 | `SITE_COPYRIGHT_START` / `SITE_THEME_CREDIT` / `SITE_THEME_CREDIT_HOVER` | 版权起始年份与画师署名（含 hover 文案） |
 | 8 统计与 CDN | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` / `SITE_ANALYTICS_DOMAINS` | Umami 地址、站点 ID、**只统计这些域名**（自动含 www + 裸域，预览域名不在名单里） |
 | | `SITE_CDN_CACHE` | 四档缓存策略：`immutable`（字体/启动图，一年）、`static`（模型/配图，含 stale-while-revalidate 与 stale-if-error）、`serviceWorker`（永不缓存）、`api`（no-store）。由 `next.config.ts` 写入响应头 |
@@ -214,7 +219,7 @@ import { SITE_URL } from '~/site.config';
 - **不想让裸域跳 www**：`SITE_WWW_REDIRECT.enabled = false`（例如裸域另有用途，要做落地页）。
 - **换统计服务商/站点 ID**：改 `SITE_ANALYTICS_URL` 与 `SITE_ANALYTICS_WEBSITE_ID`；加了新域名要把主机名并进 `SITE_ANALYTICS_DOMAINS`（目前是自动派生的两条）。
 - **CDN 缓存太顽固**：模型或字体更新后想立刻生效，调小 `SITE_CDN_CACHE.static`（默认 7 天）或在 DCDN 控制台目录刷新；`serviceWorker` 那档**永远不要改成可缓存**，否则新版本推不下去。完整的缓存头解释、平台配置清单与验证命令见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
-- **改打赏上下限**：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 同时作用于前端 zod 校验与下单接口，改完注意支付渠道自身的单笔限额。
+- **改打赏上下限**：`DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` 同时作用于前端 zod 校验与下单接口，改完注意支付渠道自身的单笔限额；PayPal 渠道单独用 `PAYPAL_CURRENCY` / `PAYPAL_MIN_AMOUNT` / `PAYPAL_MAX_AMOUNT`。
 - **改首页按钮列表**：社交链接改 `SITE_SOCIAL_LINKS`；「打赏 / 留言」是固定必选项，由 `src/features/profile/links-consts.tsx` 的 `ACTION_LINKS` 定义，不在站点配置里提供隐藏开关。
 
 </details>
@@ -293,9 +298,9 @@ import { SITE_URL } from '~/site.config';
 
 **飞书 / 钉钉 / 企业微信群机器人**：会按 webhook 域名自动识别，并把通用 JSON 转换成对应协议的消息体（飞书 `interactive` 卡片、钉钉 / 企微 `markdown`），无需额外配置。这类机器人在 payload 格式错误、签名校验失败或关键词不匹配时，通常仍返回 HTTP 200 但 body 中 `code` / `errcode` 非 0；现在会被判定为投递失败（触发失败 Webhook 或返回 `502`），真实原因写入服务端日志（`iga pages logs --since 1h`），不再静默误报成功。如果机器人开启了「签名校验」，需在机器人前加一层转换服务处理签名，或暂时关闭签名校验。
 
-#### 打赏（微信支付 / 支付宝 / 订单签名）
+#### 打赏（微信支付 / 支付宝 / PayPal / 订单签名）
 
-见下文「打赏」章节的完整环境变量表与获取方式（含官方配图）。核心变量：`DONATION_ORDER_SECRET`、`WECHAT_*`、`ALIPAY_*`。
+见下文「打赏」章节的完整环境变量表与获取方式（含官方配图）。核心变量：`DONATION_ORDER_SECRET`、`WECHAT_*`、`ALIPAY_*`、`PAYPAL_*`。
 
 #### 其他
 
@@ -430,8 +435,12 @@ import { SITE_URL } from '~/site.config';
 | `ALIPAY_PUBLIC_KEY` | 支付宝必填 | 支付宝公钥（非应用公钥），用于回调验签 |
 | `ALIPAY_GATEWAY` | 可选 | 默认 `https://openapi.alipay.com/gateway.do` |
 | `ALIPAY_NOTIFY_URL` | 可选 | 默认 `${SITE_URL}/api/donate/notify/alipay` |
+| `PAYPAL_CLIENT_ID` | PayPal 必填 | PayPal 开发者应用 Client ID |
+| `PAYPAL_CLIENT_SECRET` | PayPal 必填 | 对应 Secret |
+| `PAYPAL_ENV` | 可选 | `sandbox`（默认）/ `live` |
+| `PAYPAL_WEBHOOK_ID` | 可选 | Webhook ID；未配置时 PayPal 回调路由拒绝处理 |
 
-两个回调地址必须是公网可达的 HTTPS 地址。
+微信与支付宝的回调地址必须是公网可达的 HTTPS 地址。PayPal 的回调地址在开发者后台的应用 Webhooks 页配置为 `${SITE_URL}/api/donate/webhook/paypal`，事件订阅 `PAYMENT.CAPTURE.COMPLETED`；Webhook ID 在同一页面查看。币种与金额档位（`PAYPAL_CURRENCY` 等）在 `site.config.ts`，不在环境变量里。
 
 #### 微信支付各变量获取方式（附图）
 

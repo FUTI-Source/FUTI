@@ -149,6 +149,18 @@ export const DONATION_MAX_AMOUNT = 10000;
 /** 订单标题，出现在支付页面与商户账单里 */
 export const DONATION_SUBJECT = '打赏支持';
 
+/*
+ * PayPal 渠道（面向境外访客，与上面的人民币档位相互独立）。
+ * 凭据（PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_ENV / PAYPAL_WEBHOOK_ID）
+ * 是密钥或环境差异项，放在环境变量里；这里只放币种与金额档位。
+ */
+/** PayPal 收款币种代码（USD / EUR / HKD 等，需与 PayPal 商户账户支持的币种一致） */
+export const PAYPAL_CURRENCY = 'USD';
+/** 单笔最小金额（按 PayPal 币种计），与 zod 校验一致 */
+export const PAYPAL_MIN_AMOUNT = 1;
+/** 单笔最大金额（按 PayPal 币种计） */
+export const PAYPAL_MAX_AMOUNT = 500;
+
 /* ══════════════════════════════════════════════════════════════════
  * 7. 页脚与主题署名
  * ══════════════════════════════════════════════════════════════════ */
