@@ -169,13 +169,22 @@ main {
   }
 
   /* 页面固定为一屏，滚动只发生在内部 ScrollArea。
-     overflow:hidden 只挡住「持久性的文档滚动偏移」（iOS 键盘顶起后不回弹、
-     底部露黑色画布），并不影响橡皮筋回弹；键盘收起后的位置归零由
-     app-height.js 的 focusout / visualViewport 复查兜底。
-     不设 overscroll-behavior:none，保留 iOS 原生的页面弹性回弹。 */
+     桌面端锁定文档级滚动；触摸设备放开——iOS 的橡皮筋回弹是文档级的，
+     overflow:hidden 会把它整个禁掉，而一屏布局下内部容器没有滚动余量、
+     同样不产生回弹，导致移动端完全没有弹性手感。
+     放开后文档高度恰好一屏，不会出现真实滚动条，只有原生回弹；
+     iOS 键盘顶起后的滚动残留由 app-height.js 的 focusout / visualViewport
+     复查（scrollTo(0,0) + 高度校正）兜底，底部黑色间隔不会回归。 */
   html,
   body {
     overflow: hidden;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    html,
+    body {
+      overflow: visible;
+    }
   }
 
   /* 关闭 iOS Safari 横屏文字自动放大，避免同一字号在不同终端大小不一 */
