@@ -1,6 +1,6 @@
 # 张文涛 · 个人主页
 
-基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages，并支持通过 Gitee Go 自动发布到 Vercel（见「部署到 Vercel」）。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
+基于 **Next.js 16 + React 19 + TypeScript** 的独立个人主页，部署于火山引擎 IGA Pages，并可用 CLI 手动发布到 Vercel（见「部署到 Vercel」）。单页应用，包含 Live2D 看板形象、视差背景、打字机式自我介绍、社交链接，以及「联系表单」与「微信 / 支付宝打赏」两项后端能力。
 
 - 线上地址：<https://www.zhang-wentao.tech>
 - 站点名称、域名、联系方式、社交链接、打赏金额范围、统计与 CDN 缓存、国内外分流等配置集中在仓库根目录的 `site.config.ts`，需要调整时只改这一处；本文件会被客户端组件引用，**切勿写入任何密钥**。
@@ -27,7 +27,7 @@
 | 打赏 | qrcode（收款二维码，动态加载）· 微信 APIv3 / 支付宝 RSA2 |
 | 工具 | clsx · tailwind-merge · class-variance-authority |
 | 统计 | Umami（隐私友好）· Vercel Analytics + Speed Insights（仅 Vercel 部署注入） |
-| 部署 | 火山引擎 IGA Pages（standalone 产物）· Vercel（Gitee Go 自动发布） |
+| 部署 | 火山引擎 IGA Pages（standalone 产物）· Vercel（CLI 手动发布） |
 
 运行环境要求 **Node.js 24+**（见 `package.json` 的 `engines`）。IGA Pages 构建环境支持 20 / 22 / 24，默认 20.x，本项目需在控制台选择 **24.x**；Vercel 会把 `engines.node` 的区间解析为当前最新可用大版本（现为 **26.x**，官方支持 22/24/26，Node 20 已于 2026-10-01 停止接受新构建）。`.nvmrc` 为本地与 CI 固定在 26。
 
@@ -102,7 +102,7 @@ src/
 └── types/                        # 第三方模块类型声明（webp / parallax-js / react-css）
 public/                           # live2d 模型、字体、图标、iOS 启动图、文档配图
 site.config.ts                    # 站点全局配置（域名、分流、CDN、文案、打赏、统计）
-根目录配置                        # iga.json（IGA 构建）· vercel.json（Vercel 构建）· eslint.config.mjs（扁平 Lint 配置）· .workflow/（两条 Gitee Go 流水线）· .nvmrc
+根目录配置                        # iga.json（IGA 构建）· vercel.json（Vercel 构建）· eslint.config.mjs（扁平 Lint 配置）· .nvmrc
 ```
 
 ## 站点配置
@@ -237,7 +237,7 @@ import { SITE_URL, SITE_GEO_ROUTING } from '~/site.config';
 | --- | --- | --- |
 | `NEXT_ALLOWED_DEV_ORIGINS` | 否 | 逗号分隔的开发预览来源，供 `next.config.ts` 的 `allowedDevOrigins` 使用（预览沙箱代理域名） |
 
-> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`）配在 Gitee Go 流水线的参数里，不进 `.env.local`，也不写进 YAML，见「部署到 Vercel」与「部署到 IGA Pages」。⚠️ Gitee Go 社区版**没有加密变量**功能，明文风险与规避方式见该两节。
+> 站点公开配置（域名、备案、打赏档位、统计、分流、CDN 缓存）已全部收进根目录 `site.config.ts`，不再提供 `NEXT_PUBLIC_*` 覆盖；只有密钥与环境差异项走环境变量。部署侧凭据（`VERCEL_TOKEN`、`IGA_ACCESS_KEY` / `IGA_SECRET_KEY`）只存在于本机环境变量或密码管理器中：运行时密钥分别配在 Vercel 与 IGA 的项目后台里，发布用 token / AK / SK 不落仓库。见「部署到 Vercel」与「部署到 IGA Pages」。
 
 ## 联系表单（Webhook）
 
@@ -494,33 +494,38 @@ iga pages preview                      # 获取带访问凭证的预览地址
 - 关联了 GitHub 仓库的项目，`iga pages deploy` 会优先从仓库拉取代码构建；未授权时会退化为上传 ZIP（上限 1024 MB）。
 - 单项目最多保留 10 个部署版本，超出后自动删除最早版本。
 
-### 用 Gitee Go 自动发布
+### 用 CLI 手动发布
 
-IGA Pages 的 Git 自动构建**只支持 GitHub**，所以 Gitee 仓库走 `.workflow/deploy-iga.yml`：流水线用 CLI 把源码打成 ZIP 上传，依赖安装与 `next build` 都在 IGA 平台侧执行（控制台能看到完整构建日志，Gitee Go 只花几秒）。
+IGA Pages 的 Git 自动构建**只支持 GitHub**，因此不论 Vercel 还是 IGA 都需要把源码交给各自平台侧执行 `next build`。CLI 是唯一不依赖特定 CI/流水线的路径——本地跑一次就能提前发现问题，之后再放到任意脚本里按需运行。
 
-```bash
-git push origin main          # 触发 deploy-iga 流水线
-```
+首次接入只做三件事：
 
-首次接入只做四件事：
-
-1. 仓库页顶部 **流水线** 标签开通 Gitee Go（未开通会跳 `/gitee_go/open`，账号需绑定手机号，个人仓库有免费构建时长）。
-2. 火山引擎控制台 → 头像 → **访问控制 → 用户管理** 新建用户，登录设置勾选「通过密钥进行编程访问」，在该用户的 **密钥** Tab 创建 AK/SK（SecretKey 只展示一次，每个 IAM 用户默认最多 2 把）。官方没有 Pages 专属系统策略，先挂 `DCDNFullAccess`，部署报权限错再按报错补自定义策略；不要用主账号密钥。
-3. 在流水线的 **参数设置 → 流水线级参数** 里新增三个变量：`IGA_ACCESS_KEY`、`IGA_SECRET_KEY`、`IGA_PROJECT`（Pages 项目名或项目 ID），YAML 里用 `${名称}` 引用。
-   ⚠️ **Gitee Go 社区版没有「加密变量」**：官方《参数设置》只有系统级参数（`GITEE_*`）与流水线级参数，《高级设置》只有阻塞构建与任务超时，没有任何加密/私密字段（加密只在企业版「凭证管理」里）。参数值上限 256 字符（AK/SK 够用）。
-   不要写进 YAML 的 `variables:` 块——那等于把密钥提交进 Git 历史。风险与规避：`iga login` 只接受命令行参数，AK/SK 必然出现在构建日志里，所以流水线里先加了一行 `env | grep -c "^IGA_"` 探测——输出 `3` 说明是真环境变量注入，输出 `0` 说明 Gitee Go 做的是文本替换、密钥一定在日志里，这时应改用 GitHub Actions Secrets，或 Gitee Go 的 `deploy@agent` + 自建主机组（凭据留在主机组机器上）。一旦泄露立刻在控制台「禁用」该密钥。
-4. 每次构建都是干净工作区，没有本地项目关联记录，所以流水线里必须 `iga pages link --project=... --yes` 显式指定项目（已在 YAML 里写好）。
-
-流水线命令与本机调试用的命令完全一致，本地跑一遍就能提前发现问题：
+1. 火山引擎控制台 → 头像 → **访问控制 → 用户管理** 新建用户，登录设置勾选「通过密钥进行编程访问」，在该用户的 **密钥** Tab 创建 AK/SK（SecretKey 只展示一次，每个 IAM 用户默认最多 2 把）。官方没有 Pages 专属系统策略，先挂 `DCDNFullAccess`，部署报权限错再按报错补自定义策略；不要用主账号密钥。AK / SK 留本机环境变量或密码管理器，不要写进仓库。
+2. 在 IGA 控制台把项目「Node.js 版本」设为 24.x（可只有 20.x/22.x/24.x，默认 20.x）；密钥类环境变量在 IGA 的「项目设置 → 环境变量」里配（项目级单套，每个值 ≤2000 字符），域名 / 文案 / 分流等公开配置在 `site.config.ts`，见站点配置一节。
+3. 同样在各自的后台给项目加上运行时密钥（Vercel：Settings → Environment Variables；IGA：项目设置 → 环境变量）。
 
 ```bash
-npm install -g @iga-pages/cli
-iga login --accessKey="<AK>" --secretKey="<SK>"   # CI 专用非交互登录，不要用浏览器授权
-iga pages link --project="<项目名或 ID>" --yes
-iga pages deploy -l                               # -l 串流初始化/构建/部署日志
+# ── 安装 CLI ────────────────────────
+npm install -g @iga-pages/cli            # Node ≥ 20，用于 IGA Pages
+
+npx vercel login                         # 浏览器 OAuth；CI 中改用 VERCEL_TOKEN 环境变量
+
+# ── 关联项目 ────────────────────────
+iga pages link --project="<项目名或 ID>" --yes   # 本地工作区需显式关联
+# Vercel 项目名首次 deploy 时自动生成，可在 Settings → General 改名
+
+# ── 发布到 IGA ──────────────────────────────
+export IGA_ACCESS_KEY="<AK>"
+export IGA_SECRET_KEY="<SK>"
+export IGA_PROJECT="<项目名或 ID>"
+
+iga pages deploy -l                    # -l 串流初始化/构建/部署日志
+
+# ── 发布到 Vercel ───────────────────────────
+npx vercel deploy --prod --yes         # 生产构建 + 发布；首次会交互式选项目
 ```
 
-`deploy-iga.yml` 与 `deploy-vercel.yml` 是两条独立流水线，同一次 push 会各自跑一次；任一平台失败不影响另一条，便于把 Vercel 当作 IGA 的备用出口。只想手动发 IGA 时，把该流水线的触发方式在控制台改成手动即可。
+也可以先只部署一个平台，另一个按需再加：两条链路完全独立，互不影响。
 
 ### 自定义域名与加速
 
@@ -528,7 +533,7 @@ iga pages deploy -l                               # -l 串流初始化/构建/�
 2. 中国大陆加速区域要求域名完成 ICP 备案；TXT 验证只在中国大陆加速场景需要。
 3. **HTTPS 证书不会自动签发**：控制台不会替你申请证书，需要自己上传证书或按平台指引申请后上传；证书到期前要自行续期替换，别指望平台自动续。
 4. 建议同时绑定根域与 `www`：`src/proxy.ts` 会把站点裸域 308 到 `SITE_URL` 的 www 版本（域名从 `site.config.ts` 自动派生，不用写第二条规则）。
-4. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
+5. 域名解析生效后，`SITE_URL`、支付回调地址（`WECHAT_NOTIFY_URL` / `ALIPAY_NOTIFY_URL`）需与正式域名保持一致。
 
 ### 用 AI 编程客户端对接（可选）
 
@@ -547,9 +552,9 @@ iga pages deploy -l                               # -l 串流初始化/构建/�
 
 Plugin 与 MCP 只负责查询/操作 IGA Pages 项目、环境变量、部署与日志；本地构建、`dev`、`deploy` 仍需安装 IGA CLI。CLI 登录（`iga login`）与 MCP OAuth 授权相互独立。
 
-## 部署到 Vercel（Gitee Go 自动发布）
+## 部署到 Vercel（CLI 手动发布）
 
-Vercel 只能直接导入 GitHub / GitLab / Bitbucket / Azure DevOps 仓库，**无法绑定 Gitee**，因此发布链路是「Gitee Go 上传源码 → Vercel 远端构建」：push 到 `main` 触发 `.workflow/deploy-vercel.yml`，流水线跑 `vercel deploy --prod`，依赖安装与构建都在 Vercel 侧完成。构建日志看 Vercel 控制台，Gitee Go 只做上传，几十秒内结束，免费构建时长几乎不占用。
+Vercel 只能直接导入 GitHub / GitLab / Bitbucket / Azure DevOps 仓库，**无法绑定 Gitee**，因此发布走 CLI：在本地（或任意脚本 / CI）执行 `npx vercel deploy --prod`，CLI 把源码上传给 Vercel，依赖安装与 `next build` 都在 Vercel 侧完成，构建日志看 Vercel 控制台。
 
 ### 已做的适配
 
@@ -561,7 +566,6 @@ Vercel 只能直接导入 GitHub / GitLab / Bitbucket / Azure DevOps 仓库，**
 | `vercel.json` | 显式声明 `framework: nextjs`、`buildCommand: npm run build`（与 `package.json` 共用一个入口，改构建标志只需改一处），并用 `npm ci --registry=https://registry.npmjs.org` 覆盖仓库 `.npmrc` 里的 npmmirror —— Vercel 构建机在海外，走国内镜像只会更慢甚至超时。 |
 | `package.json` | 新增 `@vercel/analytics`、`@vercel/speed-insights`（运行时按需注入，不进首屏关键路径）。 |
 | `src/app/layout.tsx` | `<Analytics />` 与 `<SpeedInsights />` 只在 `VERCEL === '1'` 时挂载，IGA 部署不会平白多一次境外请求；预览部署 `mode` 记为 `development`，PR/预览流量不进生产数据。 |
-| `.workflow/deploy-vercel.yml` | Gitee Go 流水线定义（push 到 `main` 精确触发）。 |
 | `.gitignore` | 忽略 `.vercel/`，避免把项目 ID 等本地 link 信息提交上去。 |
 
 ### 构建器与 Node 版本
@@ -573,25 +577,19 @@ Node 版本按「Vercel 跟最新 LTS、IGA 保持平台可用上限」处理：
 | 位置 | 值 | 说明 |
 | --- | --- | --- |
 | `package.json` `engines.node` | `>=24.0.0` | Vercel 会把它解析成**当前最新可用的大版本**（现为 26.x），同时 IGA 构建环境的 24.x 仍然满足，一条声明兼容两个平台 |
-| `.nvmrc` | `26` | 本地与 CI 的开发版本；Vercel 官方未声明读取 `.nvmrc`，不要指望它决定线上版本 |
-| `.workflow/deploy-vercel.yml` | `nodeVersion: 26.13.1` | 该步骤只跑 Vercel CLI，不参与编译，用最新 LTS 即可 |
-| `.workflow/deploy-iga.yml` | `nodeVersion: 24.22.3` | 与 IGA 平台侧构建环境同大版本，避免「CI 能装、平台装不上」 |
+| `.nvmrc` | `26` | 本地开发版本；Vercel 官方未声明读取 `.nvmrc`，不要指望它决定线上版本 |
 
 要锁死 Vercel 的 Node 大版本，在项目 **Settings → Build and Deployment → Node.js Version** 里选（注意菜单名是 Build and Deployment，不是 Build & Development Environment；`vercel.json` **没有** Node 版本字段，别去那里找）。Vercel 不支持版本区间共存，且 Node 20 自 2026-10-01 起已停止接受新的构建与函数请求，落到 20 会直接报错而不是回退。
 
 ### 首次接入
 
-1. **建 Vercel 项目**：首次 `vercel deploy --yes` 会在 token 所属账号下自动创建项目（名称取自仓库目录名，之后可在 **Settings → General** 改名）。想让项目名与归属一开始就确定，先在 [vercel.com/new](https://vercel.com/new) 建好项目，再在流水线变量里补 `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`（两个必须成对出现，CLI 会自动读取，命令无需改动）；也可以用 `vercel project create` 手动建、`vercel project list --json` / `vercel project inspect <name>` 查归属，**没有** `vercel project add` 这个子命令。
+1. **建 Vercel 项目**：首次 `vercel deploy --yes` 会在当前账号下自动创建项目（名称取自仓库目录名，之后可在 **Settings → General** 改名）。想让项目名与归属一开始就确定，先在 [vercel.com/new](https://vercel.com/new) 建好项目，再补 `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`（两个必须成对出现，CLI 会自动读取，命令无需改动）；也可以用 `vercel project create` 手动建、`vercel project list --json` / `vercel project inspect <name>` 查归属，**没有** `vercel project add` 这个子命令。
 2. **填环境变量**：项目 **Settings → Environment Variables** 按上文「环境变量」逐项添加密钥（`NOTIFY_WEBHOOK_*`、`WECHAT_*`、`ALIPAY_*`、`DONATION_ORDER_SECRET`），Production / Preview / Development 三个环境都要覆盖到。值按敏感度选类型：**Secret**（加密存储、不回显）用于真正的密钥，**Config**（明文）用于不敏感值；同一变量名在三个环境各配一份。站点公开配置不在环境变量里，改 `site.config.ts` 后重新部署即可。
 3. **开通 Web Analytics**：项目侧栏 **Analytics → Enable**（Speed Insights 同理）。未开通时 Vercel 不会注册 `/_vercel/insights/*` 同源路由，页面正常但数据为 0。
-4. **生成 Token**：Vercel → **Account Settings → Tokens** 新建，作用域只选要部署的那个 Team/项目，并设过期时间。
-5. **开通 Gitee Go**：仓库页顶部 **流水线** 标签（未开通会跳 `/gitee_go/open`，账号需绑定手机号；个人仓库每月有免费构建时长额度）。推送本仓库的 `.workflow/deploy-vercel.yml` 后新建流水线，或直接在控制台导入。
-6. **加流水线变量**：在流水线 **参数设置 → 流水线级参数** 里新增 `VERCEL_TOKEN`，YAML 里用 `${VERCEL_TOKEN}` 引用。
-   ⚠️ **Gitee Go 社区版没有「加密变量」**：官方《参数设置》只有系统级参数（`GITEE_*`）与流水线级参数，《高级设置》只有阻塞构建与任务超时，没有加密/私密字段（加密只在企业版「凭证管理」里）。参数值上限 256 字符，Vercel token 够用。
-   切勿写进 YAML 的 `variables:` 块——那等于把 token 提交进 Git 历史。流水线里已改成**只用环境变量**传 token（不用 `--token=` 参数：命令行参数会进进程列表，且官方规定 `--token` 优先级高于 `VERCEL_TOKEN`），并加了一行 `env | grep -c "^VERCEL_TOKEN="` 探测：输出 `1` 说明是真环境变量注入，输出 `0` 说明 Gitee Go 做的是文本替换、token 一定出现在构建日志里，此时应改用 GitHub Actions Secrets 或 `deploy@agent` + 主机组。泄露后立刻在 Vercel 吊销 token。
-7. push 到 `main`，等待流水线跑完，在 Vercel 部署页查看构建日志与生产域名。
+4. **准备凭据**：Vercel → **Account Settings → Tokens** 新建 token，作用域只选要部署的那个 Team/项目，并设过期时间。本机用 `npx vercel login` 交互登录（凭据落在用户目录，不进仓库）；在脚本或 CI 里则用 `VERCEL_TOKEN` 环境变量——**不要**用 `--token=` 参数，命令行参数会进进程列表与 shell 历史。
+5. **发布**：`npx vercel deploy --prod --yes`，构建日志与生产域名在 Vercel 部署页查看。
 
-CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动构建」与流水线重复发布的情况；若以后把同一份代码再镜像到 GitHub 并导入 Vercel，记得只保留一条发布链路。
+CLI 部署不经过 Vercel 的 Git 集成，所以不会出现「推送即自动构建」与手动发布重复上线的情况；若以后把同一份代码再镜像到 GitHub 并导入 Vercel，记得只保留一条发布链路。
 
 ### 验证部署是否生效
 
@@ -692,12 +690,12 @@ curl -sI -H "Host: www.zhang-wentao.tech" http://127.0.0.1:3000/ | grep -i "^HTT
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。
 - **打赏查单返回 501**：`GATEWAY_NOT_IMPLEMENTED`，对应渠道/模式的查单能力暂未实现，检查所选渠道与模式是否匹配。
-- **Gitee Go 流水线报「缺少流水线变量 VERCEL_TOKEN」或 Vercel 返回 401**：`VERCEL_TOKEN` 没在流水线 **参数设置 → 流水线级参数** 里新增（Gitee Go 社区版无「加密」选项，直接明文存参数），或 token 已过期、token 的 Team 作用域与目标项目不一致。若流水线里那行 `env | grep -c "^VERCEL_TOKEN="` 输出 `0`，说明参数是文本替换而非环境变量注入，token 已出现在构建日志里——先在 Vercel 吊销该 token，再改用 GitHub Actions Secrets 或 `deploy@agent` + 主机组。
+- **Vercel 部署返回 401 / token 失效**：`VERCEL_TOKEN` 过期，或 token 的 Team 作用域与目标项目不一致；用 `npx vercel whoami` 确认当前身份。本地 `vercel login` 的凭据过期就重新登录。⚠️ token 只走环境变量，别用 `--token=` 参数（会进进程列表与 shell 历史），也别写进仓库。
 - **Vercel 构建卡在依赖安装**：多为 `.npmrc` 的国内镜像被构建机继承导致超时，`vercel.json` 的 `installCommand` 已强制切到 `registry.npmjs.org`；自行改坏该命令时构建会明显变慢。
 - **部署到 Vercel 后 Analytics 面板没数据**：先在项目 **Analytics** 里点 Enable（否则同源 `/_vercel/insights/*` 路由不存在）；预览部署被标记为 `development`，不会计入生产数据；控制台若出现 CSP violation，检查 `next.config.ts` 是否还放行 `va.vercel-scripts.com`。
 - **两个平台表现不一致**：先比密钥变量。站点公开配置来自同一份 `site.config.ts`，但 IGA 与 Vercel 的环境变量各存一份、各建一次，改一边不会影响另一边；`standalone` 产物只在 IGA 链路生成，属预期差异。
 - **改了 `site.config.ts` 不生效**：配置在构建期求值，两条部署链路各自构建，需要分别重新部署；`SITE_HOSTNAME` / `SITE_DOMAIN` / `SITE_ANALYTICS_DOMAINS` 是从 `SITE_URL` 派生的，不要手动改。
 - **裸域没有跳 www**：只有等于 `SITE_URL` 派生出的 www 版与裸域版才会被改写，`localhost`、`*.vercel.app`、`*.preview.iga-pages.com` 有意不参与；另外 `/api/*` 与带扩展名的静态资源被 matcher 排除。
 - **开了 `SITE_GEO_ROUTING` 却不跳**：四种正常情况——`SITE_DEPLOY_TARGETS.overseas` 留空、拿不到 `countryHeaders` 里的任何头（火山 DCDN 不回传地域字段）、目标主机就是当前主机、会话内已有 `site-region` Cookie。
-- **IGA 流水线报未登录或项目不存在**：`IGA_ACCESS_KEY` / `IGA_SECRET_KEY` / `IGA_PROJECT` 三个流水线变量缺任一个，或密钥对应的 IAM 用户没有 Pages 权限；每次构建都是干净工作区，必须靠 `iga pages link --project=... --yes` 显式关联。
+- **IGA 发布报未登录或项目不存在**：先 `iga login`（AK/SK 方式或浏览器授权），再 `iga pages link --project=... --yes` 显式关联项目——本地工作区不会记住关联，每次新目录都要重跑。AK/SK 对应的 IAM 用户要有 Pages 相关权限（先挂 `DCDNFullAccess`，再按报错补自定义策略）。
 - **`npm run lint` 一堆 warning 不代表坏了**：判定看退出码——当前基线 0 error / 约 34 warning，进程退出码 0。这些是存量代码欠账（`no-explicit-any`、`exhaustive-deps` 等），不是配置错误；想逐条清就 `npm run lint:fix` 先修可自动修复的，再按文件处理剩下的。真出现 `command not found` 或 `could not find plugin "@typescript-eslint"`，说明 `eslint` / `eslint-config-next` 没装进 devDependencies，或 `eslint.config.mjs` 被改回了 FlatCompat 旧写法。

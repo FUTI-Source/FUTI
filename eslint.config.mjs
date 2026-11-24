@@ -29,7 +29,6 @@ export default [
       'coverage/**',
       'public/**',
       'scripts/**',
-      '.workflow/**',
       // Live2D Cubism 官方运行时，不属于本项目可维护代码
       'src/features/avatar/live2d/**',
       // 根目录配置文件按 Node 全局书写，不参与校验
