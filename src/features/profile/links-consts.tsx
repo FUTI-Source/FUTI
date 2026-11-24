@@ -1,12 +1,17 @@
-import { HandHeart } from 'lucide-react';
-import { IconType, SiGithub, SiGmail, SiRss } from '@icons-pack/react-simple-icons';
+import {
+  IconComponent,
+  IconGithub,
+  IconGmail,
+  IconHandHeart,
+  IconRss,
+} from '@/components/icons';
 
 import { SITE_SOCIAL_LINKS } from '~/site.config';
 
 interface ILink {
   /** 稳定的英文标识，用于埋点与逻辑判断，避免依赖展示文案 */
   id: string;
-  Icon: IconType;
+  Icon: IconComponent;
   /** 仅社交链接使用；操作按钮（打赏/留言）没有跳转地址 */
   href?: string;
   label: string;
@@ -19,13 +24,13 @@ interface ILink {
 const SOCIAL_LINKS: ILink[] = [
   {
     id: 'blog',
-    Icon: SiRss,
+    Icon: IconRss,
     href: SITE_SOCIAL_LINKS.blog,
     label: '博客',
   },
   {
     id: 'github',
-    Icon: SiGithub,
+    Icon: IconGithub,
     href: SITE_SOCIAL_LINKS.github,
     label: '开源',
   },
@@ -38,12 +43,12 @@ const SOCIAL_LINKS: ILink[] = [
 const ACTION_LINKS: ILink[] = [
   {
     id: 'donate',
-    Icon: HandHeart,
+    Icon: IconHandHeart,
     label: '打赏',
   },
   {
     id: 'contact',
-    Icon: SiGmail,
+    Icon: IconGmail,
     label: '留言',
   },
 ];

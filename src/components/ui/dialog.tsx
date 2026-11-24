@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
+
+import { IconX } from "@/components/icons"
 
 import { cn } from "@/lib/utils"
 
@@ -67,7 +68,7 @@ function DialogContent({
             data-slot="dialog-close"
             className="ring-offset-background focus-visible:ring-ring absolute top-4 right-4 flex size-8 items-center justify-center rounded-md text-white/60 transition-all hover:bg-white/10 hover:text-white focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
-            <XIcon />
+            <IconX />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

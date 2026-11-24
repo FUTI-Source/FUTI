@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleCheck, CircleX, Loader2, Send } from 'lucide-react';
+import {
+  IconCircleCheck,
+  IconCircleX,
+  IconLoader,
+  IconSend,
+} from '@/components/icons';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -217,22 +222,22 @@ export const ContactDialog: React.FC<IContactDialogProps> = ({ open, onOpenChang
                 >
                   {form.formState.isSubmitting ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" />
+                      <IconLoader className="size-4 animate-spin" />
                       提交中…
                     </>
                   ) : submitState === 'success' ? (
                     <>
-                      <CircleCheck className="size-4" />
+                      <IconCircleCheck className="size-4" />
                       已提交
                     </>
                   ) : submitState === 'error' ? (
                     <>
-                      <CircleX className="size-4" />
+                      <IconCircleX className="size-4" />
                       重试提交
                     </>
                   ) : (
                     <>
-                      <Send className="size-4" />
+                      <IconSend className="size-4" />
                       提交
                     </>
                   )}

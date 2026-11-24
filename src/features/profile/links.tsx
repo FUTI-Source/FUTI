@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { IconType } from '@icons-pack/react-simple-icons';
+import type { IconComponent } from '@/components/icons';
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
 
@@ -18,7 +18,7 @@ type ILinksProps = BasicsProps & {
 };
 
 type ITriggerProps = {
-  Icon: IconType;
+  Icon: IconComponent;
   label: string;
   iconClassName?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;

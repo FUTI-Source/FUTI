@@ -2,7 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-import { CircleAlert, CircleCheck, ExternalLink, Loader2, QrCode, Wallet } from 'lucide-react';
+import {
+  IconCircleAlert,
+  IconCircleCheck,
+  IconExternalLink,
+  IconLoader,
+  IconQrCode,
+  IconWallet,
+} from '@/components/icons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -479,27 +486,27 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
             <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-6 text-center">
               {returnState === 'verifying' ? (
                 <>
-                  <Loader2 className="size-9 animate-spin text-[#64c6f4]" />
+                  <IconLoader className="size-9 animate-spin text-[#64c6f4]" />
                   <p className="text-sm text-white/60">正在确认支付结果，请稍候…</p>
                 </>
               ) : returnState === 'paid' ? (
                 <>
-                  <CircleCheck className="size-10 text-[#64c6f4]" />
+                  <IconCircleCheck className="size-10 text-[#64c6f4]" />
                   <p className="text-sm text-[#64c6f4]">支付成功，感谢你的支持！</p>
                 </>
               ) : returnState === 'refunded' ? (
                 <>
-                  <CircleAlert className="size-9 text-[#ffd166]" />
+                  <IconCircleAlert className="size-9 text-[#ffd166]" />
                   <p className="text-sm text-white/60">该笔打赏已退款</p>
                 </>
               ) : returnState === 'cancelled' ? (
                 <>
-                  <CircleAlert className="size-9 text-[#ffd166]" />
+                  <IconCircleAlert className="size-9 text-[#ffd166]" />
                   <p className="text-sm text-white/60">支付已取消</p>
                 </>
               ) : (
                 <>
-                  <CircleAlert className="size-9 text-[#ff8a8a]" />
+                  <IconCircleAlert className="size-9 text-[#ff8a8a]" />
                   <p className="text-sm text-white/70">
                     暂未确认到支付结果，如已付款请稍后重新打开页面查看
                   </p>
@@ -582,7 +589,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
 
             {wechatBlocked && (
               <div className="flex items-start gap-3 rounded-xl border border-[#64c6f4]/25 bg-[#64c6f4]/10 p-4">
-                <ExternalLink className="mt-0.5 size-4 shrink-0 text-[#64c6f4]" />
+                <IconExternalLink className="mt-0.5 size-4 shrink-0 text-[#64c6f4]" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-white/85">请在浏览器中打开后支付</p>
                   <p className="text-xs leading-relaxed text-white/50">
@@ -613,12 +620,12 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               <div className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-4">
                 {phase === 'paid' ? (
                   <>
-                    <CircleCheck className="size-10 text-[#64c6f4]" />
+                    <IconCircleCheck className="size-10 text-[#64c6f4]" />
                     <p className="text-sm text-[#64c6f4]">支付成功，感谢你的支持！</p>
                   </>
                 ) : orderMode === 'jsapi' ? (
                   <>
-                    <Loader2 className="size-8 animate-spin text-[#64c6f4]" />
+                    <IconLoader className="size-8 animate-spin text-[#64c6f4]" />
                     <p className="text-sm text-white/60">
                       支付完成后将自动确认，请稍候…
                     </p>
@@ -636,18 +643,18 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                       />
                     ) : qrFailed ? (
                       <div className="flex size-44 flex-col items-center justify-center gap-2 rounded-lg bg-white/10 px-3 text-center">
-                        <CircleAlert className="size-6 text-[#ff8a8a]" />
+                        <IconCircleAlert className="size-6 text-[#ff8a8a]" />
                         <span className="text-xs text-white/60">
                           二维码生成失败，请重新生成
                         </span>
                       </div>
                     ) : (
                       <div className="flex size-44 items-center justify-center rounded-lg bg-white/10">
-                        <Loader2 className="size-6 animate-spin text-white/50" />
+                        <IconLoader className="size-6 animate-spin text-white/50" />
                       </div>
                     )}
                     <p className="flex items-center gap-1.5 text-sm text-white/60">
-                      <QrCode className="size-4" />
+                      <IconQrCode className="size-4" />
                       {activeChannel.hint}
                     </p>
                   </>
@@ -657,7 +664,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               <div className="space-y-2">
                 {configState === 'ready' && !configured && (
                   <p className="flex items-start gap-2 rounded-lg border border-[#ffd166]/20 bg-[#ffd166]/5 p-3 text-sm text-[#ffd166]">
-                    <CircleAlert className="mt-0.5 size-4 shrink-0" />
+                    <IconCircleAlert className="mt-0.5 size-4 shrink-0" />
                     {activeChannel.label} 渠道暂未开通，站长完成商户配置后即可使用。
                   </p>
                 )}
@@ -686,7 +693,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                 onClick={() => handleOpenChange(false)}
                 className="bg-[#0295e5] text-white hover:bg-[#0295e5]/90"
               >
-                <CircleCheck className="size-4" />
+                <IconCircleCheck className="size-4" />
                 完成
               </Button>
             ) : (
@@ -698,37 +705,37 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               >
                 {phase === 'creating' ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <IconLoader className="size-4 animate-spin" />
                     生成中…
                   </>
                 ) : phase === 'waiting' ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <IconLoader className="size-4 animate-spin" />
                     等待支付…
                   </>
                 ) : phase === 'error' ? (
                   <>
-                    <CircleAlert className="size-4" />
+                    <IconCircleAlert className="size-4" />
                     重新发起
                   </>
                 ) : wechatBlocked ? (
                   <>
-                    <ExternalLink className="size-4" />
+                    <IconExternalLink className="size-4" />
                     请用浏览器打开
                   </>
                 ) : useJsapi ? (
                   <>
-                    <Wallet className="size-4" />
+                    <IconWallet className="size-4" />
                     立即支付
                   </>
                 ) : alipayMobile || wechatMobileH5 ? (
                   <>
-                    <Wallet className="size-4" />
+                    <IconWallet className="size-4" />
                     {alipayMobile ? '前往支付宝' : '前往微信支付'}
                   </>
                 ) : (
                   <>
-                    <QrCode className="size-4" />
+                    <IconQrCode className="size-4" />
                     生成支付码
                   </>
                 )}
