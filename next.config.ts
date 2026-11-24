@@ -63,16 +63,19 @@ const nextConfig: NextConfig = {
     // CSP：生产环境强制启用，开发环境用 Report-Only 避免阻断调试
     // va.vercel-scripts.com 只在 Vercel 统计的调试链路（mode=development，即预览部署）上加载脚本与上报；
     // 生产走同源 /_vercel/insights/*、/_vercel/speed-insights/*，由 'self' 覆盖。漏配不会报错，只会让统计静默归零。
+    // PayPal：打赏的 PayPal Buttons 是跨域 iframe 收银台，SDK 脚本、上报、弹窗框架都要放行
+    // *.paypal.com；paypalobjects.com 是 SDK 的静态资源域名，blob: 是 SDK 内部 Web Worker 所需。
     const cspHeader = {
       key: isProd ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
       value: [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cloud.umami.is https://va.vercel-scripts.com",
+        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cloud.umami.is https://va.vercel-scripts.com https://www.paypal.com https://www.paypalobjects.com https://*.paypal.com",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob:",
+        "img-src 'self' data: blob: https://*.paypal.com https://www.paypalobjects.com",
         "font-src 'self' data:",
-        "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is https://va.vercel-scripts.com",
-        "worker-src 'self'",
+        "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is https://va.vercel-scripts.com https://*.paypal.com",
+        "worker-src 'self' blob:",
+        "frame-src https://www.paypal.com https://*.paypal.com",
         "manifest-src 'self'",
         "frame-ancestors 'none'",
         'base-uri \'self\'',

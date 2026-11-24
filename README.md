@@ -674,7 +674,7 @@ Vercel 只能直接导入 GitHub / GitLab / Bitbucket / Azure DevOps 仓库，**
 | 文件 | 适配内容 |
 | --- | --- |
 | `next.config.ts` | `VERCEL === '1'` 时不设置 `output: 'standalone'`。Vercel **明确不支持** `output` 配置，构建期会直接报 `Invalid Next.js configuration: "output" should be set to "standalone"`，所以必须按平台跳过；IGA 链路仍然要 standalone。 |
-| `next.config.ts` | CSP 的 `script-src` / `connect-src` 放行 `https://va.vercel-scripts.com`（Vercel 统计的调试/预览链路域名，即 `mode: 'development'`）。生产走同源 `/_vercel/insights/*`，由 `'self'` 覆盖；漏配不报错，只会让统计静默归零。 |
+| `next.config.ts` | CSP 的 `script-src` / `connect-src` 放行 `https://va.vercel-scripts.com`（Vercel 统计的调试/预览链路域名，即 `mode: 'development'`）。生产走同源 `/_vercel/insights/*`，由 `'self'` 覆盖；漏配不报错，只会让统计静默归零。PayPal 打赏相关：`script-src` / `connect-src` / `img-src` / `frame-src` 放行 `*.paypal.com` 与 `paypalobjects.com`（Buttons 是跨域 iframe 收银台），`worker-src` 放行 `blob:`（SDK 内部 Worker）。 |
 | `next.config.ts` | 缓存策略与裸域跳转不再写死在这里：缓存读 `site.config.ts` 的 `SITE_CDN_CACHE`，裸域补 www 移到 `src/proxy.ts`（`redirects` 只能按写死的 host 精确匹配，做不到「不带 www 就自动加」）。 |
 | `vercel.json` | 显式声明 `framework: nextjs`、`buildCommand: npm run build`（与 `package.json` 共用一个入口，改构建标志只需改一处），并用 `npm ci --registry=https://registry.npmjs.org` 覆盖仓库 `.npmrc` 里的 npmmirror —— Vercel 构建机在海外，走国内镜像只会更慢甚至超时。 |
 | `package.json` | 新增 `@vercel/analytics`、`@vercel/speed-insights`（运行时按需注入，不进首屏关键路径）。 |
@@ -794,6 +794,7 @@ dig +subnet=114.114.114.114 www.example.com @ns1.volcengine-dns.com +short  # �
 - **打赏下单 502 / 网关错误**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定、支付宝应用是否上线。
 - **打赏回调 401**：微信公钥 ID/公钥错误或时间戳偏差；支付宝公钥误填成应用公钥。
 - **打赏查单返回 501**：`GATEWAY_NOT_IMPLEMENTED`，对应渠道/模式的查单能力暂未实现，检查所选渠道与模式是否匹配。
+- **PayPal 渠道选了没按钮 / 控制台报 CSP violation**：`next.config.ts` 的 CSP 未放行 `*.paypal.com`（SDK 脚本、iframe 收银台与上报都要放行），或环境变量里 PayPal 凭据缺失导致渠道显示未配置。
 - **Vercel 部署返回 401 / token 失效**：`VERCEL_TOKEN` 过期，或 token 的 Team 作用域与目标项目不一致；用 `npx vercel whoami` 确认当前身份。本地 `vercel login` 的凭据过期就重新登录。⚠️ token 只走环境变量，别用 `--token=` 参数（会进进程列表与 shell 历史），也别写进仓库。
 - **Vercel 构建卡在依赖安装**：多为 `.npmrc` 的国内镜像被构建机继承导致超时，`vercel.json` 的 `installCommand` 已强制切到 `registry.npmjs.org`；自行改坏该命令时构建会明显变慢。
 - **部署到 Vercel 后 Analytics 面板没数据**：先在项目 **Analytics** 里点 Enable（否则同源 `/_vercel/insights/*` 路由不存在）；预览部署被标记为 `development`，不会计入生产数据；控制台若出现 CSP violation，检查 `next.config.ts` 是否还放行 `va.vercel-scripts.com`。
