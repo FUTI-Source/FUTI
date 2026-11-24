@@ -134,7 +134,7 @@ iga pages deploy -l
 
 控制台方式：创建项目 → 设置 Node.js 版本为 24.x → 添加环境变量 → 构建部署
 
-### Vercel（CLI 手动发布）
+### Vercel（Git 集成自动发布）
 
 ```bash
 npx vercel login
