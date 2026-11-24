@@ -1,4 +1,6 @@
+import { getAlipayEnv } from '@/config/env';
 import type { DonationStatus } from '../../types';
+import { normalizeTradeState } from '../status';
 
 import { buildGatewayUrl, formatTimestamp, signParams, verifyParams } from './crypto';
 
@@ -27,19 +29,18 @@ interface AlipayConfig {
   privateKey: string;
   publicKey: string;
   gateway: string;
+  sellerId: string;
 }
 
 function getAlipayConfig(): AlipayConfig | null {
-  const appId = process.env.ALIPAY_APP_ID?.trim();
-  const privateKey = process.env.ALIPAY_PRIVATE_KEY?.trim();
-  const publicKey = process.env.ALIPAY_PUBLIC_KEY?.trim();
-  if (!appId || !privateKey || !publicKey) return null;
-
+  const env = getAlipayEnv('');
+  if (!env) return null;
   return {
-    appId,
-    privateKey,
-    publicKey,
-    gateway: process.env.ALIPAY_GATEWAY?.trim() || 'https://openapi.alipay.com/gateway.do',
+    appId: env.appId,
+    privateKey: env.privateKey,
+    publicKey: env.publicKey,
+    gateway: env.gateway,
+    sellerId: env.sellerId,
   };
 }
 
@@ -172,25 +173,21 @@ export function createAlipayWapUrl(input: {
   });
 }
 
-const TRADE_STATE_MAP: Record<string, DonationStatus> = {
-  TRADE_SUCCESS: 'paid',
-  TRADE_FINISHED: 'paid',
-  TRADE_CLOSED: 'closed',
-  WAIT_BUYER_PAY: 'pending',
-};
-
 export async function queryAlipayOrder(orderId: string): Promise<{
   status: DonationStatus;
   transactionId?: string;
+  amountFen?: number;
 }> {
-  const payload = await callAlipay<{ trade_status?: string; trade_no?: string }>(
-    'alipay.trade.query',
-    { out_trade_no: orderId },
-  );
+  const payload = await callAlipay<{
+    trade_status?: string;
+    trade_no?: string;
+    total_amount?: string;
+  }>('alipay.trade.query', { out_trade_no: orderId });
 
   return {
-    status: TRADE_STATE_MAP[payload.trade_status ?? ''] ?? 'pending',
+    status: normalizeTradeState(payload.trade_status),
     transactionId: payload.trade_no,
+    amountFen: payload.total_amount ? Math.round(parseFloat(payload.total_amount) * 100) : undefined,
   };
 }
 
@@ -211,6 +208,10 @@ export function parseAlipayNotify(params: Record<string, string>): AlipayNotifyP
   }
   if (params.app_id !== config.appId) {
     throw new AlipayNotifyError('应用 ID 不匹配', 401);
+  }
+  // 卖家账号校验：防止跨商户回调攻击（A 商户的回调被转发到 B 商户的接口）
+  if (config.sellerId && params.seller_id && params.seller_id !== config.sellerId) {
+    throw new AlipayNotifyError('卖家账号不匹配', 401);
   }
 
   const outTradeNo = params.out_trade_no?.trim();

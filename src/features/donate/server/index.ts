@@ -1,6 +1,14 @@
 import { randomBytes } from 'node:crypto';
 
-import { DONATION_SUBJECT, SITE_URL } from '../../../lib/site';
+import {
+  getAlipayEnv,
+  getWechatOAuthEnv,
+  getWechatPayEnv,
+  isAlipayEnvSet,
+  isWechatPayEnvSet,
+} from '@/config/env';
+import { logger } from '@/lib/logger';
+import { DONATION_SUBJECT, SITE_URL } from '@/lib/site';
 import type {
   CreateDonationRequest,
   CreateDonationResponse,
@@ -40,22 +48,8 @@ export class DonationGatewayError extends Error {
   }
 }
 
-/** 各渠道启用所需的商户配置（订单签名密钥可自动派生，不再列入必填） */
-const REQUIRED_ENV: Record<DonateChannel, string[]> = {
-  alipay: ['ALIPAY_APP_ID', 'ALIPAY_PRIVATE_KEY', 'ALIPAY_PUBLIC_KEY'],
-  wechat: [
-    'WECHAT_MCH_ID',
-    'WECHAT_APP_ID',
-    'WECHAT_API_V3_KEY',
-    'WECHAT_CERT_SERIAL_NO',
-    'WECHAT_PRIVATE_KEY',
-    'WECHAT_PUBLIC_KEY_ID',
-    'WECHAT_PUBLIC_KEY',
-  ],
-};
-
 const isDonateChannelConfigured = (channel: DonateChannel): boolean =>
-  REQUIRED_ENV[channel].every((key) => Boolean(process.env[key]));
+  channel === 'alipay' ? isAlipayEnvSet() : isWechatPayEnvSet();
 
 export const getDonateChannelConfig = (): DonateChannelConfig => ({
   alipay: isDonateChannelConfigured('alipay'),
@@ -64,7 +58,7 @@ export const getDonateChannelConfig = (): DonateChannelConfig => ({
 
 /** 微信内置浏览器走 JSAPI 还需要公众号 AppSecret */
 export const isWechatJsapiConfigured = (): boolean =>
-  isDonateChannelConfigured('wechat') && Boolean(process.env.WECHAT_APP_SECRET?.trim());
+  isDonateChannelConfigured('wechat') && Boolean(getWechatOAuthEnv());
 
 /** 微信支付要求 out_trade_no 为 6–32 位字母、数字或 _-|* */
 function createOrderId(): string {
@@ -118,8 +112,9 @@ export async function createDonation(
 
   try {
     if (input.channel === 'alipay') {
-      const notifyUrl =
-        process.env.ALIPAY_NOTIFY_URL?.trim() || `${SITE_URL}/api/donate/notify/alipay`;
+      const alipayEnv = getAlipayEnv(`${SITE_URL}/api/donate/notify/alipay`);
+      if (!alipayEnv) throw new DonationGatewayError('GATEWAY_NOT_CONFIGURED', '支付宝尚未配置');
+      const notifyUrl = alipayEnv.notifyUrl;
 
       if (MOBILE_USER_AGENT.test(options.userAgent)) {
         const redirectUrl = createAlipayWapUrl({
@@ -142,8 +137,9 @@ export async function createDonation(
       return { orderId: order.orderId, channel: 'alipay', codeUrl, statusToken };
     }
 
-    const notifyUrl =
-      process.env.WECHAT_NOTIFY_URL?.trim() || `${SITE_URL}/api/donate/notify/wechat`;
+    const wechatEnv = getWechatPayEnv(`${SITE_URL}/api/donate/notify/wechat`);
+    if (!wechatEnv) throw new DonationGatewayError('GATEWAY_NOT_CONFIGURED', '微信支付尚未配置');
+    const notifyUrl = wechatEnv.notifyUrl;
 
     if (input.mode === 'jsapi') {
       const payment = await createWechatJsapiOrder({
@@ -188,7 +184,7 @@ export async function createDonation(
 
     return { orderId: order.orderId, channel: 'wechat', codeUrl, statusToken };
   } catch (error) {
-    console.error('[donate] 下单失败', error);
+    logger.error('[donate] 下单失败', error);
     if (error instanceof WechatPayError || error instanceof AlipayError) {
       // 透传网关返回的具体原因（不含敏感信息），便于定位配置/权限问题
       throw new DonationGatewayError('GATEWAY_FAILED', error.message || '下单失败，请稍后重试');
@@ -201,17 +197,32 @@ export async function queryDonation(token: string): Promise<DonationStatusRespon
   const payload = verifyOrderToken(token);
   if (!payload) throw new DonationGatewayError('INVALID_ORDER', '订单不存在或已过期');
 
-  let status: 'pending' | 'paid' | 'closed';
+  let status: DonationStatusResponse['status'];
+  let amountFen: number | undefined;
 
   try {
     if (payload.channel === 'alipay') {
-      status = (await queryAlipayOrder(payload.orderId)).status;
+      const result = await queryAlipayOrder(payload.orderId);
+      status = result.status;
+      amountFen = result.amountFen;
     } else {
-      status = (await queryWechatOrder(payload.orderId)).status;
+      const result = await queryWechatOrder(payload.orderId);
+      status = result.status;
+      amountFen = result.amountFen;
     }
   } catch (error) {
-    console.error('[donate] 查单失败', error);
+    logger.error('[donate] 查单失败', error);
     throw new DonationGatewayError('GATEWAY_FAILED', '查询订单失败，请稍后重试');
+  }
+
+  // 金额交叉校验：网关返回的金额必须与令牌中记录的金额一致，防止篡改或重放
+  if (amountFen !== undefined && amountFen !== payload.amountFen) {
+    logger.error('[donate] 金额不匹配', {
+      orderId: payload.orderId,
+      expected: payload.amountFen,
+      actual: amountFen,
+    });
+    throw new DonationGatewayError('INVALID_ORDER', '订单金额异常');
   }
 
   return {

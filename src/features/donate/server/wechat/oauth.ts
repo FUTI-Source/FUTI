@@ -1,5 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 
+import { getOpenidCookieKey, getWechatOAuthEnv } from '@/config/env';
+
 import { hmacSha256 } from './crypto';
 
 const OAUTH_AUTHORIZE_URL = 'https://open.weixin.qq.com/connect/oauth2/authorize';
@@ -12,10 +14,7 @@ interface WechatJsapiConfig {
 
 /** JSAPI 需要公众号 AppID 与 AppSecret，两者齐备才可用 */
 export function getWechatJsapiConfig(): WechatJsapiConfig | null {
-  const appId = process.env.WECHAT_APP_ID?.trim();
-  const appSecret = process.env.WECHAT_APP_SECRET?.trim();
-  if (!appId || !appSecret) return null;
-  return { appId, appSecret };
+  return getWechatOAuthEnv();
 }
 
 /** 生成网页授权地址，snsapi_base 可静默获取 openid */
@@ -75,15 +74,15 @@ export function signOpenid(openid: string, secret: string): string {
 export function readWechatOpenid(value: string | undefined): string | undefined {
   if (!value) return undefined;
 
-  const config = getWechatJsapiConfig();
-  if (!config) return undefined;
+  const key = getOpenidCookieKey();
+  if (!key) return undefined;
 
   const separator = value.lastIndexOf('.');
   if (separator <= 0) return undefined;
 
   const openid = value.slice(0, separator);
   const provided = Buffer.from(value.slice(separator + 1), 'utf8');
-  const expected = Buffer.from(hmacSha256(config.appSecret, openid), 'utf8');
+  const expected = Buffer.from(hmacSha256(key, openid), 'utf8');
 
   if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
     return undefined;

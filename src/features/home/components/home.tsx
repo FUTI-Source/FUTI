@@ -103,6 +103,8 @@ const Home: React.FC = () => {
       performance: true,
       // 采集未捕获异常与未处理的 Promise 拒绝，后台「监控 → 错误」查看
       errors: true,
+      // 默认关闭会话录制，避免隐私与带宽开销
+      replays: false,
     });
 
     identifyUmami({

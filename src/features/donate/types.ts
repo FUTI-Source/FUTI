@@ -41,7 +41,7 @@ export interface CreateDonationResponse {
   statusToken: string;
 }
 
-export type DonationStatus = 'pending' | 'paid' | 'closed';
+export type DonationStatus = 'pending' | 'paid' | 'refunded' | 'closed';
 
 export interface DonationStatusResponse {
   orderId: string;

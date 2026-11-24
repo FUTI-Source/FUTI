@@ -1,12 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
+import { getOrderTokenSecret } from '@/config/env';
+
 import type { DonateChannel } from '../types';
 
-/** 令牌有效期，覆盖前端 5 分钟轮询与 H5 回跳 */
-const TOKEN_TTL_SECONDS = 60 * 60;
+/** 令牌有效期：覆盖前端 5 分钟轮询与 H5 回跳；比原 1 小时更短，减少令牌被重放的窗口 */
+const TOKEN_TTL_SECONDS = 10 * 60;
 const TOKEN_VERSION = 1;
-/** 派生信息串：未显式配置时据此从支付私钥派生订单签名密钥，实现用途隔离 */
-const DERIVE_INFO = 'zyf-homepage/donation-order-secret';
 
 interface OrderTokenPayload {
   orderId: string;
@@ -23,25 +23,7 @@ interface SignedPayload {
   a: number;
 }
 
-/**
- * 显式配置 DONATION_ORDER_SECRET 优先；否则从支付私钥派生。
- * 派生源（微信/支付宝私钥）是稳定的环境变量，跨 serverless 实例一致，
- * 下单签名与查单验签因此使用同一密钥，无需手动配置。
- */
-function getSecret(): string | null {
-  const explicit = process.env.DONATION_ORDER_SECRET?.trim();
-  if (explicit) return explicit;
-
-  // 固定优先级，保证下单与查单使用同一派生源（不随订单渠道变化）
-  const source =
-    process.env.WECHAT_PRIVATE_KEY?.trim() ||
-    process.env.ALIPAY_PRIVATE_KEY?.trim();
-  if (!source) return null;
-
-  return createHmac('sha256', source).update(DERIVE_INFO).digest('hex');
-}
-
-export const isOrderTokenConfigured = (): boolean => Boolean(getSecret());
+export const isOrderTokenConfigured = (): boolean => Boolean(getOrderTokenSecret());
 
 function sign(data: string, secret: string): string {
   return createHmac('sha256', secret).update(data).digest('base64url');
@@ -49,7 +31,7 @@ function sign(data: string, secret: string): string {
 
 /** 把订单信息签成无状态令牌，服务端无需落库即可在查单时还原 */
 export function createOrderToken(payload: OrderTokenPayload): string {
-  const secret = getSecret();
+  const secret = getOrderTokenSecret();
   if (!secret) throw new Error('无法获取订单令牌签名密钥：请配置 DONATION_ORDER_SECRET 或确保支付私钥可用');
 
   const body: SignedPayload = {
@@ -63,12 +45,19 @@ export function createOrderToken(payload: OrderTokenPayload): string {
   return `${encoded}.${sign(encoded, secret)}`;
 }
 
-/** 校验签名与有效期，失败返回 null */
+/**
+ * 校验签名与有效期，失败返回 null。
+ *
+ * 严格校验令牌为「<payload>.<sig>」两段式：多段或单段一律视为无效，
+ * 避免攻击者通过附加额外段绕过签名校验（即便当前签名算法本身不受影响）。
+ */
 export function verifyOrderToken(token: string): OrderTokenPayload | null {
-  const secret = getSecret();
+  const secret = getOrderTokenSecret();
   if (!secret) return null;
 
-  const [encoded, signature] = token.split('.');
+  const segments = token.split('.');
+  if (segments.length !== 2) return null;
+  const [encoded, signature] = segments;
   if (!encoded || !signature) return null;
 
   const expected = Buffer.from(sign(encoded, secret));

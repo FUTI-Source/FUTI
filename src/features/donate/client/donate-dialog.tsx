@@ -129,7 +129,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   const [isWechat, setIsWechat] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [returnState, setReturnState] = useState<
-    'verifying' | 'paid' | 'cancelled' | 'error'
+    'verifying' | 'paid' | 'refunded' | 'cancelled' | 'error'
   >('verifying');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [qrFailed, setQrFailed] = useState(false);
@@ -165,7 +165,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
 
     const token = result.token;
     if (!token) {
-      setReturnState('paid');
+      // 回跳缺少令牌：无法查单，视为异常
+      setReturnState('error');
       return;
     }
 
@@ -174,7 +175,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
     let timer: number | undefined;
     setReturnState('verifying');
 
+    // 指数退避：2s → 4s → 8s → ... 上限 60s
+    const getDelay = () => Math.min(2000 * 2 ** attempts, 60_000);
+
     const check = () => {
+      // 页面不可见时暂停轮询，节省资源
+      if (typeof document !== 'undefined' && document.hidden) {
+        timer = window.setTimeout(check, getDelay());
+        return;
+      }
+
       queryDonation(token)
         .then((next) => {
           if (!active) return;
@@ -187,25 +197,31 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
             setReturnState('paid');
             return;
           }
+          if (next.status === 'refunded') {
+            // 退款成功：不记收入，显示退款状态
+            setReturnState('refunded');
+            return;
+          }
           if (next.status === 'closed') {
             setReturnState('cancelled');
             return;
           }
           attempts += 1;
-          if (attempts >= 5) {
+          if (attempts >= 30) {
+            // 最多轮询 30 次（约 10 分钟）
             setReturnState('error');
             return;
           }
-          timer = window.setTimeout(check, 2_000);
+          timer = window.setTimeout(check, getDelay());
         })
         .catch(() => {
           if (!active) return;
           attempts += 1;
-          if (attempts >= 5) {
+          if (attempts >= 30) {
             setReturnState('error');
             return;
           }
-          timer = window.setTimeout(check, 2_000);
+          timer = window.setTimeout(check, getDelay());
         });
     };
 
@@ -470,6 +486,11 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
                 <>
                   <CircleCheck className="size-10 text-[#64c6f4]" />
                   <p className="text-sm text-[#64c6f4]">支付成功，感谢你的支持！</p>
+                </>
+              ) : returnState === 'refunded' ? (
+                <>
+                  <CircleAlert className="size-9 text-[#ffd166]" />
+                  <p className="text-sm text-white/60">该笔打赏已退款</p>
                 </>
               ) : returnState === 'cancelled' ? (
                 <>

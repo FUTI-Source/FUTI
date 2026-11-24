@@ -21,7 +21,8 @@
     "build": "next build",
     "start": "next start",
     "start:standalone": "node prepare-standalone.mjs && node .next/standalone/server.js",
-    "type:check": "tsc --noEmit"
+    "type:check": "tsc --noEmit",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

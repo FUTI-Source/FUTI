@@ -4,7 +4,7 @@
  * 注意：本文件会被客户端组件引用，切勿写入任何密钥或授权码。
  */
 
-export const SITE_URL = 'https://www.zhang-wentao.tech';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.zhang-wentao.tech';
 /** 完整主机名，含 www */
 const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 /** 根域名（apex），不含 www；用于裸域到 www 的重定向与统计域名列表 */

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const CACHE_NAME = `site-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
@@ -76,11 +76,25 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cache = await caches.open(CACHE_NAME);
 
+        // 导航请求的缓存键去掉查询串，避免令牌等敏感参数残留在 Cache Storage
+        const cacheKey = new URL(request.url);
+        cacheKey.search = '';
+        const cacheRequest = new Request(cacheKey.toString(), {
+          method: 'GET',
+          headers: request.headers,
+          mode: request.mode,
+          credentials: request.credentials,
+          cache: request.cache,
+          redirect: request.redirect,
+          referrer: request.referrer,
+          integrity: request.integrity,
+        });
+
         try {
           const response = await fetch(request);
           if (response.ok) {
             try {
-              await cache.put(request, response.clone());
+              await cache.put(cacheRequest, response.clone());
             } catch (error) {
               console.warn('Unable to cache page navigation', error);
             }
@@ -88,7 +102,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         } catch {
           return (
-            (await cache.match(request)) ||
+            (await cache.match(cacheRequest)) ||
             (await cache.match('/')) ||
             (await cache.match('/offline.html')) ||
             new Response('<h1>当前处于离线状态</h1>', {

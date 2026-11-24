@@ -1,7 +1,9 @@
 import { randomBytes } from 'node:crypto';
 
+import { getWechatPayEnv } from '@/config/env';
 import { SITE_USER_AGENT } from '../../../../lib/site';
 import type { DonationStatus, WechatJsapiPaymentParams } from '../../types';
+import { normalizeTradeState } from '../status';
 import {
   buildAuthorization,
   decryptNotifyResource,
@@ -46,20 +48,19 @@ interface WechatPayConfig {
   publicKey: string;
 }
 
+/**
+ * 返回微信支付配置；未配置时返回 null。
+ *
+ * 注意：notifyUrl 由下单方（donate/server/index.ts）按渠道传入，这里用空串占位，
+ * 因为 wechatRequest 等内部调用并不需要 notifyUrl。
+ */
 function getWechatPayConfig(): WechatPayConfig | null {
-  const mchId = process.env.WECHAT_MCH_ID?.trim();
-  const appId = process.env.WECHAT_APP_ID?.trim();
-  const apiV3Key = process.env.WECHAT_API_V3_KEY?.trim();
-  const serialNo = process.env.WECHAT_CERT_SERIAL_NO?.trim();
-  const privateKey = process.env.WECHAT_PRIVATE_KEY?.trim();
-  const publicKeyId = process.env.WECHAT_PUBLIC_KEY_ID?.trim();
-  const publicKey = process.env.WECHAT_PUBLIC_KEY?.trim();
-
-  if (!mchId || !appId || !apiV3Key || !serialNo || !privateKey || !publicKeyId || !publicKey) {
-    return null;
+  const env = getWechatPayEnv('');
+  if (!env) return null;
+  {
+    const { notifyUrl: _notifyUrl, ...rest } = env;
+    return rest;
   }
-
-  return { mchId, appId, apiV3Key, serialNo, privateKey, publicKeyId, publicKey };
 }
 
 async function wechatRequest<T>(
@@ -216,29 +217,23 @@ export async function createWechatJsapiOrder(input: {
   };
 }
 
-const TRADE_STATE_MAP: Record<string, DonationStatus> = {
-  SUCCESS: 'paid',
-  REFUND: 'paid',
-  CLOSED: 'closed',
-  REVOKED: 'closed',
-  PAYERROR: 'closed',
-};
-
 export async function queryWechatOrder(
   orderId: string,
-): Promise<{ status: DonationStatus; transactionId?: string }> {
+): Promise<{ status: DonationStatus; transactionId?: string; amountFen?: number }> {
   const config = getWechatPayConfig();
   if (!config) throw new WechatPayError('微信支付尚未配置', 'GATEWAY_NOT_CONFIGURED');
 
   const urlPath = `/v3/pay/transactions/out-trade-no/${encodeURIComponent(orderId)}?mchid=${encodeURIComponent(config.mchId)}`;
-  const data = await wechatRequest<{ trade_state?: string; transaction_id?: string }>(
-    'GET',
-    urlPath,
-  );
+  const data = await wechatRequest<{
+    trade_state?: string;
+    transaction_id?: string;
+    amount?: { total?: number };
+  }>('GET', urlPath);
 
   return {
-    status: TRADE_STATE_MAP[data.trade_state ?? ''] ?? 'pending',
+    status: normalizeTradeState(data.trade_state),
     transactionId: data.transaction_id,
+    amountFen: data.amount?.total,
   };
 }
 

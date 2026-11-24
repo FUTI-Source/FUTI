@@ -18,13 +18,6 @@ type Phase = 'loading' | 'leaving' | 'done';
  * 这类环境通常只截首帧或等待时间很短，遮罩会让预览图永远停在加载态；
  * 脚本在 body 起始处同步执行，早于遮罩渲染，保证截图直接拿到加载后的页面。
  */
-const HIDE_PRELOADER_IN_AUTOMATION_SCRIPT = `(function(){try{
-var nav=window.navigator||{};
-var ua=nav.userAgent||'';
-var q=window.location.search||'';
-if(nav.webdriver||/[?&]preview=1(?:&|$)/.test(q)||/HeadlessChrome|Vercel-Screenshot|IGA-Screenshot/i.test(ua))document.documentElement.classList.add('preload-skip');
-}catch(e){}})();`;
-
 /**
  * 首屏加载页。
  *
@@ -84,7 +77,7 @@ export const SitePreloader = () => {
         <style>{'#site-preloader{display:none}'}</style>
       </noscript>
       {/* 自动化环境直接隐藏遮罩，并跳过入场动画，让截图拿到最终态页面；正常用户不受影响 */}
-      <script dangerouslySetInnerHTML={{ __html: HIDE_PRELOADER_IN_AUTOMATION_SCRIPT }} />
+      <script src="/scripts/preload-skip.js" />
       <style>
         {'html.preload-skip #site-preloader{display:none}html.preload-skip .profile-loading,html.preload-skip .avatar-loading{display:none}html.preload-skip *{opacity:1!important;transform:none!important;transition:none!important;animation:none!important}'}
       </style>

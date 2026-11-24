@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
-import { SITE_DOMAIN, SITE_URL } from './src/lib/site';
+import { SITE_DOMAIN } from './src/lib/site';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.zhang-wentao.tech';
 
 // Next 16 默认拦截跨域 dev 请求；预览沙箱的代理域名通过 .env.local 注入，
 // 避免把环境专属主机名写进仓库。
@@ -48,6 +50,29 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
+
+    // CSP：生产环境强制启用，开发环境用 Report-Only 避免阻断调试
+    const cspHeader = {
+      key: isProd ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
+      value: [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cloud.umami.is",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "font-src 'self' data:",
+        "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is",
+        "worker-src 'self'",
+        "manifest-src 'self'",
+        "frame-ancestors 'none'",
+        'base-uri \'self\'',
+        'form-action \'self\'',
+        isProd ? 'upgrade-insecure-requests' : '',
+      ]
+        .filter(Boolean)
+        .join('; '),
+    };
+
     return [
       {
         source: '/sw.js',
@@ -62,7 +87,17 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          cspHeader,
         ],
       },
       {

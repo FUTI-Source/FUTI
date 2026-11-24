@@ -130,8 +130,8 @@ export function initUmami(options: UmamiOptions) {
   document.head.appendChild(script);
 
   // 会话回放使用独立的 recorder.js：采样率、掩码级别、最大时长由 Umami 后台的网站配置决定，
-  // 脚本本身只接收 website-id 与 host-url。
-  if (options.replays !== false) {
+  // 脚本本身只接收 website-id 与 host-url。默认关闭，需显式开启。
+  if (options.replays === true) {
     const recorder = document.createElement('script');
     recorder.defer = true;
     recorder.src = `${base}/recorder.js`;

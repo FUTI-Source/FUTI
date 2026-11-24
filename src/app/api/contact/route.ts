@@ -1,125 +1,44 @@
 import { NextResponse } from 'next/server';
 
-import { checkContactRateLimit, sendContactWebhook } from '@/features/contact/server';
+import { sendContactNotice } from '@/features/contact/server';
 import { contactSchema } from '@/features/contact/schema';
+import { resolveClientId } from '@/lib/http/client-ip';
+import { contactRateLimiter } from '@/lib/http/rate-limit';
+import { jsonError, rateLimited, readJsonBody } from '@/lib/http/api-response';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_BODY_BYTES = 24 * 1024;
 
-/**
- * 解析真实客户端 IP。
- * CDN/边缘节点常把 x-real-ip 写成节点自身地址，所有访客会共用同一个限流桶，
- * 因此优先取 x-forwarded-for 的第一个地址；都取不到时返回 null，跳过限流而不是全局误伤。
- */
-function resolveClientId(request: Request): string | null {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const candidates = [
-    forwarded?.split(',')[0],
-    request.headers.get('x-real-ip'),
-    request.headers.get('x-client-ip'),
-    request.headers.get('true-client-ip'),
-  ];
-
-  for (const value of candidates) {
-    const clientId = value?.trim();
-    if (clientId && clientId !== 'unknown') return clientId;
-  }
-
-  return null;
-}
-
 let warnedMissingClientId = false;
 
 export async function POST(request: Request) {
-  const clientId = resolveClientId(request);
+  const clientId = resolveClientId(request.headers);
 
-  // 取不到客户端 IP 时跳过限流而不是把所有访客归入同一个桶；
-  // 这属于限流失效的降级路径，首个请求提醒一次即可，避免刷日志。
   if (!clientId && !warnedMissingClientId) {
     warnedMissingClientId = true;
-    console.warn('[contact] 未能解析客户端 IP，本次跳过限流');
+    logger.warn('[contact] 未能解析客户端 IP，本次跳过限流');
   }
 
-  const rateLimit = clientId
-    ? checkContactRateLimit(clientId)
-    : { allowed: true, retryAfterSeconds: 0 };
+  const rateLimit = clientId ? contactRateLimiter.check(clientId) : { allowed: true, retryAfterSeconds: 0 };
+  if (!rateLimit.allowed) return rateLimited(rateLimit);
 
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'RATE_LIMITED',
-          message: '提交过于频繁，请稍后再试',
-        },
-      },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) },
-      },
-    );
-  }
+  const body = await readJsonBody(request, MAX_BODY_BYTES);
+  if (!body.ok) return body.response;
 
-  const contentLength = Number(request.headers.get('content-length'));
-  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-    return NextResponse.json(
-      { error: { code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大' } },
-      { status: 413 },
-    );
-  }
-
-  let body: string;
-  try {
-    body = await request.text();
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'BAD_REQUEST', message: '请求体不是合法 JSON' } },
-      { status: 400 },
-    );
-  }
-
-  if (new TextEncoder().encode(body).byteLength > MAX_BODY_BYTES) {
-    return NextResponse.json(
-      { error: { code: 'PAYLOAD_TOO_LARGE', message: '请求内容过大' } },
-      { status: 413 },
-    );
-  }
-
-  let raw: unknown;
-  try {
-    raw = JSON.parse(body);
-  } catch {
-    return NextResponse.json(
-      { error: { code: 'BAD_REQUEST', message: '请求体不是合法 JSON' } },
-      { status: 400 },
-    );
-  }
-
-  const parsed = contactSchema.safeParse(raw);
+  const parsed = contactSchema.safeParse(body.data);
   if (!parsed.success) {
     const firstIssue = parsed.error.issues[0];
-    return NextResponse.json(
-      {
-        error: {
-          code: 'BAD_REQUEST',
-          message: firstIssue?.message ?? '邮箱或内容不合法',
-        },
-      },
-      { status: 400 },
-    );
+    return jsonError(400, 'BAD_REQUEST', firstIssue?.message ?? '邮箱或内容不合法');
   }
 
   try {
-    const result = await sendContactWebhook(parsed.data);
+    const result = await sendContactNotice(parsed.data);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    // 真实原因（含 webhook 响应体）只记服务端日志，避免向访客泄露内部细节；
-    // 站长可通过 `iga pages logs` 查看。访客统一看到友好提示。
-    console.error('[contact] webhook 投递失败', error);
-    return NextResponse.json(
-      { error: { code: 'NOTIFY_FAILED', message: '通知发送失败，请稍后重试' } },
-      { status: 502 },
-    );
+    logger.error('[contact] 通知投递失败', error);
+    return jsonError(502, 'NOTIFY_FAILED', '通知发送失败，请稍后重试');
   }
 }
