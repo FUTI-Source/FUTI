@@ -33,9 +33,10 @@ export default function RootLayout({
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
         <meta name="google" content="notranslate" />
         {/* 首帧前用真实视口高度校正 --app-height：
-            1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度；
+            1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度，首帧用 screen.height 兜底；
             2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，
-               这里取 innerHeight 与 visualViewport.height 的较大值，保证铺满画布。 */}
+               这里取 innerHeight 与 visualViewport.height 的较大值，保证铺满画布；
+            3. 之后视口稳定收缩（如原生状态栏出现）也要跟随，避免页面高于可视区域产生滚动。 */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：改的是首帧高度，异步加载会先按错误高度画一帧再抖回去 */}
         <script src="/scripts/app-height.js" />

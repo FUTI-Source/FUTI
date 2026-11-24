@@ -234,7 +234,7 @@ export const SITE_ANALYTICS_WEBSITE_ID = '123ce0ff-afc4-4a61-9435-9face57dbd70';
  * 统计域名白名单（只统计这些域名，多个逗号分隔）。
  * 由 SITE_URL 自动派生 www + 裸域两条，平台预览域名不在名单内，
  * 因此预览/本地流量不会写进正式数据。加新域名时改这里，
- * 或者按需在 src/features/home/components/home.tsx 里覆盖。
+ * 或者按需在 src/features/home/home.tsx 里覆盖。
  */
 export const SITE_ANALYTICS_DOMAINS = `${SITE_HOSTNAME},${SITE_DOMAIN}`;
 
