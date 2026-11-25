@@ -31,8 +31,14 @@ export default function RootLayout({
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：不达标浏览器应在新语法代码执行前被重定向 */}
         <script src="/scripts/browser-check.js" />
+        {/* 性能条目兼容层：过滤 Firefox 不支持的 layout-shift 等条目类型，
+            消除第三方统计脚本（Umami Web Vitals）的控制台噪音。
+            不改变支持的浏览器里的采集结果，也不影响布局。
+            用 defer 即可：统计脚本都在 hydration 之后才注入，晚于本脚本执行。 */}
+        <script src="/scripts/perf-observer-guard.js" defer />
         {/* 视口稳定性：实测 --app-height 并同步 html min-height，修复 iOS 主屏 PWA
-            底部黑边；同时标记 ios-standalone，并在软键盘收起后复位残留滚动。 */}
+            底部黑边；同时标记 ios-standalone。实测值会等样式表就绪后再写入，
+            避免在解析期强制排版（Firefox 会因此报无样式内容闪烁）。 */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：ios-standalone class 要在首帧绘制前就位，避免状态栏补偿闪一下 */}
         <script src="/scripts/app-height.js" />
