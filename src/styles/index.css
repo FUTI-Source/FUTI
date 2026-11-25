@@ -502,3 +502,37 @@ body [contenteditable=''] {
     opacity: 0;
   }
 }
+
+/*
+ * 细滑动条：适配悬浮面板类小尺寸滚动容器（当前使用方：音乐胶囊 · 歌单）。
+ * Firefox 走 scrollbar-width/scrollbar-color，Chromium/WebKit 走 ::-webkit-scrollbar 伪元素；
+ * 两者同时写，不依赖 -moz- 前缀。track 保持透明，thumb 靠黑背景上的白色低不透明度区分，
+ * hover/active 提升亮度；圆角拉满避免 “方框” 观感。
+ */
+.scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.scrollbar-slim::-webkit-scrollbar-thumb:hover,
+.scrollbar-slim::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.scrollbar-slim::-webkit-scrollbar-corner {
+  background: transparent;
+}

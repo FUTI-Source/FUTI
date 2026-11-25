@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -9,6 +9,11 @@ import { cn } from '@/lib/utils';
 import { SITE_MUSIC_PLAYLIST, SITE_MUSIC_TRACKS, type MusicTrack } from '@/config/site';
 
 const STORAGE_KEY = 'site-music-index';
+
+/** 列表行高： size-8 封面 32px + button 上下内边距 12px = 44px，与渲染时的 li 高度保持同步 */
+const ROW_HEIGHT = 44;
+/** 虚拟列表上下缓冲行数：避免快速滞回时露白 */
+const OVERSCAN = 4;
 
 const readSavedIndex = (length: number): number => {
   if (typeof window === 'undefined' || length === 0) return 0;
@@ -125,11 +130,15 @@ const ListIcon: React.FC = () => (
 export const MusicPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingPlayRef = useRef(false);
-  const currentRowRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const [isDesktop, setIsDesktop] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [listOpen, setListOpen] = useState(false);
+  // 虚拟滞回：只渲染 [scrollTop, scrollTop + viewportH] 内的行 ± OVERSCAN 缓冲，
+  // 避免长歌单一次挂几十个 <img> 触发 Edge LazyLoad intervention。
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportH, setViewportH] = useState(0);
   const [tracks, setTracks] = useState<readonly MusicTrack[]>(SITE_MUSIC_TRACKS);
   const [index, setIndex] = useState(() => readSavedIndex(SITE_MUSIC_TRACKS.length));
   const [playing, setPlaying] = useState(false);
@@ -185,12 +194,27 @@ export const MusicPlayer: React.FC = () => {
     (nextIndex: number, autoplay: boolean) => {
       if (tracks.length === 0) return;
       const normalized = ((nextIndex % tracks.length) + tracks.length) % tracks.length;
+
+      // 同一首（点到当前行）：src 不会变，[current?.src] 效应不会重跑，
+      // 必须手动接同一下行逻辑，避免乐观 playing 与真实 audio 状态失同步。
+      if (normalized === index) {
+        const audio = audioRef.current;
+        if (audio && autoplay && audio.paused) {
+          setPlaying(true);
+          void audio.play().catch(() => setPlaying(false));
+        }
+        return;
+      }
+
       pendingPlayRef.current = autoplay;
+      // 乐观更新 playing：UI 立即跟上新行高亮/图标，不靠异步 onPlay 反馈。
+      // 如果随后 play() 拒绝（自动播放策略、跨域失败），effect 里的 catch 会回平。
+      setPlaying(autoplay);
       setIndex(normalized);
       setCurrentTime(0);
       setDuration(0);
     },
-    [tracks.length],
+    [tracks.length, index],
   );
 
   const toggle = useCallback(() => {
@@ -198,8 +222,11 @@ export const MusicPlayer: React.FC = () => {
     if (!audio || !current) return;
 
     if (audio.paused) {
+      // 乐观翻转：胶囊与列表行里的图标立刻变，play() 失败时 catch 回平。
+      setPlaying(true);
       void audio.play().catch(() => setPlaying(false));
     } else {
+      setPlaying(false);
       audio.pause();
     }
   }, [current]);
@@ -224,10 +251,44 @@ export const MusicPlayer: React.FC = () => {
     if (audioRef.current) audioRef.current.muted = muted;
   }, [muted]);
 
-  // 列表打开时，确保当前曲目滞回在可视区（block:'nearest' 避免自动滞回时顶到列表顶部）
-  useEffect(() => {
+  // 列表挂载时同步尺寸；滞回/窗口变化持续更新，供虚拟范围计算使用
+  useLayoutEffect(() => {
     if (!listOpen) return;
-    currentRowRef.current?.scrollIntoView({ block: 'nearest' });
+    const el = listRef.current;
+    if (!el) return;
+    const sync = () => {
+      const s = el.scrollTop;
+      setViewportH(el.clientHeight);
+      // 只在跨行边界时才 setState，避免 60fps 滞回下频繁 re-render
+      setScrollTop((prev) =>
+        Math.floor(prev / ROW_HEIGHT) === Math.floor(s / ROW_HEIGHT) ? prev : s,
+      );
+    };
+    sync();
+    el.addEventListener('scroll', sync, { passive: true });
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', sync);
+      ro.disconnect();
+    };
+  }, [listOpen]);
+
+  // 打开列表或切歌时，手动将当前行滚到可视区（block:'nearest' 语义）。
+  // 虚拟列表下目标行可能根本没挂载，scrollIntoView 会失效，必须直接算 scrollTop。
+  useLayoutEffect(() => {
+    if (!listOpen) return;
+    const el = listRef.current;
+    if (!el) return;
+    const top = index * ROW_HEIGHT;
+    const bottom = top + ROW_HEIGHT;
+    if (top < el.scrollTop) {
+      el.scrollTop = top;
+    } else if (bottom > el.scrollTop + el.clientHeight) {
+      el.scrollTop = bottom - el.clientHeight;
+    }
+    setScrollTop(el.scrollTop);
+    setViewportH(el.clientHeight);
   }, [listOpen, index]);
 
   useEffect(() => {
@@ -257,6 +318,14 @@ export const MusicPlayer: React.FC = () => {
 
   const progress = Number.isFinite(duration) && duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // 歌单虚拟滞回范围：上下各多渲 OVERSCAN 行做缓冲，viewportH 首次读取失败时退回 CSS max-h（420）
+  const listViewportH = viewportH || 420;
+  const vStart = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const vEnd = Math.min(
+    tracks.length,
+    Math.ceil((scrollTop + listViewportH) / ROW_HEIGHT) + OVERSCAN,
+  );
+
   return (
     <div
       onMouseEnter={() => setExpanded(true)}
@@ -281,25 +350,33 @@ export const MusicPlayer: React.FC = () => {
       {listOpen ? (
         <div
           id="site-music-playlist"
+          ref={listRef}
           role="dialog"
           aria-label="当前歌单"
           className={cn(
-            'w-[280px] max-h-[min(420px,60vh)] overflow-y-auto rounded-xl',
-            'border border-[color:var(--hairline)] bg-[#121720]/85 py-1 shadow-2xl backdrop-blur-md',
+            'scrollbar-slim w-[280px] max-h-[min(420px,60vh)] overflow-y-auto overscroll-contain rounded-xl',
+            'border border-[color:var(--hairline)] bg-[#121720]/85 shadow-2xl backdrop-blur-md',
           )}
         >
-          <ul className="flex flex-col">
-            {tracks.map((track, i) => {
-              const active = i === index;
+          {/* 上下占位靠 ul 的 padding 实现，避免额外 spacer 节点；+4 对应原先的 py-1 内边距 */}
+          <ul
+            className="flex flex-col"
+            style={{
+              paddingTop: vStart * ROW_HEIGHT + 4,
+              paddingBottom: Math.max(0, (tracks.length - vEnd) * ROW_HEIGHT) + 4,
+            }}
+          >
+            {tracks.slice(vStart, vEnd).map((track, i) => {
+              const idx = vStart + i;
+              const active = idx === index;
               return (
-                <li key={`${track.src}-${i}`}>
+                <li key={`${track.src}-${idx}`} style={{ height: ROW_HEIGHT }}>
                   <button
-                    ref={active ? currentRowRef : undefined}
                     type="button"
                     aria-current={active ? 'true' : undefined}
-                    onClick={() => switchTrack(i, true)}
+                    onClick={() => switchTrack(idx, true)}
                     className={cn(
-                      'flex w-full items-center gap-2.5 px-2.5 py-1.5 text-left transition-colors',
+                      'flex h-full w-full items-center gap-2.5 px-2.5 text-left transition-colors',
                       active
                         ? 'bg-white/[0.06]'
                         : 'hover:bg-white/[0.04] focus-visible:bg-white/[0.06]',
