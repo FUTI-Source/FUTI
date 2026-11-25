@@ -244,6 +244,20 @@ const UNSUPPORTED_HTML = `<!doctype html>
         line-height: 1.7;
       }
 
+      .continue {
+        display: inline-block;
+        margin-top: 16px;
+        color: #9edcff;
+        font-size: 13px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .continue:hover,
+      .continue:focus {
+        color: #c4ecff;
+      }
+
       @media (min-width: 40rem) {
         body {
           padding: 40px 24px;
@@ -328,6 +342,7 @@ const UNSUPPORTED_HTML = `<!doctype html>
       </div>
 
       <p class="footer">升级完成后，请刷新或重新打开本站。</p>
+      <a class="continue" href="/?browser-check-continue=1" rel="nofollow">我的浏览器其实没问题，仍要继续访问</a>
     </main>
   </body>
 </html>

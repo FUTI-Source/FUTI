@@ -25,6 +25,12 @@ const wwwManagedHosts = new Set([SITE_HOSTNAME, SITE_DOMAIN]);
  */
 const UNSUPPORTED_PATH = '/browser-unsupported';
 
+/**
+ * 误判逃生：版本过低页的「继续访问」链接带 ?browser-check-continue=1，
+ * proxy 命中后放行并种一个会话级 Cookie，后续导航凭 Cookie 继续放行。
+ */
+const CONTINUE_FLAG = 'browser-check-continue';
+
 export function proxy(request: NextRequest) {
   const hostname = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
   const { pathname, search } = request.nextUrl;
@@ -49,7 +55,20 @@ export function proxy(request: NextRequest) {
     pathname !== UNSUPPORTED_PATH &&
     !isBrowserSupported(ua, request.headers.get('sec-ch-ua'))
   ) {
-    return NextResponse.redirect(new URL(UNSUPPORTED_PATH, request.url));
+    // 用户已从兜底页确认继续：放行并（首次）种会话 Cookie，不写过期时间
+    if (request.nextUrl.searchParams.has(CONTINUE_FLAG) || request.cookies.get(CONTINUE_FLAG)?.value === '1') {
+      const response = NextResponse.next();
+      if (!request.cookies.get(CONTINUE_FLAG)) {
+        response.cookies.set(CONTINUE_FLAG, '1', { path: '/', sameSite: 'lax' });
+      }
+      return response;
+    }
+    // 显式 307 + no-store：条件跳转绝不能被共享缓存（DCDN / Edge）按 URL 缓存，
+    // 否则某个旧 UA 触发的跳转会被错发给现代浏览器。
+    return NextResponse.redirect(new URL(UNSUPPORTED_PATH, request.url), {
+      status: 307,
+      headers: { 'Cache-Control': 'no-store' },
+    });
   }
 
   return NextResponse.next();

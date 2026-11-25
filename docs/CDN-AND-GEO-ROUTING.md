@@ -43,7 +43,7 @@
 | 路径 | 策略 | 响应头 | 说明 |
 |------|------|--------|------|
 | `/fonts/*`、`/launch/*` | `immutable` | `public, max-age=31536000, s-maxage=31536000, immutable` | 字体、iOS 启动图，内容不可变，浏览器和 CDN 都存一年 |
-| `/live2d/*`、`/docs/*` | `static` | `public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, stale-if-error=604800` | 模型、文档配图，可能随版本更新 |
+| `/live2d/*` | `static` | `public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, stale-if-error=604800` | Live2D 运行时与模型，可能随版本更新 |
 | `/serwist/sw.js` | `serviceWorker` | `no-cache, no-store, must-revalidate, no-transform` | 永不缓存，否则新版本推不下去 |
 | `/api/*` | `api` | `no-store, no-cache, must-revalidate, private` | 支付回调、订单查询、Webhook，禁止任何缓存 |
 | 其他页面 | 无显式缓存头 | 由 Next.js 决定 | 页面由 Serwist 按 NetworkFirst 处理，离线时回退缓存 |
@@ -169,6 +169,14 @@ dig +subnet=8.8.8.8 www.example.com @ns1.volcengine-dns.com +short          # �
 curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
   https://你的预览地址/ | grep -i "^HTTP\|^location\|^x-site-geo"
 # 期望：200，无 location、无 x-site-geo
+
+# 5. SW 响应只有一个 CSP 头（确认通用页 CSP 与 SW 专用 CSP 没有同时发出）
+curl -sI https://www.example.com/serwist/sw.js | grep -ci "^content-security-policy:"
+# 期望：1
+
+# 6. UA 兜底跳转不可被共享缓存（用一个过旧的 UA 触发）
+curl -sI -A "Mozilla/5.0 (Windows NT 6.1) Chrome/90.0 Safari/537.36" https://www.example.com/ | grep -i "^HTTP\|^location\|^cache-control"
+# 期望：307 → /browser-unsupported，且 Cache-Control: no-store
 ```
 
 浏览器侧再确认：
@@ -189,6 +197,7 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 | 境内访客被分到 Vercel（慢） | 用 `dig +subnet` 确认 DNS 中国内地线路是否命中 IGA；免费版 DNS 的境外 NS 节点可能导致 ECS 判断偏差 |
 | 境外访客被分到 IGA | 检查「全球（不含中国内地）」与默认线路记录；免费版境内 NS 的 ECS 偏差见 4.3，单域名下代码不会纠正分流 |
 | 出现跨域名跳转 | 当前代码已无地域跳转逻辑：检查平台控制台跳转规则、老版本产物是否仍在线，及 DNS 是否解析到旧部署 |
+| 明明是新浏览器却被“版本过低”拦住 | 点兜底页底部的「仍要继续访问」（带 `?browser-check-continue=1`，`proxy.ts` 会种一个 `browser-check-continue` 会话 Cookie 并放行）；若是大量同类误判，需调 `SITE_BROWSER_MINIMUMS` 或补 `browser-support.ts` 的 UA 解析 |
 | 支付回调异常 | `proxy.ts` 的 matcher 已排除 `/api/*`；单域名下回调地址按 `SITE_URL` 拼接，确认两侧密钥一致 |
 | DNS 改了不生效 | 免费版 TTL 最小 600 秒，等待至少 10 分钟再用 `dig +subnet` 复核 |
 | 改了 `src/config/site` 不生效 | 配置在构建期求值，IGA 与 Vercel 两条链路要分别重新部署 |

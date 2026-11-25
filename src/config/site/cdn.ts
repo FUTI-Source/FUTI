@@ -1,6 +1,8 @@
 /**
  * 静态资源缓存策略，由 next.config.ts 写入响应头，交给 CDN / Vercel Edge 缓存。
- * 缓存头只按路径设置，在共用同一域名的两条部署链路上表现一致。
+ * 缓存头只按路径设置，共用同一域名的两条部署链路写入的响应头字符串完全一致；
+ * 但 Vercel Edge 与火山 DCDN 对 s-maxage / stale-while-revalidate / stale-if-error
+ * 的实际生效（尤其 SWR 窗口上限）可能不同，最终 TTL 以各平台自身规则为准。
  */
 export const SITE_CDN_CACHE = {
   immutable: 'public, max-age=31536000, s-maxage=31536000, immutable',

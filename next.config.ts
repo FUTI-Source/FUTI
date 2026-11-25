@@ -150,10 +150,6 @@ const nextConfig: NextConfig = {
         source: '/live2d/:path*',
         headers: [{ key: 'Cache-Control', value: STATIC_CACHE }],
       },
-      {
-        source: '/docs/:path*',
-        headers: [{ key: 'Cache-Control', value: STATIC_CACHE }],
-      },
     ];
   },
 };
