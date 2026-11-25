@@ -105,12 +105,31 @@ const VolumeIcon: React.FC<{ muted: boolean }> = ({ muted }) => (
   </svg>
 );
 
+const ListIcon: React.FC = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    className="size-3.5"
+  >
+    <path d="M4 6h10M4 12h10M4 18h7" />
+    <circle cx="18" cy="16" r="2.4" />
+    <path d="M20.4 16V9.5l-3 .7" />
+  </svg>
+);
+
 export const MusicPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingPlayRef = useRef(false);
+  const currentRowRef = useRef<HTMLButtonElement>(null);
 
   const [isDesktop, setIsDesktop] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [tracks, setTracks] = useState<readonly MusicTrack[]>(SITE_MUSIC_TRACKS);
   const [index, setIndex] = useState(() => readSavedIndex(SITE_MUSIC_TRACKS.length));
   const [playing, setPlaying] = useState(false);
@@ -205,6 +224,12 @@ export const MusicPlayer: React.FC = () => {
     if (audioRef.current) audioRef.current.muted = muted;
   }, [muted]);
 
+  // 列表打开时，确保当前曲目滞回在可视区（block:'nearest' 避免自动滞回时顶到列表顶部）
+  useEffect(() => {
+    if (!listOpen) return;
+    currentRowRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [listOpen, index]);
+
   useEffect(() => {
     if (!isDesktop) return;
 
@@ -235,14 +260,11 @@ export const MusicPlayer: React.FC = () => {
   return (
     <div
       onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-      className={cn(
-        'fixed bottom-5 right-[var(--desktop-edge-inset)] z-40 flex items-center overflow-hidden rounded-full',
-        'transition-[max-width,height,padding,gap,border-color,background-color] duration-300 ease-out',
-        expanded
-          ? 'h-[2.875rem] max-w-[calc(100vw-2rem)] gap-2 border border-[color:var(--hairline)] bg-[#121720]/45 px-1.5 backdrop-blur-md'
-          : 'h-[46px] max-w-[46px] gap-0 border border-transparent bg-transparent p-0',
-      )}
+      onMouseLeave={() => {
+        setExpanded(false);
+        setListOpen(false);
+      }}
+      className="fixed bottom-5 right-[var(--desktop-edge-inset)] z-40 flex flex-col items-end gap-2"
     >
       <audio
         ref={audioRef}
@@ -256,6 +278,94 @@ export const MusicPlayer: React.FC = () => {
         onError={() => setPlaying(false)}
       />
 
+      {listOpen ? (
+        <div
+          id="site-music-playlist"
+          role="dialog"
+          aria-label="当前歌单"
+          className={cn(
+            'w-[280px] max-h-[min(420px,60vh)] overflow-y-auto rounded-xl',
+            'border border-[color:var(--hairline)] bg-[#121720]/85 py-1 shadow-2xl backdrop-blur-md',
+          )}
+        >
+          <ul className="flex flex-col">
+            {tracks.map((track, i) => {
+              const active = i === index;
+              return (
+                <li key={`${track.src}-${i}`}>
+                  <button
+                    ref={active ? currentRowRef : undefined}
+                    type="button"
+                    aria-current={active ? 'true' : undefined}
+                    onClick={() => switchTrack(i, true)}
+                    className={cn(
+                      'flex w-full items-center gap-2.5 px-2.5 py-1.5 text-left transition-colors',
+                      active
+                        ? 'bg-white/[0.06]'
+                        : 'hover:bg-white/[0.04] focus-visible:bg-white/[0.06]',
+                      'focus-visible:outline-none',
+                    )}
+                  >
+                    <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-white/[0.05] text-white/60">
+                      {track.cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={track.cover}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <MusicIcon />
+                      )}
+                      {active && playing ? (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-0 grid place-items-center bg-black/50 text-[color:var(--accent-ink)]"
+                        >
+                          <PauseIcon />
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          'block truncate text-xs',
+                          active
+                            ? 'font-semibold text-[color:var(--accent-ink-strong)]'
+                            : 'text-white/80',
+                        )}
+                      >
+                        {track.title}
+                      </span>
+                      <span className="block truncate text-[10px] leading-tight text-white/45">
+                        {track.artist || '未知歌手'}
+                      </span>
+                    </span>
+                    {active ? (
+                      <span
+                        aria-hidden="true"
+                        className="h-6 w-[2px] shrink-0 rounded-full bg-[color:var(--accent-ink)]"
+                      />
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+
+      <div
+        className={cn(
+          'relative flex items-center overflow-hidden rounded-full',
+          'transition-[max-width,height,padding,gap,border-color,background-color] duration-300 ease-out',
+          expanded
+            ? 'h-[2.875rem] max-w-[calc(100vw-2rem)] gap-2 border border-[color:var(--hairline)] bg-[#121720]/45 px-1.5 backdrop-blur-md'
+            : 'h-[46px] max-w-[46px] gap-0 border border-transparent bg-transparent p-0',
+        )}
+      >
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -323,6 +433,15 @@ export const MusicPlayer: React.FC = () => {
         <IconButton label={muted ? '取消静音' : '静音'} onClick={() => setMuted((value) => !value)}>
           <VolumeIcon muted={muted} />
         </IconButton>
+        <IconButton
+          label={listOpen ? '收起歌单' : '展开歌单'}
+          aria-expanded={listOpen}
+          aria-controls="site-music-playlist"
+          onClick={() => setListOpen((value) => !value)}
+          className={cn(listOpen && 'bg-white/[0.08] text-[color:var(--accent-ink-strong)]')}
+        >
+          <ListIcon />
+        </IconButton>
       </div>
 
       <div
@@ -335,6 +454,7 @@ export const MusicPlayer: React.FC = () => {
           className="h-full bg-gradient-to-r from-[#37eff9]/60 via-[#0091e4]/40 to-[#64c6f4]/60 transition-[width] duration-200"
           style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
         />
+      </div>
       </div>
     </div>
   );
