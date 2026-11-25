@@ -90,6 +90,12 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
     let restoreTimer: number | undefined;
 
     const handleRestore = () => {
+      // 正常运行中的实例不重建：Pixi 销毁渲染器时会调用 WEBGL_lose_context，
+      // 每切回一次标签页就主动丢一次上下文，Firefox 控制台会打印
+      // "WebGL context was lost."；重建还要重下模型纹理。
+      // 只有确实失效（context 丢失后未恢复 / 初始化失败）才走重建。
+      if (initRef.current) return;
+
       restart();
       if (restoreTimer !== undefined) window.clearTimeout(restoreTimer);
       restoreTimer = window.setTimeout(() => {
