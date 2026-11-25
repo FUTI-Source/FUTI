@@ -27,7 +27,7 @@
 | 打赏 | qrcode · 微信 APIv3 / 支付宝 RSA2 / PayPal Orders API v2 |
 | 部署 | 火山引擎 IGA Pages · Vercel（GitHub 镜像自动构建） |
 
-**运行环境要求 Node.js 24+**
+**运行环境要求 Node.js 24.x**（`package.json` 的 `engines` 已锁 `24.x`，升级 major 请手动改）
 
 ## 快速开始
 
@@ -274,7 +274,7 @@ npx vercel deploy --prod --yes
 
 **火山 IGA Pages**
 - `iga.json` 固定 `installCommand: npm ci`、`buildCommand: npm run build`；
-- Node.js 版本选 **24.x**（`package.json` 要求 ≥24）；
+- Node.js 版本选 **24.x**（`package.json` 的 `engines` 已锁 `24.x`，防止 Vercel 自动升到新 major）；
 - 环境变量（密钥）在项目设置里配置，公开配置全部在 `src/config/site`；
 - 绑定自定义域名 `www.zhang-wentao.tech`，但 DNS 记录由云解析控制台统一管理，不要在 IGA 里另配跳转；
 - 不需要额外指定输出目录，平台按 Next.js 模式处理 standalone 产物；

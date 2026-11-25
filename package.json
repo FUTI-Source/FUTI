@@ -4,7 +4,7 @@
   "private": true,
   "license": "BSD-3-Clause",
   "engines": {
-    "node": ">=24.0.0"
+    "node": "24.x"
   },
   "browserslist": [
     "chrome >= 125",
