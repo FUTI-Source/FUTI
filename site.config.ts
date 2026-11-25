@@ -246,3 +246,61 @@ export const SITE_BROWSER_MINIMUMS = {
   safari: 17.5,
   ios: 17.5,
 } as const;
+
+/* ══════════════════════════════════════════════════════════════════
+ * 9.6 音乐胶囊
+ *
+ * 所有公开的音乐配置统一放在这里。Cookie 等敏感信息仍然只走服务端环境变量，
+ * 不要写进本文件。
+ * ══════════════════════════════════════════════════════════════════ */
+
+export interface MusicTrack {
+  title: string;
+  artist?: string;
+  /** 音频地址，本地文件建议放到 public/music/ 下 */
+  src: string;
+  /** 封面地址，留空时播放器显示默认音符图标 */
+  cover?: string;
+}
+
+export type MetingServer = 'netease' | 'tencent' | 'kugou' | 'baidu' | 'kuwo';
+export type MetingType = 'song' | 'playlist' | 'album' | 'artist' | 'search';
+
+export interface MusicPlaylistSource {
+  /** 音乐平台：netease 网易云、tencent QQ、kugou 酷狗、baidu、kuwo */
+  server: MetingServer;
+  /** 资源类型：song 单曲、playlist 歌单、album 专辑、artist 歌手、search 搜索 */
+  type: MetingType;
+  /** 资源 ID，从歌单/歌曲分享链接里取 */
+  id: string;
+}
+
+/**
+ * 外部 Meting API 地址。
+ * 留空时使用项目内置 @meting/core 自建解析；这里只能放公开地址，不要放 Cookie 或密钥。
+ */
+export const SITE_MUSIC_API_BASE = '';
+
+/** 本地曲目。配置在线歌单后，在线歌单会覆盖这里的内容。 */
+export const SITE_MUSIC_TRACKS: readonly MusicTrack[] = [
+  // {
+  //   title: '示例歌曲',
+  //   artist: '示例歌手',
+  //   src: '/music/example.mp3',
+  //   cover: '/images/example.webp',
+  // },
+];
+
+/** 在线歌单来源，对应 HeoMusic / MetingJS 的 server、type、id 参数。 */
+export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
+  server: 'netease',
+  type: 'playlist',
+  id: '8152976493',
+};
+
+// 示例：
+// export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
+//   server: 'netease',
+//   type: 'playlist',
+//   id: '7360465359',
+// };

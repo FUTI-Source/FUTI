@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js Dev",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
+      "autoAttachChildProcesses": true,
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "${workspaceFolder}/**/*.mjs",
+        "${workspaceFolder}/**/*.cjs",
+        "!${workspaceFolder}/node_modules/**/*.js",
+        "!${workspaceFolder}/node_modules/**/*.mjs",
+        "!${workspaceFolder}/node_modules/**/*.cjs"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!${workspaceFolder}/node_modules/**"
+      ]
+    }
+  ]
+}

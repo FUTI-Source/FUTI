@@ -11,6 +11,7 @@
 - **联系表单**：react-hook-form + zod 校验，POST JSON Webhook 通知，带 IP 限流与蜜罐反滥用
 - **打赏**：微信支付、支付宝、PayPal，无状态订单令牌，扫码/跳转支付、回调验签通知站长
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕与桌面 WCO
+- **音乐胶囊**：右下角悬浮播放器，支持本地曲目与 Meting 在线歌单
 - **统计**：Umami 自建统计（隐私友好），Vercel 部署时额外注入 Vercel Analytics
 - **SEO**：Metadata API、robots.ts、sitemap.ts、OG 分享图与结构化数据
 
@@ -64,6 +65,7 @@ src/
 │   ├── profile/                  # 名称、描述、社交链接
 │   ├── contact/                  # 联系表单
 │   ├── donate/                   # 打赏
+│   ├── music/                    # 全局音乐播放胶囊
 │   └── pwa/                      # Service Worker
 ├── hooks/                        # 通用 React hooks
 ├── lib/                          # 站点工具（日志、通知、限流）
@@ -116,6 +118,24 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 | `ALIPAY_PUBLIC_KEY` | 支付宝必填 | 支付宝公钥 |
 | `PAYPAL_CLIENT_ID` | PayPal 必填 | Client ID |
 | `PAYPAL_CLIENT_SECRET` | 必填 | 对应 Secret |
+
+### 在线歌单
+
+所有公开的音乐配置统一写在根目录 `site.config.ts` 的「9.6 音乐胶囊」：本地曲目 `SITE_MUSIC_TRACKS`、在线歌单 `SITE_MUSIC_PLAYLIST`、外部 API 地址 `SITE_MUSIC_API_BASE`。在线歌单使用 HeoMusic / MetingJS 相同参数：`server`、`type`、`id`。
+
+项目已内置 `@meting/core` 自建解析，`SITE_MUSIC_API_BASE` 留空时不依赖外部公共 API。浏览器只请求 `/api/music/playlist`，由服务端解析并统一转换为播放器数据。
+
+以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `site.config.ts`：
+
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `METING_NETEASE_COOKIE` | 否 | 网易云 Cookie，可提高会员/受限歌曲解析成功率 |
+| `METING_TENCENT_COOKIE` | 否 | QQ 音乐 Cookie，可提高会员/受限歌曲解析成功率 |
+| `METING_KUGOU_COOKIE` | 否 | 酷狗 Cookie |
+| `METING_BAIDU_COOKIE` | 否 | 百度音乐 Cookie |
+| `METING_KUWO_COOKIE` | 否 | 酷我 Cookie |
+
+前端不会直接访问任何第三方 API，也不会接触这些 Cookie。
 
 ## 部署
 

@@ -1,5 +1,6 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { MusicPlayer } from '@/features/music/music-player';
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
@@ -58,6 +59,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <MusicPlayer />
         <ServiceWorkerRegistration />
         <SiteInteractionGuard />
         {/* Vercel 统计只在 Vercel 部署注入：IGA 侧加载同一个脚本只会多一次无归属的境外请求。

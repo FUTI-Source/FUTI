@@ -178,3 +178,18 @@ export function getOpenidCookieKey(): string | null {
 
   return deriveKey(explicit || oauth.appSecret, 'futi/wechat-openid-cookie/v1');
 }
+
+/* -------------------------------- 在线歌单 -------------------------------- */
+
+const METING_COOKIE_ENV: Record<string, string> = {
+  netease: 'METING_NETEASE_COOKIE',
+  tencent: 'METING_TENCENT_COOKIE',
+  kugou: 'METING_KUGOU_COOKIE',
+  baidu: 'METING_BAIDU_COOKIE',
+  kuwo: 'METING_KUWO_COOKIE',
+};
+
+/** 平台 Cookie：用于提升在线歌单/会员音质解析成功率，非必填 */
+export function getMetingCookie(server: string): string {
+  return envStr(METING_COOKIE_ENV[server] ?? '');
+}

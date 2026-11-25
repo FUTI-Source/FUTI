@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@meting/core": "^1.6.2",
     "@pixi/app": "6.5.10",
     "@pixi/core": "6.5.10",
     "@pixi/display": "6.5.10",
