@@ -36,18 +36,24 @@
         color: #f2f4f8;
         font-family: 'Nunito Variable', 'ZCOOL KuaiLe', 'PingFang SC', 'Hiragino Sans GB',
           'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
       }
 
       body {
         display: grid;
         min-height: 100vh;
+        min-height: 100dvh;
         margin: 0;
         place-items: center;
         text-align: center;
       }
 
       main {
-        padding: 2rem;
+        padding: max(2rem, env(safe-area-inset-top)) max(2rem, env(safe-area-inset-right))
+          max(2rem, env(safe-area-inset-bottom)) max(2rem, env(safe-area-inset-left));
       }
 
       p {
