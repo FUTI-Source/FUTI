@@ -157,7 +157,7 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 火山云解析 DNS（智能解析，单域名分线路）
   ├─ 中国内地线路 ──► 火山引擎 IGA Pages（境内源站，standalone）
   ├─ 全球(不含中国) ─► Vercel（境外源站）
-  └─ 默认线路 ──────► Vercel（兜底）
+  └─ 默认线路 ──────► 火山引擎（兜底）
   │
   ▼
 平台 CDN / Edge（两个平台按同一套路径规则写 Cache-Control）
