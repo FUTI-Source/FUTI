@@ -9,6 +9,27 @@ import { cn } from '@/lib/utils';
 import { SITE_MUSIC_PLAYLIST, SITE_MUSIC_TRACKS, type MusicTrack } from '@/config/site';
 
 const STORAGE_KEY = 'site-music-index';
+const MODE_KEY = 'site-music-mode';
+
+/**
+ * 播放模式：
+ *  - list：列表循环（默认），一首完 → (index + 1) % len；
+ *  - single：单曲循环，直接给 audio 置 loop=true，浏览器不会 fire ended；
+ *  - shuffle：随机播放，ended 时从 tracks 中随机取不同于当前的一首。
+ */
+type PlayMode = 'list' | 'single' | 'shuffle';
+const MODE_ORDER: readonly PlayMode[] = ['list', 'single', 'shuffle'];
+const MODE_LABEL: Record<PlayMode, string> = {
+  list: '列表循环',
+  single: '单曲循环',
+  shuffle: '随机播放',
+};
+
+const readSavedMode = (): PlayMode => {
+  if (typeof window === 'undefined') return 'list';
+  const s = window.localStorage.getItem(MODE_KEY);
+  return s === 'single' || s === 'shuffle' ? s : 'list';
+};
 
 /** 列表行高： size-8 封面 32px + button 上下内边距 12px = 44px，与渲染时的 li 高度保持同步 */
 const ROW_HEIGHT = 44;
@@ -127,6 +148,27 @@ const ListIcon: React.FC = () => (
   </svg>
 );
 
+const ModeLoopIcon: React.FC<{ mode: PlayMode }> = ({ mode }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    className="size-3.5"
+  >
+    {/* 外框三种模式共用一套 loop 箭头，中心小字 / 小图标区分 */}
+    <path d="m17 2 4 4-4 4" />
+    <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+    <path d="m7 22-4-4 4-4" />
+    <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    {mode === 'single' ? <text x="12" y="14.6" textAnchor="middle" fontSize="9" fontWeight="700" fill="currentColor" stroke="none">1</text> : null}
+    {mode === 'shuffle' ? <path d="m7 9 4 6M7 15l4-6" strokeWidth="1.5" /> : null}
+  </svg>
+);
+
 export const MusicPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingPlayRef = useRef(false);
@@ -145,6 +187,7 @@ export const MusicPlayer: React.FC = () => {
   const [muted, setMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [mode, setMode] = useState<PlayMode>(readSavedMode);
 
   const current = tracks[index] ?? tracks[0];
 
@@ -251,6 +294,22 @@ export const MusicPlayer: React.FC = () => {
     if (audioRef.current) audioRef.current.muted = muted;
   }, [muted]);
 
+  // 模式切换时直接同 audio.loop（single 下 ended 不会 fire，自动回到同一首）。
+  // deps 里带上 current?.src：列表初次异步拉到后才会渲染 audio，否则首次 mount
+  // audioRef 仍为 null，loop 属性会遗漏。
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.loop = mode === 'single';
+  }, [mode, current?.src]);
+
+  useEffect(() => {
+    if (!isDesktop || typeof window === 'undefined') return;
+    window.localStorage.setItem(MODE_KEY, mode);
+  }, [isDesktop, mode]);
+
+  const cycleMode = useCallback(() => {
+    setMode((m) => MODE_ORDER[(MODE_ORDER.indexOf(m) + 1) % MODE_ORDER.length]);
+  }, []);
+
   // 列表挂载时同步尺寸；滞回/窗口变化持续更新，供虚拟范围计算使用
   useLayoutEffect(() => {
     if (!listOpen) return;
@@ -341,7 +400,16 @@ export const MusicPlayer: React.FC = () => {
         preload="metadata"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onEnded={() => switchTrack(index + 1, true)}
+        onEnded={() => {
+          // 单曲循环走 audio.loop，不会 fire ended；这里只需处理 list / shuffle
+          if (mode === 'shuffle' && tracks.length > 1) {
+            let n = index;
+            while (n === index) n = Math.floor(Math.random() * tracks.length);
+            switchTrack(n, true);
+            return;
+          }
+          switchTrack(index + 1, true);
+        }}
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onError={() => setPlaying(false)}
@@ -492,9 +560,9 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={cn(
           'flex items-center gap-0.5 overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-out',
-          // 5 个 size-7 按钮 + gap-0.5 + pl-1 + border-l 共需≈153px，预留到 160px，
-          // 否则最后一颗「展开歌单」会被 overflow-hidden 削掉。
-          expanded ? 'ml-1 max-w-[10rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
+          // 6 颗 size-7 按钮 + 5 × gap-0.5 + pl-1 + border-l 共需≈183px，预留到 192px，
+          // 否则最后两颗（展开歌单 / 播放模式）会被 overflow-hidden 削掉。
+          expanded ? 'ml-1 max-w-[12rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
         )}
       >
         <IconButton
@@ -520,6 +588,14 @@ export const MusicPlayer: React.FC = () => {
           className={cn(listOpen && 'bg-white/[0.08] text-[color:var(--accent-ink-strong)]')}
         >
           <ListIcon />
+        </IconButton>
+        <IconButton
+          label={MODE_LABEL[mode]}
+          aria-label={`播放模式：${MODE_LABEL[mode]}，点击切换`}
+          onClick={cycleMode}
+          className={cn(mode !== 'list' && 'text-[color:var(--accent-ink-strong)]')}
+        >
+          <ModeLoopIcon mode={mode} />
         </IconButton>
       </div>
 
