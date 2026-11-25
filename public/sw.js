@@ -167,14 +167,14 @@ self.addEventListener('fetch', (event) => {
         const copy = response.clone();
         event.waitUntil(cache.put(request, copy));
       } else if (!response.ok && url.pathname.startsWith('/_next/static/')) {
-        // 旧 HTML 缓存引用了已被新构建删除的 chunk：清掉整站缓存并通知页面重载，
-        // 避免长时间挂后台后切回来卡在白屏 / 半加载状态。
+        // 旧 HTML 引用了已被新构建删除的 chunk。这里【不删缓存】：
+        // 缓存里有导航兜底页与字体等关键资源，删掉后弱网重载将无内容可退，直接白屏。
+        // 旧缓存的清理由新 SW 在 activate 阶段统一完成；这里只通知页面做软刷新。
+        // 用 waitUntil 异步通知，不阻塞 404 响应本身。
         event.waitUntil(
-          (async () => {
-            await caches.delete(CACHE_NAME);
-            const clients = await self.clients.matchAll({ type: 'window' });
+          self.clients.matchAll({ type: 'window' }).then((clients) => {
             clients.forEach((client) => client.postMessage({ type: 'stale-cache' }));
-          })(),
+          }),
         );
       }
       return response;

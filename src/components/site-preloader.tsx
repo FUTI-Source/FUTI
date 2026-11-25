@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { PAGE_RESTORE_EVENT } from '@/lib/app-events';
 import { cn } from '@/lib/utils';
 
 /** 加载圈至少停留的时间，避免秒开时只闪一下反而显得突兀 */
@@ -33,11 +34,15 @@ export const SitePreloader = () => {
     const timers: number[] = [];
     let finished = false;
 
-    const reveal = () => {
+    const reveal = (immediate = false) => {
       if (finished) return;
       finished = true;
 
-      const remaining = Math.max(0, MIN_VISIBLE_MS - (performance.now() - startedAt));
+      // 从后台恢复时直接放行，不再等最小展示时间——此时资源早已就绪，
+      // 继续等待只会让遮罩多盖一段时间，看起来像白屏。
+      const remaining = immediate
+        ? 0
+        : Math.max(0, MIN_VISIBLE_MS - (performance.now() - startedAt));
       timers.push(
         window.setTimeout(() => {
           setPhase('leaving');
@@ -46,24 +51,13 @@ export const SitePreloader = () => {
       );
     };
 
-    // 手机长时间锁屏后切回来，浏览器可能从 bfcache 恢复：此时字体/图片的 Promise
-    // 不会重新触发，而遮罩还停在 loading。恢复可见或 bfcache 命中时直接放行。
-    let wasHidden = document.hidden;
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        wasHidden = true;
-        return;
-      }
-      if (wasHidden) {
-        wasHidden = false;
-        reveal();
-      }
+    // 只认协调器广播的统一恢复信号，不再各自判断 visibilitychange / pageshow 顺序。
+    // 无论遮罩当前停在 loading 还是 leaving，恢复时都强制放行并收尾。
+    const onRestore = () => {
+      reveal(true);
+      setPhase('done');
     };
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) reveal();
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('pageshow', onPageShow);
+    window.addEventListener(PAGE_RESTORE_EVENT, onRestore);
 
     // 不直接等 window load：它还会算上统计脚本、Service Worker 等与首屏无关的资源，
     // 慢网下会把加载页拖到兜底时间。字体与首屏图片就绪即可交还页面。
@@ -84,8 +78,7 @@ export const SitePreloader = () => {
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener(PAGE_RESTORE_EVENT, onRestore);
     };
   }, []);
 

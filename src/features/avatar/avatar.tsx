@@ -1,6 +1,6 @@
 'use client';
 
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 import { AnimatePresence } from 'motion/react';
 import * as m from 'motion/react-m';
@@ -11,10 +11,14 @@ import { BasicsProps } from '@/components/types';
 
 import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter';
 import useExternal from '@/hooks/use-external';
+import { PAGE_RESTORE_EVENT } from '@/lib/app-events';
 
 import { AvatarEvent } from './events';
 
 const AvatarCore = lazy(() => import('./avatar-core.tsx'));
+
+/** 后台恢复后初始化超时：超时就退回静态形象，避免 WebGL context 未恢复时一直转圈 */
+const RESTORE_INIT_TIMEOUT_MS = 8000;
 
 type IAvatarProps = BasicsProps & {
   event$?: EventEmitter<AvatarEvent>;
@@ -54,44 +58,48 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
   }, [cubismSDKStatus]);
 
   const [init, setInit] = useState(false);
+  const initRef = useRef(false);
+  const setInitState = React.useCallback((ready: boolean) => {
+    initRef.current = ready;
+    setInit(ready);
+  }, []);
   const [instanceKey, setInstanceKey] = useState(0);
   const restart = React.useCallback(() => {
-    setInit(false);
+    setInitState(false);
     setFailed(false);
     setInstanceKey((current) => current + 1);
     event$?.emit(AvatarEvent.LOADING);
-  }, [event$]);
+  }, [event$, setInitState]);
 
+  // 后台恢复只认协调器的统一信号；restart 后加超时兜底，
+  // 若 WebGL context 长时间后台丢失、初始化事件没回来，就退回静态形象而不是一直转圈。
   useEffect(() => {
-    let wasHidden = document.visibilityState === 'hidden';
+    let restoreTimer: number | undefined;
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        wasHidden = true;
-      } else if (wasHidden) {
-        wasHidden = false;
-        restart();
-      }
+    const handleRestore = () => {
+      restart();
+      if (restoreTimer !== undefined) window.clearTimeout(restoreTimer);
+      restoreTimer = window.setTimeout(() => {
+        // 8 秒仍未 INIT，说明这次恢复初始化卡死，走失败态显示静态形象
+        if (!initRef.current) {
+          setFailed(true);
+          event$?.emit(AvatarEvent.FAILED);
+        }
+      }, RESTORE_INIT_TIMEOUT_MS);
     };
 
-    const handlePageShow = (pageEvent: PageTransitionEvent) => {
-      if (pageEvent.persisted) restart();
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pageshow', handlePageShow);
-
+    window.addEventListener(PAGE_RESTORE_EVENT, handleRestore);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pageshow', handlePageShow);
+      if (restoreTimer !== undefined) window.clearTimeout(restoreTimer);
+      window.removeEventListener(PAGE_RESTORE_EVENT, handleRestore);
     };
-  }, [restart]);
+  }, [restart, event$]);
 
   const avatarEvent$ = useEventEmitter<AvatarEvent>();
   avatarEvent$.useSubscription((target) => {
     switch (target) {
       case AvatarEvent.CONTEXT_LOST: {
-        setInit(false);
+        setInitState(false);
         event$?.emit(AvatarEvent.LOADING);
         break;
       }
@@ -100,7 +108,7 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
         break;
       }
       case AvatarEvent.INIT: {
-        setInit(true);
+        setInitState(true);
         event$?.emit(AvatarEvent.INIT);
         // 模型已就绪：先让头像退出，模型延迟 0.2s 再淡入，避免两者叠加出现重影
         event$?.emit(AvatarEvent.SHOW);

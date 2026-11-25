@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MusicPlayer } from '@/features/music/music-player';
+import { PageRestoreCoordinator } from '@/features/pwa/page-restore-coordinator';
 import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
@@ -47,6 +48,7 @@ export default function RootLayout({
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
       </head>
       <body>
+        <PageRestoreCoordinator />
         <SitePreloader />
         <script
           id="structured-data"
