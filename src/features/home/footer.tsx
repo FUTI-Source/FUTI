@@ -14,38 +14,31 @@ import {
   SITE_AUTHOR_NAME,
   SITE_COPYRIGHT_START,
   SITE_JOB_TITLE_EN,
-  SITE_THEME_CREDIT,
-  SITE_THEME_CREDIT_HOVER,
 } from '~/site.config';
 import Link from 'next/link';
 
 type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
-  const creditParts = SITE_THEME_CREDIT.split(' ');
-  const creditBrand = creditParts.pop() ?? SITE_THEME_CREDIT;
-  const creditPrefix = creditParts.join(' ');
-
   return (
     <div className={cn('footer font-playful flex h-16 shrink-0 items-center gap-4 pl-[var(--desktop-edge-inset)] max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <m.a
-            href="/"
-            className="group flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1 select-none sm:h-auto sm:flex-col sm:items-start sm:justify-start sm:gap-0.5"
+          <m.div
+            className="group flex h-7 shrink-0 items-center justify-center gap-1 select-none sm:h-auto sm:flex-col sm:items-start sm:justify-start sm:gap-0.5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
             <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/40 transition-colors duration-300 group-hover:text-[color:var(--accent-ink)] max-sm:hidden sm:text-xs">
-              {creditPrefix}
+              Drawn by
             </span>
             <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/55 transition-colors duration-300 group-hover:text-[color:var(--accent-ink-strong)] sm:text-xs">
-              {creditBrand}
+              NAVILAB
             </span>
-          </m.a>
+          </m.div>
         </TooltipTrigger>
-        <TooltipContent sideOffset={12}>{SITE_THEME_CREDIT_HOVER}</TooltipContent>
+        <TooltipContent sideOffset={12}>由 NAVILAB 绘制</TooltipContent>
       </Tooltip>
 
       <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>

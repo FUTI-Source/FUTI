@@ -93,8 +93,6 @@ export const SITE_DESCRIPTION = '张文涛的个人主页，分享全栈开发�
 export const SITE_KEYWORDS = ['张文涛', '个人主页', '全栈开发', '开源项目', 'Web 开发'];
 /** 首页副标题签名（打字机文案） */
 export const SITE_SIGNATURE = '分享 · 开源 · 实践';
-/** 左下角水印品牌字，同时用于 SVG 内联标记 */
-export const SITE_BRAND = 'MINE';
 
 /** 结构化数据与页脚使用的真实姓名 */
 export const SITE_AUTHOR_NAME = '张文涛';
@@ -167,9 +165,6 @@ export const PAYPAL_MAX_AMOUNT = 500;
 
 /** 版权起始年份，页脚会渲染成「2017 - 当前年」 */
 export const SITE_COPYRIGHT_START = 2016;
-export const SITE_THEME_CREDIT = 'Drawn by NAVILAB';
-/** 悬停时显示的别名，用于给画师/模型来源留不同署名 */
-export const SITE_THEME_CREDIT_HOVER = 'Drawn by Navigator Kepler';
 
 /* ══════════════════════════════════════════════════════════════════
  * 8. 统计与 CDN

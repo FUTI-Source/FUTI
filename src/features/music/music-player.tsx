@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { cn } from '@/lib/utils';
 
 import { SITE_MUSIC_PLAYLIST, SITE_MUSIC_TRACKS, type MusicTrack } from '~/site.config';
@@ -19,19 +21,23 @@ type IconButtonProps = React.ComponentPropsWithoutRef<'button'> & {
 };
 
 const IconButton: React.FC<IconButtonProps> = ({ label, className, children, ...props }) => (
-  <button
-    type="button"
-    aria-label={label}
-    title={label}
-    className={cn(
-      'grid size-7 shrink-0 place-items-center rounded-full text-white/55 transition-colors',
-      'hover:bg-white/[0.06] hover:text-[color:var(--accent-ink-strong)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
-      className,
-    )}
-    {...props}
-  >
-    {children}
-  </button>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <button
+        type="button"
+        aria-label={label}
+        className={cn(
+          'grid size-7 shrink-0 place-items-center rounded-full text-white/55 transition-colors',
+          'hover:bg-white/[0.06] hover:text-[color:var(--accent-ink-strong)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </button>
+    </TooltipTrigger>
+    <TooltipContent sideOffset={12}>{label}</TooltipContent>
+  </Tooltip>
 );
 
 const MusicIcon: React.FC<{ spinning?: boolean }> = ({ spinning }) => (
@@ -250,30 +256,34 @@ export const MusicPlayer: React.FC = () => {
         onError={() => setPlaying(false)}
       />
 
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={playing ? '暂停音乐' : '播放音乐'}
-        title={playing ? '暂停音乐' : '播放音乐（Shift + M）'}
-        className={cn(
-          'relative grid shrink-0 place-items-center overflow-hidden rounded-full',
-          'bg-gradient-to-br from-[#37eff9]/20 via-[#0091e4]/20 to-[#64c6f4]/20',
-          'text-[color:var(--accent-ink)] ring-1 ring-[color:var(--hairline)]',
-          'transition-[width,height,transform,color] hover:scale-105 hover:text-[color:var(--accent-ink-strong)]',
-          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
-          expanded ? 'size-9' : 'size-[44px]',
-        )}
-      >
-        {playing && current.cover ? (
-          <span
-            aria-hidden="true"
-            className="size-full animate-spin rounded-full bg-cover bg-center"
-            style={{ backgroundImage: `url("${current.cover}")` }}
-          />
-        ) : (
-          <MusicIcon spinning={playing} />
-        )}
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={playing ? '暂停音乐' : '播放音乐'}
+            className={cn(
+              'relative grid shrink-0 place-items-center overflow-hidden rounded-full',
+              'bg-gradient-to-br from-[#37eff9]/20 via-[#0091e4]/20 to-[#64c6f4]/20',
+              'text-[color:var(--accent-ink)] ring-1 ring-[color:var(--hairline)]',
+              'transition-[width,height,transform,color] hover:scale-105 hover:text-[color:var(--accent-ink-strong)]',
+              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
+              expanded ? 'size-9' : 'size-[44px]',
+            )}
+          >
+            {playing && current.cover ? (
+              <span
+                aria-hidden="true"
+                className="size-full animate-spin rounded-full bg-cover bg-center"
+                style={{ backgroundImage: `url("${current.cover}")` }}
+              />
+            ) : (
+              <MusicIcon spinning={playing} />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={12}>{playing ? '暂停音乐' : '播放音乐（Shift + M）'}</TooltipContent>
+      </Tooltip>
 
       <button
         type="button"
