@@ -1,4 +1,20 @@
-<!doctype html>
+import { NextResponse } from 'next/server';
+
+/**
+ * 浏览器版本过低提示页。
+ *
+ * 原先是 public/browser-unsupported.html 独立静态文件，现内置为 Route Handler：
+ * 直接返回纯 HTML + 内联 CSS，不套 root layout、不注入 Next 运行时脚本，
+ * 因此仍满足「零 JS、零框架」——被跳过来的旧内核也能正常解析显示。
+ *
+ * 由两处链路跳入（路径需保持一致）：
+ *  - src/proxy.ts        服务端按 UA 拦截页面导航
+ *  - public/scripts/browser-check.js  客户端语法能力兜底
+ *
+ * 注意：下方「支持的最低版本」文案需与 src/config/site 的 SITE_BROWSER_MINIMUMS
+ * 保持一致（本页不引用运行时配置）。
+ */
+const UNSUPPORTED_HTML = `<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
@@ -7,17 +23,6 @@
     <meta name="theme-color" content="#0b0f16" />
     <meta name="color-scheme" content="dark" />
     <title>浏览器版本过低 · 张文涛</title>
-    <!--
-      浏览器版本过低提示页：纯静态 HTML，零 JS、零框架产物。
-
-      被重定向到这里的浏览器版本过低，或伪造了高版本 UA 但内核过旧，
-      任何新版 JS 都可能解析失败，因此页面必须完全不依赖脚本——
-      站点入口的拦截链路见 site.config.ts「9.5 浏览器版本检查」与
-      /scripts/browser-check.js（版本检测 + 语法能力兜底）。
-
-      注意：下方「支持的最低版本」文案需与 site.config.ts 的
-      SITE_BROWSER_MINIMUMS 保持一致（静态文件读不到该配置）。
-    -->
     <style>
       @font-face {
         font-family: 'Nunito Variable';
@@ -326,3 +331,18 @@
     </main>
   </body>
 </html>
+`;
+
+// 内容为常量、与请求无关：静态化后由服务端直接吐出，避免每次进 runtime。
+export const dynamic = 'force-static';
+
+export function GET() {
+  return new NextResponse(UNSUPPORTED_HTML, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      // 无指纹的固定页：短缓存即可，改动随下次构建生效
+      'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
+}

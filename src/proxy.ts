@@ -20,10 +20,10 @@ import { SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '@/config/site';
 const wwwManagedHosts = new Set([SITE_HOSTNAME, SITE_DOMAIN]);
 
 /**
- * 版本过低提示页（public/ 下的纯静态 HTML，零 JS）。
+ * 版本过低提示页（内置为 Route Handler，见 src/app/browser-unsupported/route.ts，零 JS）。
  * 与 public/scripts/browser-check.js 里的跳转路径保持一致，无需配置、直接定死。
  */
-const UNSUPPORTED_PATH = '/browser-unsupported.html';
+const UNSUPPORTED_PATH = '/browser-unsupported';
 
 export function proxy(request: NextRequest) {
   const hostname = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();

@@ -69,8 +69,8 @@
 离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）。所有 PWA 配置集中在 `src/config/site` 的 `SITE_PWA`：路径、主题色、图标、注册行为、SW 生命周期与 CSP 白名单都从这里读取，其他文件不再写死这些常量。
 
 - `src/app/sw.ts`：Service Worker 源码，使用 `defaultCache` 提供的 Next.js 推荐运行时策略（HTML/RSC 走 NetworkFirst，带 hash 的静态资源走 CacheFirst/StaleWhileRevalidate）；`/api/*` 被前置规则强制 NetworkOnly，不缓存支付与留言接口。
-- `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/~offline` 的预缓存清单，并从 `/serwist/sw.js` 提供。
-- `src/app/~offline/page.tsx`：文档请求离线且无缓存时的兜底页。
+- `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/offline-fallback` 的预缓存清单，并从 `/serwist/sw.js` 提供。
+- `src/app/offline-fallback/page.tsx`：文档请求离线且无缓存时的兜底页。
 - `src/features/pwa/pwa-registration.tsx`：`PwaRegistration` 先注销浏览器中残留的 `/sw.js` 注册并清理 `site-*` 旧缓存，再挂载 `SerwistProvider`；这解决了删除 `public/sw.js` 后旧注册仍尝试更新并报 404 的问题。
 - `src/app/layout.tsx`：`SerwistProvider` 仅在生产环境注册 SW；关闭 `reloadOnOnline` 与 `cacheOnNavigation`，避免后台恢复/网络恢复时自动刷新造成白屏。
 - `next.config.ts`：用 `withSerwist` 包装配置，把 esbuild 声明为 `serverExternalPackages`；为 `/serwist/:path*` 设置 `Content-Type`、永不缓存的 `Cache-Control` 与 SW 专用 CSP。SW 的 CSP 除 `default-src 'self'`、`script-src 'self'` 外，还必须显式放行 `connect-src`（统计域名、Vercel、PayPal 与音乐 CDN），否则 Serwist 在 worker 内 fetch 跨域资源时会被 CSP 回退规则拦截。
@@ -175,7 +175,7 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 
 - DevTools → Application → Service Workers：`/serwist/sw.js` 处于 Activated 状态，Unsafe requests 为 0；
 - DevTools → Application → Cache Storage：出现 Serwist 的预缓存及 `pages*` / `next-*` 缓存，旧的 `site-*` 缓存不再被写入；
-- Network 面板：`/serwist/sw.js` 永远不是 from disk cache；断网刷新首页仍能渲染，未缓存路由显示 `/~offline` 兜底页；
+- Network 面板：`/serwist/sw.js` 永远不是 from disk cache；断网刷新首页仍能渲染，未缓存路由显示 `/offline-fallback` 兜底页；
 - 境内/境外访问地址栏始终是同一个域名，没有 307 跨域跳转。
 
 ---

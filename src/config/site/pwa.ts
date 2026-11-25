@@ -25,7 +25,7 @@ export const SITE_PWA = {
   swUrl: '/serwist/sw.js',
   scope: '/',
   /** 文档请求离线且无缓存时的兜底页 */
-  offlineUrl: '/~offline',
+  offlineUrl: '/offline-fallback',
   /** 迁移期要注销的旧 SW 路径与旧手写缓存前缀 */
   legacySwPath: '/sw.js',
   legacyCachePrefix: 'site-',

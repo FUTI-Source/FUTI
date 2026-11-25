@@ -20,7 +20,7 @@
 
     function redirect() {
       if (window.location) {
-        window.location.replace('/browser-unsupported.html?from=runtime-check');
+        window.location.replace('/browser-unsupported?from=runtime-check');
       }
     }
 

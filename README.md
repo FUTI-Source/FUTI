@@ -52,7 +52,7 @@ npm run start:standalone  # 按 standalone 产物启动
 
 ```
 src/
-├── app/                          # App Router 入口（api、serwist、~offline 均为路由契约）
+├── app/                          # App Router 入口（api、serwist、offline-fallback 均为路由契约）
 ├── components/
 │   ├── ui/                       # 基础 UI 与跨 feature 的通用 props 类型
 │   └── site-interaction/         # 全局交互守卫与自定义光标
