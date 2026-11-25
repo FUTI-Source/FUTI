@@ -73,7 +73,7 @@
 - `src/app/~offline/page.tsx`：文档请求离线且无缓存时的兜底页。
 - `src/features/pwa/pwa-registration.tsx`：`PwaRegistration` 先注销浏览器中残留的 `/sw.js` 注册并清理 `site-*` 旧缓存，再挂载 `SerwistProvider`；这解决了删除 `public/sw.js` 后旧注册仍尝试更新并报 404 的问题。
 - `src/app/layout.tsx`：`SerwistProvider` 仅在生产环境注册 SW；关闭 `reloadOnOnline` 与 `cacheOnNavigation`，避免后台恢复/网络恢复时自动刷新造成白屏。
-- `next.config.ts`：用 `withSerwist` 包装配置，把 esbuild 声明为 `serverExternalPackages`；为 `/serwist/:path*` 设置 `Content-Type`、永不缓存的 `Cache-Control` 与严格 CSP。
+- `next.config.ts`：用 `withSerwist` 包装配置，把 esbuild 声明为 `serverExternalPackages`；为 `/serwist/:path*` 设置 `Content-Type`、永不缓存的 `Cache-Control` 与 SW 专用 CSP。SW 的 CSP 除 `default-src 'self'`、`script-src 'self'` 外，还必须显式放行 `connect-src`（统计域名、Vercel、PayPal 与音乐 CDN），否则 Serwist 在 worker 内 fetch 跨域资源时会被 CSP 回退规则拦截。
 
 之前手写的 `CacheFirst / stale-cache` 逻辑、版本戳脚本、`public/sw.js` 和手动注册组件均已删除。页面从后台恢复的可见性处理仍由 `PageRestoreCoordinator` 统一广播，与 SW 解耦。`scripts/build/prepare-standalone.mjs` 会把 `BUILD_ID` 同步进 standalone 产物，保证本地 `npm run start:standalone` 与线上行为一致。
 

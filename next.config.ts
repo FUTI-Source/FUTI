@@ -21,6 +21,15 @@ const IMMUTABLE_CACHE = SITE_CDN_CACHE.immutable;
 const STATIC_CACHE = SITE_CDN_CACHE.static;
 /** Service Worker 必须永不缓存，否则新版本推不下去 */
 const SW_CACHE = SITE_CDN_CACHE.serviceWorker;
+/**
+ * SW 自身的 CSP：Serwist 会在 worker 内部 fetch 跨域资源（统计脚本、音乐 CDN），
+ * 只写 default-src 'self' 会让这些请求被 connect-src 回退规则拦掉。
+ */
+const SW_CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is https://va.vercel-scripts.com https://*.paypal.com https://music.126.net https://*.music.126.net",
+].join('; ');
 /** 接口一律 no-store：支付回调、订单状态与 Webhook 不能被 CDN 复用 */
 const API_CACHE = SITE_CDN_CACHE.api;
 
@@ -126,7 +135,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self'",
+            value: SW_CSP,
           },
         ],
       },
