@@ -65,7 +65,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
   return (
     <div
       ref={node}
-      className="fixed inset-0 z-[-1] overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
+      className="fixed top-[calc(-1*var(--safe-top))] right-0 bottom-[calc(-1*var(--safe-bottom))] left-0 z-[-1] overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
     >
       <Image
         ref={leftImage}

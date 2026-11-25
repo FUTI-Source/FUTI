@@ -43,10 +43,9 @@
   unicode-range: U+00A9, U+00B7, U+2018-201D, U+2026, U+2122, U+2E80-2FFF, U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
 }
 
-/* 视口高度基准：完全交给浏览器原生 dvh 实时计算，
-   不再由 JS 测量写入，从根源消除各种时序差导致的底部黑区。
-   用 @supports 显式回退：自定义属性对无效值是宽松存储，
-   不能靠相邻双重声明做渐进增强。 */
+/* 视口高度基准：CSS 提供 dvh 回退值，
+   实际高度由 app-height.js 以 inline style 实测写入并持续校正
+   （iOS 主屏应用的 dvh 会偏小，纯 CSS 会在底部露出黑边）。 */
 :root {
   --app-height: 100vh;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -171,11 +170,19 @@ main {
 }
 
 @layer base {
-  html,
+  html {
+    width: 100%;
+    /* html 用 min-height 兜底：即使实测值偏小也能继续撑开，底部不露系统黑底 */
+    min-height: var(--app-height);
+    margin: 0;
+    padding: 0;
+  }
+
   body,
   #app,
   #root {
     width: 100%;
+    /* body 需要确定高度，ScrollArea 的 h-full 才有参照，保证一屏布局 */
     height: var(--app-height);
     min-height: var(--app-height);
     margin: 0;
@@ -221,6 +228,8 @@ main {
   }
 
   body {
+    /* 必须透明：DetroitBackground 是 z-[-1]，body 若有不透明背景会盖住它。
+       安全区黑带由背景容器自身延伸覆盖，不靠 body 底色兜底。 */
     background: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
