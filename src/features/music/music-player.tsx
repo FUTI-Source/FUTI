@@ -236,8 +236,7 @@ export const MusicPlayer: React.FC = () => {
   const [lyricLines, setLyricLines] = useState<readonly LyricLine[]>([]);
   const [lyricsStatus, setLyricsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [lyricsLoadedKey, setLyricsLoadedKey] = useState<string>();
-  // 虚拟滞回：只渲染 [scrollTop, scrollTop + viewportH] 内的行 ± OVERSCAN 缓冲，
-  // 避免长歌单一次挂几十个 <img> 触发 Edge LazyLoad intervention。
+  // 虚拟滞回限制封面并发请求，也避免原生懒加载触发 Edge 的 LazyLoad intervention。
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportH, setViewportH] = useState(0);
   const [tracks, setTracks] = useState<readonly MusicTrack[]>(SITE_MUSIC_TRACKS);
@@ -661,7 +660,6 @@ export const MusicPlayer: React.FC = () => {
                         <img
                           src={track.cover}
                           alt=""
-                          loading="lazy"
                           decoding="async"
                           className="size-full object-cover"
                         />
