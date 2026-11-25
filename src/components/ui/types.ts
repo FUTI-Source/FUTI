@@ -9,10 +9,7 @@ export type BasicsProps<T extends keyof React.JSX.IntrinsicElements = 'div', K e
 
 export type AsComp =
   | keyof React.JSX.IntrinsicElements
-  | React.ForwardRefExoticComponent<
-      React.PropsWithoutRef<{
-        style: CSSProperties;
-        children: ReactNode;
-      }> &
-        React.RefAttributes<any>
-    >;
+  | React.ComponentType<{
+      style: CSSProperties;
+      children: ReactNode;
+    }>;

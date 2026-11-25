@@ -3,14 +3,14 @@ import { useCallback, useRef } from 'react';
 import useLatest from '@/hooks/use-latest';
 import useUnmount from '@/hooks/use-unmount';
 
-type noop = (...args: any[]) => any;
+type AnyFunction = (...args: never[]) => unknown;
 
 export interface DebounceOptions {
   wait?: number;
   leading?: boolean;
 }
 
-const useDebounceFn = <T extends noop>(fn: T, options?: DebounceOptions) => {
+const useDebounceFn = <T extends AnyFunction>(fn: T, options?: DebounceOptions) => {
   const fnRef = useLatest(fn);
 
   const wait = options?.wait ?? 1000;

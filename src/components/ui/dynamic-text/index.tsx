@@ -53,6 +53,9 @@ export const DynamicText: React.FC<IDynamicTextProps> = memo(
     const prevTextRef = useRef<string | null>(null);
     // 动画版本号：每开一个新动画 +1，旧动画发现版本不符就自行退出
     const runIdRef = useRef(0);
+    const invalidateAnimation = useMemoizedFn(() => {
+      runIdRef.current++;
+    });
 
     // 把目标文本提到外面，作为 effect 的稳定依赖
     const target = text || children?.toString() || '';
@@ -128,10 +131,10 @@ export const DynamicText: React.FC<IDynamicTextProps> = memo(
     // instant 模式：直接同步文本，不跑任何动画
     useEffect(() => {
       if (!instant) return;
-      runIdRef.current++; // 让可能还在跑的旧动画立刻失效
+      invalidateAnimation(); // 让可能还在跑的旧动画立刻失效
       prevTextRef.current = target;
       setVisibleText(target);
-    }, [instant, target]);
+    }, [instant, invalidateAnimation, target]);
 
     // 动画模式：保持原有行为（text 变化时重播动画）
     useEffect(() => {
@@ -141,10 +144,8 @@ export const DynamicText: React.FC<IDynamicTextProps> = memo(
         void handleAnimation();
       }
       // 依赖变化 / 卸载时，让正在跑的动画失效
-      return () => {
-        runIdRef.current++;
-      };
-    }, [instant, handleAnimation, target]);
+      return invalidateAnimation;
+    }, [instant, handleAnimation, invalidateAnimation, target]);
 
     return (
       <Element

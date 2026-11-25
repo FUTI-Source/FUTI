@@ -1,14 +1,19 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
+
+import useLatest from '@/hooks/use-latest';
 
 type SubscriptionEventName = string | symbol;
-type Subscription<N extends SubscriptionEventName, T = unknown> = (eventName: N, val?: T) => void | Promise<any>;
+type Subscription<N extends SubscriptionEventName, T = unknown> = (
+  eventName: N,
+  val?: T,
+) => void | Promise<unknown>;
 
 export class EventEmitter<N extends SubscriptionEventName, T = unknown> {
   private subscriptions = new Set<Subscription<N, T>>();
 
   emit = async (eventName: N, val?: T): Promise<void> => {
-    const promises: Promise<any>[] = [];
+    const promises: Promise<unknown>[] = [];
 
     for (const subscription of this.subscriptions) {
       const result = subscription(eventName, val);
@@ -23,8 +28,7 @@ export class EventEmitter<N extends SubscriptionEventName, T = unknown> {
   };
 
   useSubscription = (callback: Subscription<N, T>) => {
-    const callbackRef = useRef<Subscription<N, T>>(void 0);
-    callbackRef.current = callback;
+    const callbackRef = useLatest(callback);
 
     useEffect(() => {
       const subscription = async (eventName: N, val?: T) => {
@@ -36,16 +40,13 @@ export class EventEmitter<N extends SubscriptionEventName, T = unknown> {
       return () => {
         this.subscriptions.delete(subscription);
       };
-    }, []);
+    }, [callbackRef]);
   };
 }
 
 const useEventEmitter = <N extends SubscriptionEventName, T = unknown>() => {
-  const ref = useRef<EventEmitter<N, T>>(void 0);
-  if (!ref.current) {
-    ref.current = new EventEmitter<N, T>();
-  }
-  return ref.current;
+  const [emitter] = useState(() => new EventEmitter<N, T>());
+  return emitter;
 };
 
 export default useEventEmitter;

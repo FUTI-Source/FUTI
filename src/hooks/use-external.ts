@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import useLatest from '@/hooks/use-latest';
 import { logger } from '@/lib/logger';
 
 type JsOptions = {
@@ -34,7 +35,7 @@ interface LoadResult {
   status: Status;
 }
 
-type LoadExternal = <T extends Record<string, any>>(path: string, props?: Partial<T>) => LoadResult;
+type LoadExternal = (path: string, props?: object) => LoadResult;
 
 const loadScript: LoadExternal = (path, props = {}) => {
   const script = document.querySelector(`script[src="${path}"]`);
@@ -43,9 +44,7 @@ const loadScript: LoadExternal = (path, props = {}) => {
     const newScript = document.createElement('script');
     newScript.src = path;
 
-    Object.keys(props).forEach((key) => {
-      (newScript as any)[key] = props[key];
-    });
+    Object.assign(newScript, props);
 
     newScript.setAttribute('data-status', 'loading');
     document.body.appendChild(newScript);
@@ -69,9 +68,7 @@ const loadCss: LoadExternal = (path, props = {}) => {
 
     newCss.rel = 'stylesheet';
     newCss.href = path;
-    Object.keys(props).forEach((key) => {
-      (newCss as any)[key] = props[key];
-    });
+    Object.assign(newCss, props);
     newCss.setAttribute('data-status', 'loading');
     document.head.appendChild(newCss);
 
@@ -88,26 +85,38 @@ const loadCss: LoadExternal = (path, props = {}) => {
 };
 
 const useExternal = (path?: string, options?: Options) => {
-  const [status, setStatus] = useState<Status>(path ? 'loading' : 'unset');
+  const [resource, setResource] = useState<{ path?: string; status: Status }>(() => ({
+    path,
+    status: path ? 'loading' : 'unset',
+  }));
+  const optionsRef = useLatest(options);
 
   const ref = useRef<Element>(void 0);
 
   useEffect(() => {
-    if (!path) {
-      setStatus('unset');
-      return;
-    }
+    if (!path) return;
+
+    const currentOptions = optionsRef.current;
     const pathname = path.replace(/[|#].*$/, '');
-    const isCss = options?.type === 'css' || (!options?.type && /(^css!|\.css$)/.test(pathname));
-    const isJs = options?.type === 'js' || (!options?.type && /(^js!|\.js$)/.test(pathname));
+    const isCss =
+      currentOptions?.type === 'css' ||
+      (!currentOptions?.type && /(^css!|\.css$)/.test(pathname));
+    const isJs =
+      currentOptions?.type === 'js' || (!currentOptions?.type && /(^js!|\.js$)/.test(pathname));
     if (isCss) {
-      const result = loadCss(path, options && 'css' in options ? options.css : undefined);
+      const result = loadCss(
+        path,
+        currentOptions && 'css' in currentOptions ? currentOptions.css : undefined,
+      );
       ref.current = result.ref;
-      setStatus(result.status);
+      setResource({ path, status: result.status });
     } else if (isJs) {
-      const result = loadScript(path, options && 'js' in options ? options.js : undefined);
+      const result = loadScript(
+        path,
+        currentOptions && 'js' in currentOptions ? currentOptions.js : undefined,
+      );
       ref.current = result.ref;
-      setStatus(result.status);
+      setResource({ path, status: result.status });
     } else {
       // 无法推断外部资源类型，记录错误但不创建元素
       logger.error("Cannot infer the type of external resource, and please provide a type ('js' | 'css'). " + 'Refer to the https://ahooks.js.org/hooks/dom/use-external/#options');
@@ -126,7 +135,7 @@ const useExternal = (path?: string, options?: Options) => {
     const handler = (event: Event) => {
       const targetStatus = event.type === 'load' ? 'ready' : 'error';
       ref.current?.setAttribute('data-status', targetStatus);
-      setStatus(targetStatus);
+      setResource({ path, status: targetStatus });
     };
 
     ref.current.addEventListener('load', handler);
@@ -137,7 +146,7 @@ const useExternal = (path?: string, options?: Options) => {
 
       EXTERNAL_USED_COUNT[path] -= 1;
 
-      if (EXTERNAL_USED_COUNT[path] === 0 && !options?.keepWhenUnused) {
+      if (EXTERNAL_USED_COUNT[path] === 0 && !currentOptions?.keepWhenUnused) {
         ref.current?.remove();
         delete EXTERNAL_USED_COUNT[path];
       }
@@ -145,9 +154,9 @@ const useExternal = (path?: string, options?: Options) => {
       ref.current = undefined;
     };
     // 仅以 path 为依赖：options 变化不触发资源重载（ahooks 原设计）；如需重载请变更 path
-  }, [path]);
+  }, [path, optionsRef]);
 
-  return status;
+  return resource.path === path ? resource.status : path ? 'loading' : 'unset';
 };
 
 export default useExternal;

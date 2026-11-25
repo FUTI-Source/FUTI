@@ -53,13 +53,6 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
     },
   );
 
-  const [cubismSdkInit, setCubismSdkInit] = useState(false);
-  useEffect(() => {
-    if (cubismSDKStatus === 'ready') {
-      setCubismSdkInit(true);
-    }
-  }, [cubismSDKStatus]);
-
   const [init, setInit] = useState(false);
   const initRef = useRef(false);
   const setInitState = React.useCallback((ready: boolean) => {
@@ -163,7 +156,7 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
           </m.div>
         )}
         <Suspense fallback={null}>
-          {cubismSdkInit && (
+          {cubismSDKStatus === 'ready' && (
             <AvatarCore
               key={`avatar-${instanceKey}`}
               className="size-full"

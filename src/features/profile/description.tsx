@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { BasicsProps } from '@/components/ui/types';
 
@@ -22,19 +22,15 @@ const SignatureText = () => (
 );
 
 type ITypingSignatureProps = {
+  instant: boolean;
   onAnimationComplete?: () => void;
 };
 
-const TypingSignature: React.FC<ITypingSignatureProps> = ({ onAnimationComplete }) => {
+const TypingSignature: React.FC<ITypingSignatureProps> = ({ instant, onAnimationComplete }) => {
   const [text, setText] = useState('');
 
   useEffect(() => {
-    // 自动化环境（部署预览截图）不跑打字机，直接显示完整文案
-    if (document.documentElement.classList.contains('preload-skip')) {
-      setText(SIGNATURE);
-      onAnimationComplete?.();
-      return;
-    }
+    if (instant) return;
 
     let timer = 0;
     let index = 0;
@@ -50,11 +46,11 @@ const TypingSignature: React.FC<ITypingSignatureProps> = ({ onAnimationComplete 
 
     timer = window.setTimeout(tick, TYPING_SPEED);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [instant, onAnimationComplete]);
 
   return (
     <h2 className="font-mono text-lg font-normal text-[#ecf6ff]/85">
-      {text.split('·').map((part, index) => (
+      {(instant ? SIGNATURE : text).split('·').map((part, index) => (
         <React.Fragment key={index}>
           {index > 0 && <span className="text-[#0295e5]">·</span>}
           {part}
@@ -64,10 +60,13 @@ const TypingSignature: React.FC<ITypingSignatureProps> = ({ onAnimationComplete 
   );
 };
 
-type IDescriptionProps = BasicsProps;
+type IDescriptionProps = BasicsProps & {
+  instant?: boolean;
+};
 
-export const Description: React.FC<IDescriptionProps> = ({ className, style }) => {
+export const Description: React.FC<IDescriptionProps> = ({ className, style, instant = false }) => {
   const [inAnimation, setInAnimation] = useState<boolean>(true);
+  const handleAnimationComplete = useCallback(() => setInAnimation(false), []);
 
   return (
     <div
@@ -75,12 +74,12 @@ export const Description: React.FC<IDescriptionProps> = ({ className, style }) =
         // 父级（App 里的 flex-col items-center）已负责水平居中；
         // min-width 由 .profile-description 统一控制，避免逐字出现时整行左右抖动。
         'profile-description relative flex h-7 w-fit items-center justify-center gap-1',
-        inAnimation && 'typing-cursor',
+        !instant && inAnimation && 'typing-cursor',
         className,
       )}
       style={style}
     >
-      <TypingSignature onAnimationComplete={() => setInAnimation(false)} />
+      <TypingSignature instant={instant} onAnimationComplete={handleAnimationComplete} />
       {/* 静态副本：仅在自动化环境（部署截图）下显示，SSR 即可见，不依赖水合与打字动画 */}
       <span
         aria-hidden="true"

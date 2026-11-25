@@ -9,7 +9,7 @@ const useUnmount = (fn: () => void) => {
     () => () => {
       fnRef.current();
     },
-    [],
+    [fnRef],
   );
 };
 

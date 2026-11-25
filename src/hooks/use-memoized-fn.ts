@@ -1,22 +1,24 @@
-import { useMemo, useRef } from 'react';
+import { useState } from 'react';
 
-type noop = (this: any, ...args: any[]) => any;
+import useLatest from '@/hooks/use-latest';
 
-type PickFunction<T extends noop> = (this: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>;
+type AnyFunction = (...args: never[]) => unknown;
 
-const useMemoizedFn = <T extends noop>(fn: T) => {
-  const fnRef = useRef<T>(fn);
+type PickFunction<T extends AnyFunction> = (
+  this: ThisParameterType<T>,
+  ...args: Parameters<T>
+) => ReturnType<T>;
 
-  fnRef.current = useMemo<T>(() => fn, [fn]);
+const useMemoizedFn = <T extends AnyFunction>(fn: T) => {
+  const fnRef = useLatest(fn);
 
-  const memoizedFn = useRef<PickFunction<T>>(void 0);
-  if (!memoizedFn.current) {
-    memoizedFn.current = function (this, ...args) {
-      return fnRef.current.apply(this, args);
-    };
-  }
+  const [memoizedFn] = useState<PickFunction<T>>(() =>
+    function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+      return fnRef.current.apply(this, args) as ReturnType<T>;
+    },
+  );
 
-  return memoizedFn.current as PickFunction<T>;
+  return memoizedFn;
 };
 
 export default useMemoizedFn;

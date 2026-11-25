@@ -39,7 +39,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
     // decode() 对已缓存和仍在加载的图片都有效，这里直接补一次，避免一直停在 opacity-0。
     revealImage(leftImage.current, () => setIsLeftLoaded(true));
     revealImage(rightImage.current, () => setIsRightLoaded(true));
-  }, []);
+  }, [revealImage]);
 
   useDebounceEffect(
     () => {

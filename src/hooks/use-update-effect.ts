@@ -8,22 +8,37 @@ import type { DependencyList, EffectCallback } from 'react';
  */
 const useUpdateEffect = (effect: EffectCallback, deps?: DependencyList) => {
   const isMounted = useRef(false);
+  const previousDepsRef = useRef<DependencyList | undefined>(undefined);
+  const cleanupRef = useRef<ReturnType<EffectCallback>>(undefined);
 
   // for react-refresh
   useEffect(
     () => () => {
       isMounted.current = false;
+      cleanupRef.current?.();
+      cleanupRef.current = undefined;
     },
     [],
   );
 
   useEffect(() => {
+    const previousDeps = previousDepsRef.current;
+    const depsChanged =
+      !deps ||
+      !previousDeps ||
+      deps.length !== previousDeps.length ||
+      !deps.every((dependency, index) => Object.is(dependency, previousDeps[index]));
+    previousDepsRef.current = deps && [...deps];
+
     if (!isMounted.current) {
       isMounted.current = true;
-    } else {
-      return effect();
+    } else if (depsChanged) {
+      cleanupRef.current?.();
+      cleanupRef.current = undefined;
+      const cleanup = effect();
+      if (typeof cleanup === 'function') cleanupRef.current = cleanup;
     }
-  }, deps);
+  });
 };
 
 export default useUpdateEffect;

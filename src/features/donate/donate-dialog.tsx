@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   IconCircleAlert,
@@ -54,6 +55,31 @@ const CHANNELS = [
 
 const PAYMENT_TIMEOUT_MS = 5 * 60_000;
 const DONATE_DRAFT_KEY = 'donate-draft';
+
+function readDonateDraft(): { channel?: DonateChannel; amount?: number } {
+  try {
+    const raw = sessionStorage.getItem(DONATE_DRAFT_KEY);
+    if (!raw) return {};
+
+    const draft = JSON.parse(raw) as { channel?: DonateChannel; amount?: number };
+    const channel =
+      draft.channel && CHANNELS.some((item) => item.id === draft.channel)
+        ? draft.channel
+        : undefined;
+    const bounds =
+      draft.channel === 'paypal'
+        ? [PAYPAL_MIN_AMOUNT, PAYPAL_MAX_AMOUNT]
+        : [DONATION_MIN_AMOUNT, DONATION_MAX_AMOUNT];
+    const amount =
+      typeof draft.amount === 'number' && draft.amount >= bounds[0] && draft.amount <= bounds[1]
+        ? draft.amount
+        : undefined;
+
+    return { channel, amount };
+  } catch {
+    return {};
+  }
+}
 
 /* ── PayPal JS SDK：脚本加载与类型（仅声明用到的 Buttons 子集） ────── */
 
@@ -181,27 +207,47 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   onOpenChange,
   result,
 }) => {
+  const router = useRouter();
   const [config, setConfig] = useState<DonateConfig | null>(null);
-  const [configState, setConfigState] = useState<'loading' | 'ready' | 'error'>(
-    'loading',
-  );
+  const [configStatus, setConfigStatus] = useState<{
+    retry: number;
+    state: 'loading' | 'ready' | 'error';
+  }>({ retry: 0, state: 'loading' });
   const [configRetry, setConfigRetry] = useState(0);
-  const [channel, setChannel] = useState<DonateChannel>('alipay');
-  const [customAmount, setCustomAmount] = useState('');
+  const [environment] = useState(() => {
+    const ua = typeof window === 'undefined' ? '' : window.navigator.userAgent;
+    return {
+      isWechat: /MicroMessenger/i.test(ua),
+      isMobile: /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(ua),
+    };
+  });
+  // 授权跳转前保存的填写内容，回到页面后自动恢复
+  const [draft] = useState(readDonateDraft);
+  const [channel, setChannel] = useState<DonateChannel>(
+    draft.channel ?? (environment.isWechat ? 'wechat' : 'alipay'),
+  );
+  const [customAmount, setCustomAmount] = useState(
+    draft.amount === undefined ? '' : String(draft.amount),
+  );
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<CreateDonationResponse | null>(null);
   const [orderMode, setOrderMode] = useState<DonationMode | null>(null);
-  const [isWechat, setIsWechat] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [returnState, setReturnState] = useState<
-    'verifying' | 'paid' | 'refunded' | 'cancelled' | 'error'
-  >('verifying');
-  const [qrDataUrl, setQrDataUrl] = useState('');
-  const [qrFailed, setQrFailed] = useState(false);
+  const [polledReturnState, setPolledReturnState] = useState<{
+    token: string;
+    state: 'paid' | 'refunded' | 'cancelled' | 'error';
+  } | null>(null);
+  const [qrState, setQrState] = useState<{
+    codeUrl: string;
+    dataUrl: string;
+    failed: boolean;
+  } | null>(null);
   const [message, setMessage] = useState('');
   /** PayPal JS SDK 状态：按钮渲染前的加载反馈 */
-  const [paypalSdk, setPaypalSdk] = useState<PayPalSdk | null>(null);
-  const [paypalSdkState, setPaypalSdkState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [paypalSdkResult, setPaypalSdkResult] = useState<{
+    clientId: string;
+    sdk: PayPalSdk | null;
+    state: 'ready' | 'error';
+  } | null>(null);
   /** 用于丢弃切换渠道/关闭弹窗后返回的旧下单结果 */
   const requestSeq = useRef(0);
   const paypalHostRef = useRef<HTMLDivElement | null>(null);
@@ -211,6 +257,13 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
 
   const amount = Number(customAmount);
   const isPaypal = channel === 'paypal';
+  const isWechat = environment.isWechat;
+  const isMobile = environment.isMobile;
+  const configState = configStatus.retry === configRetry ? configStatus.state : 'loading';
+  const paypalClientId = config?.paypalClientId ?? null;
+  const paypalSdk = paypalSdkResult?.clientId === paypalClientId ? paypalSdkResult.sdk : null;
+  const paypalSdkState =
+    paypalSdkResult?.clientId === paypalClientId ? paypalSdkResult.state : 'loading';
   const minAmount = isPaypal ? PAYPAL_MIN_AMOUNT : DONATION_MIN_AMOUNT;
   const maxAmount = isPaypal ? PAYPAL_MAX_AMOUNT : DONATION_MAX_AMOUNT;
   const amountValid = isPaypal
@@ -220,40 +273,30 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
       Math.abs(amount * 100 - Math.round(amount * 100)) < 1e-6
     : Number.isInteger(amount) && amount >= minAmount && amount <= maxAmount;
   const configured = configState === 'ready' && (config?.channels[channel] ?? false);
-  const paypalClientId = config?.paypalClientId ?? null;
   const wechatJsapi = configState === 'ready' && (config?.wechatJsapi ?? false);
   /** 微信内置浏览器且已配置 AppSecret 时走 JSAPI，否则用扫码 */
   const useJsapi = channel === 'wechat' && isWechat && wechatJsapi;
   /** 微信内未配置 JSAPI：微信会拦截 H5 支付，提示改用浏览器打开 */
   const wechatBlocked = channel === 'wechat' && isWechat && configured && !wechatJsapi;
+  const returnState =
+    result?.status === 'cancel'
+      ? 'cancelled'
+      : result && !result.token
+        ? 'error'
+        : polledReturnState && polledReturnState.token === result?.token
+          ? polledReturnState.state
+          : 'verifying';
+  const qrDataUrl = qrState?.codeUrl === order?.codeUrl ? qrState?.dataUrl ?? '' : '';
+  const qrFailed = qrState?.codeUrl === order?.codeUrl ? qrState?.failed ?? false : false;
 
   useEffect(() => {
-    const ua = window.navigator.userAgent;
-    const wechat = /MicroMessenger/i.test(ua);
-    setIsWechat(wechat);
-    setIsMobile(/Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(ua));
-    if (wechat) setChannel('wechat');
-  }, []);
-
-  useEffect(() => {
-    if (!open || !result) return;
-
-    if (result.status === 'cancel') {
-      setReturnState('cancelled');
-      return;
-    }
+    if (!open || !result || result.status === 'cancel' || !result.token) return;
 
     const token = result.token;
-    if (!token) {
-      // 回跳缺少令牌：无法查单，视为异常
-      setReturnState('error');
-      return;
-    }
 
     let active = true;
     let attempts = 0;
     let timer: number | undefined;
-    setReturnState('verifying');
 
     // 指数退避：2s → 4s → 8s → ... 上限 60s
     const getDelay = () => Math.min(2000 * 2 ** attempts, 60_000);
@@ -274,22 +317,22 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
               amount: next.amount,
               channel: next.channel,
             });
-            setReturnState('paid');
+            setPolledReturnState({ token, state: 'paid' });
             return;
           }
           if (next.status === 'refunded') {
             // 退款成功：不记收入，显示退款状态
-            setReturnState('refunded');
+            setPolledReturnState({ token, state: 'refunded' });
             return;
           }
           if (next.status === 'closed') {
-            setReturnState('cancelled');
+            setPolledReturnState({ token, state: 'cancelled' });
             return;
           }
           attempts += 1;
           if (attempts >= 30) {
             // 最多轮询 30 次（约 10 分钟）
-            setReturnState('error');
+            setPolledReturnState({ token, state: 'error' });
             return;
           }
           timer = window.setTimeout(check, getDelay());
@@ -298,7 +341,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
           if (!active) return;
           attempts += 1;
           if (attempts >= 30) {
-            setReturnState('error');
+            setPolledReturnState({ token, state: 'error' });
             return;
           }
           timer = window.setTimeout(check, getDelay());
@@ -316,24 +359,8 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   useEffect(() => {
     if (!open) return;
 
-    // 授权跳转前保存的填写内容，回到页面后自动恢复
     try {
-      const raw = sessionStorage.getItem(DONATE_DRAFT_KEY);
-      if (!raw) return;
       sessionStorage.removeItem(DONATE_DRAFT_KEY);
-      const draft = JSON.parse(raw) as { channel?: DonateChannel; amount?: number };
-      if (draft.channel && CHANNELS.some((item) => item.id === draft.channel)) {
-        setChannel(draft.channel);
-      }
-      if (typeof draft.amount === 'number') {
-        const bounds =
-          draft.channel === 'paypal'
-            ? [PAYPAL_MIN_AMOUNT, PAYPAL_MAX_AMOUNT]
-            : [DONATION_MIN_AMOUNT, DONATION_MAX_AMOUNT];
-        if (draft.amount >= bounds[0] && draft.amount <= bounds[1]) {
-          setCustomAmount(String(draft.amount));
-        }
-      }
     } catch {
       // 隐私模式下存储不可用，忽略即可
     }
@@ -343,17 +370,16 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
     if (!open) return;
 
     let active = true;
-    setConfigState('loading');
     fetchDonateConfig()
       .then((next) => {
         if (!active) return;
         setConfig(next);
-        setConfigState('ready');
+        setConfigStatus({ retry: configRetry, state: 'ready' });
       })
       .catch(() => {
         if (!active) return;
         setConfig(null);
-        setConfigState('error');
+        setConfigStatus({ retry: configRetry, state: 'error' });
       });
 
     return () => {
@@ -362,27 +388,24 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
   }, [open, configRetry]);
 
   useEffect(() => {
-    if (!order?.codeUrl) {
-      setQrDataUrl('');
-      return;
-    }
+    const codeUrl = order?.codeUrl;
+    if (!codeUrl) return;
+
     let active = true;
-    setQrFailed(false);
     void import('qrcode')
       .then(({ toDataURL }) =>
-        toDataURL(order.codeUrl as string, {
+        toDataURL(codeUrl, {
           margin: 1,
           width: 240,
           color: { dark: '#0b0e12', light: '#ffffff' },
         }),
       )
       .then((url) => {
-        if (active) setQrDataUrl(url);
+        if (active) setQrState({ codeUrl, dataUrl: url, failed: false });
       })
       .catch(() => {
         if (!active) return;
-        setQrDataUrl('');
-        setQrFailed(true);
+        setQrState({ codeUrl, dataUrl: '', failed: true });
       });
 
     return () => {
@@ -400,17 +423,14 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
     if (!open || !isPaypal || !paypalClientId) return;
 
     let active = true;
-    setPaypalSdkState('loading');
     loadPaypalSdk(paypalClientId, PAYPAL_CURRENCY)
       .then((sdk) => {
         if (!active) return;
-        setPaypalSdk(sdk);
-        setPaypalSdkState('ready');
+        setPaypalSdkResult({ clientId: paypalClientId, sdk, state: 'ready' });
       })
       .catch(() => {
         if (!active) return;
-        setPaypalSdk(null);
-        setPaypalSdkState('error');
+        setPaypalSdkResult({ clientId: paypalClientId, sdk: null, state: 'error' });
         setMessage('PayPal 组件加载失败，请检查网络后重试');
       });
 
@@ -551,8 +571,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
     setPhase('idle');
     setOrder(null);
     setOrderMode(null);
-    setQrDataUrl('');
-    setQrFailed(false);
+    setQrState(null);
     setMessage('');
   };
 
@@ -626,9 +645,7 @@ export const DonateDialog: React.FC<IDonateDialogProps> = ({
           // 存储不可用时仍继续授权，返回后需重新填写
         }
         const redirect = `${window.location.pathname}${window.location.search}`;
-        window.location.assign(
-          `/api/donate/wechat/oauth?redirect=${encodeURIComponent(redirect)}`,
-        );
+        router.push(`/api/donate/wechat/oauth?redirect=${encodeURIComponent(redirect)}`);
         return;
       }
 

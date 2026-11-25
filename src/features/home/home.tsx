@@ -1,6 +1,6 @@
 'use client';
 
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { AnimatePresence, LazyMotion } from 'motion/react';
 import * as m from 'motion/react-m';
@@ -28,6 +28,11 @@ import {
 } from '@/config/site';
 import { identifyUmami, initUmami, trackEvent } from '@/lib/umami';
 
+// preload-skip 在水合前由同步脚本写入，之后不再变化。
+const subscribeToPreloadSkip = () => () => {};
+const getPreloadSkipSnapshot = () => document.documentElement.classList.contains('preload-skip');
+const getPreloadSkipServerSnapshot = () => false;
+
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);
 const ContactDialog = lazy(() =>
   import('@/features/contact/contact-dialog').then(({ ContactDialog: Component }) => ({
@@ -41,6 +46,11 @@ const DonateDialog = lazy(() =>
 );
 
 const Home: React.FC = () => {
+  const preloadSkip = useSyncExternalStore(
+    subscribeToPreloadSkip,
+    getPreloadSkipSnapshot,
+    getPreloadSkipServerSnapshot,
+  );
   const [avatarVisible, setAvatarVisible] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
@@ -52,22 +62,25 @@ const Home: React.FC = () => {
     const donate = params.get('donate');
     if (donate !== 'success' && donate !== 'cancel') return;
 
-    setDonateResult({
-      status: donate,
-      token: params.get('token') ?? undefined,
-    });
-    setDonateOpen(true);
+    const frame = window.requestAnimationFrame(() => {
+      setDonateResult({
+        status: donate,
+        token: params.get('token') ?? undefined,
+      });
+      setDonateOpen(true);
 
-    params.delete('donate');
-    params.delete('token');
-    params.delete('orderId');
-    params.delete('out_trade_no');
-    const search = params.toString();
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`,
-    );
+      params.delete('donate');
+      params.delete('token');
+      params.delete('orderId');
+      params.delete('out_trade_no');
+      const search = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`,
+      );
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const handleContactOpenChange = (open: boolean) => {
@@ -123,16 +136,10 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (avatarVisible) return;
-    // 自动化环境（部署截图）立即挂载，让截图尽量拿到模型最终效果；
-    // 未就绪时仍由进度圈占位。
-    if (document.documentElement.classList.contains('preload-skip')) {
-      setAvatarVisible(true);
-      return;
-    }
+    if (avatarVisible || preloadSkip) return;
     const timer = window.setTimeout(() => setAvatarVisible(true), 1500);
     return () => window.clearTimeout(timer);
-  }, [avatarVisible]);
+  }, [avatarVisible, preloadSkip]);
 
   return (
     <LazyMotion features={loadMotionFeatures} strict>
@@ -143,7 +150,7 @@ const Home: React.FC = () => {
           <div className="home-stack my-auto flex w-full shrink-0 flex-col items-center gap-[clamp(0.75rem,1.8vh,1rem)] py-4 text-center">
             <ProfileWrapper className="flex-center profile-reveal relative overflow-hidden">
               <AnimatePresence>
-                {!avatarVisible && (
+                {!avatarVisible && !preloadSkip && (
                   <m.div
                     key="profile-loading"
                     className="profile-loading absolute inset-0 flex items-center justify-center"
@@ -155,10 +162,10 @@ const Home: React.FC = () => {
                   </m.div>
                 )}
               </AnimatePresence>
-              {avatarVisible && <Avatar event$={avatarEvent$} />}
+              {(avatarVisible || preloadSkip) && <Avatar event$={avatarEvent$} />}
             </ProfileWrapper>
             <Name initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }} transition={{ duration: 0.2 }} />
-            <div className="h-7"><Description /></div>
+            <div className="h-7"><Description instant={preloadSkip} /></div>
             <Links
               onContactClick={() => {
                 trackEvent('contact-open', { source: 'profile' });
