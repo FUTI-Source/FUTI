@@ -28,6 +28,9 @@ h=vv.height;
 if(inner-h>140)h=lastHeight||inner;
 }
 }
+// 软键盘弹出时 visualViewport 明显小于 innerHeight：普通移动浏览器同样要保护，
+// 否则 --app-height 被压小，键盘收起后画布比视口矮，底部露出一段黑色区域。
+if(!homeScreen&&vv&&vv.height>0&&inner-vv.height>140)h=lastHeight||inner;
 return {w:w,h:h};
 };
 var apply=function(m){
@@ -68,7 +71,11 @@ keyboardTimers.push(setTimeout(function(){
 if(window.scrollY)window.scrollTo(0,0);
 var scroller=document.querySelector('[data-slot="scroll-area"]');
 if(scroller)scroller.scrollTop=0;
-update();
+// 弹窗内部滚动区同样归零：键盘顶起后它可能停留在滚动位置，收起后底部留黑。
+var dialogBodies=document.querySelectorAll('.site-dialog-body');
+for(var i=0;i<dialogBodies.length;i++)dialogBodies[i].scrollTop=0;
+// 强制跳过变低时的 debounce，直接把画布恢复到真实视口高度。
+pending=0;first=false;apply(measure());update();
 },delay));
 });
 };
