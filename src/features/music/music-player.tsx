@@ -231,7 +231,7 @@ export const MusicPlayer: React.FC = () => {
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
       className={cn(
-        'fixed bottom-2 right-[var(--desktop-edge-inset)] z-40 flex items-center overflow-hidden rounded-full',
+        'fixed bottom-4 right-[var(--desktop-edge-inset)] z-40 flex items-center overflow-hidden rounded-full',
         'transition-[max-width,height,padding,gap,border-color,background-color] duration-300 ease-out',
         expanded
           ? 'h-[2.875rem] max-w-[calc(100vw-2rem)] gap-2 border border-[color:var(--hairline)] bg-[#121720]/45 px-1.5 backdrop-blur-md'
