@@ -71,6 +71,7 @@
 - `src/app/sw.ts`：Service Worker 源码，使用 `defaultCache` 提供的 Next.js 推荐运行时策略（HTML/RSC 走 NetworkFirst，带 hash 的静态资源走 CacheFirst/StaleWhileRevalidate）；`/api/*` 被前置规则强制 NetworkOnly，不缓存支付与留言接口。
 - `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/~offline` 的预缓存清单，并从 `/serwist/sw.js` 提供。
 - `src/app/~offline/page.tsx`：文档请求离线且无缓存时的兜底页。
+- `src/features/pwa/pwa-registration.tsx`：`PwaRegistration` 先注销浏览器中残留的 `/sw.js` 注册并清理 `site-*` 旧缓存，再挂载 `SerwistProvider`；这解决了删除 `public/sw.js` 后旧注册仍尝试更新并报 404 的问题。
 - `src/app/layout.tsx`：`SerwistProvider` 仅在生产环境注册 SW；关闭 `reloadOnOnline` 与 `cacheOnNavigation`，避免后台恢复/网络恢复时自动刷新造成白屏。
 - `next.config.ts`：用 `withSerwist` 包装配置，把 esbuild 声明为 `serverExternalPackages`；为 `/serwist/:path*` 设置 `Content-Type`、永不缓存的 `Cache-Control` 与严格 CSP。
 
@@ -173,7 +174,7 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 浏览器侧再确认：
 
 - DevTools → Application → Service Workers：`/serwist/sw.js` 处于 Activated 状态，Unsafe requests 为 0；
-- DevTools → Application → Cache Storage：出现 `serwist-precache` 与 `pages*` 等缓存，旧的 `site-*` 缓存不再被写入；
+- DevTools → Application → Cache Storage：出现 Serwist 的预缓存及 `pages*` / `next-*` 缓存，旧的 `site-*` 缓存不再被写入；
 - Network 面板：`/serwist/sw.js` 永远不是 from disk cache；断网刷新首页仍能渲染，未缓存路由显示 `/~offline` 兜底页；
 - 境内/境外访问地址栏始终是同一个域名，没有 307 跨域跳转。
 

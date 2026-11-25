@@ -1,8 +1,8 @@
-import { SerwistProvider } from '@serwist/turbopack/react';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MusicPlayer } from '@/features/music/music-player';
 import { PageRestoreCoordinator } from '@/features/pwa/page-restore-coordinator';
+import { PwaRegistration } from '@/features/pwa/pwa-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
 import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
@@ -31,8 +31,8 @@ export default function RootLayout({
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：不达标浏览器应在新语法代码执行前被重定向 */}
         <script src="/scripts/browser-check.js" />
-        {/* 视口稳定性：给 iOS 主屏应用标记 class，并在软键盘收起后复位残留滚动。
-            页面高度本身由 CSS 100dvh 原生跟随，脚本不再测量/写入高度。 */}
+        {/* 视口稳定性：实测 --app-height 并同步 html min-height，修复 iOS 主屏 PWA
+            底部黑边；同时标记 ios-standalone，并在软键盘收起后复位残留滚动。 */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：ios-standalone class 要在首帧绘制前就位，避免状态栏补偿闪一下 */}
         <script src="/scripts/app-height.js" />
@@ -48,13 +48,7 @@ export default function RootLayout({
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
       </head>
       <body>
-        <SerwistProvider
-          swUrl="/serwist/sw.js"
-          disable={process.env.NODE_ENV !== 'production'}
-          cacheOnNavigation={false}
-          reloadOnOnline={false}
-          options={{ scope: '/', updateViaCache: 'none' }}
-        >
+        <PwaRegistration>
           <PageRestoreCoordinator />
           <SitePreloader />
           <script
@@ -77,7 +71,7 @@ export default function RootLayout({
               <SpeedInsights />
             </>
           ) : null}
-        </SerwistProvider>
+        </PwaRegistration>
       </body>
     </html>
   );
