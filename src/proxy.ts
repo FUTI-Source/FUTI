@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { isBrowserSupported } from '@/lib/browser-support';
-import { SITE_BROWSER_CHECK, SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '~/site.config';
+import { SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '~/site.config';
 
 /**
  * 站点级请求处理：
@@ -18,6 +18,12 @@ import { SITE_BROWSER_CHECK, SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } fro
 
 /** 裸域 → www 的主机名白名单：www 版本 + 裸域版本，由 SITE_URL 自动派生 */
 const wwwManagedHosts = new Set([SITE_HOSTNAME, SITE_DOMAIN]);
+
+/**
+ * 版本过低提示页（public/ 下的纯静态 HTML，零 JS）。
+ * 与 public/scripts/browser-check.js 里的跳转路径保持一致，无需配置、直接定死。
+ */
+const UNSUPPORTED_PATH = '/browser-unsupported.html';
 
 export function proxy(request: NextRequest) {
   const hostname = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
@@ -39,12 +45,11 @@ export function proxy(request: NextRequest) {
   // 机器人、爬虫与无法识别的 UA 在 browser-support 里一律放行。
   const ua = request.headers.get('user-agent') ?? '';
   if (
-    SITE_BROWSER_CHECK.enabled &&
     (request.method === 'GET' || request.method === 'HEAD') &&
-    pathname !== SITE_BROWSER_CHECK.unsupportedPath &&
+    pathname !== UNSUPPORTED_PATH &&
     !isBrowserSupported(ua, request.headers.get('sec-ch-ua'))
   ) {
-    return NextResponse.redirect(new URL(SITE_BROWSER_CHECK.unsupportedPath, request.url));
+    return NextResponse.redirect(new URL(UNSUPPORTED_PATH, request.url));
   }
 
   return NextResponse.next();

@@ -230,10 +230,12 @@ export const SITE_SOCIAL_LINKS = {
  * 9.5 浏览器版本检查
  *
  * 检测逻辑在 src/lib/browser-support.ts，由 src/proxy.ts 在每个页面
- * 请求上执行：不达标的浏览器 302 重定向到 unsupportedPath（版本过低页，
- * 实现在 public/browser-unsupported.html——纯静态 HTML，零 JS，
- * 旧内核浏览器不会再加载任何框架产物）。API 与静态资源不在 proxy 的
- * matcher 里，不受影响；.html 路径由 CDN 直接命中，不走 proxy。
+ * 请求上执行：不达标的浏览器 302 重定向到版本过低页
+ * public/browser-unsupported.html（路径在 proxy.ts 内定死，无需配置；
+ * 纯静态 HTML、零 JS，旧内核浏览器不会再加载任何框架产物，
+ * /scripts/browser-check.js 会在首帧前做内核语法实测兜底）。
+ * API 与静态资源不在 proxy 的 matcher 里，不受影响；.html 路径由
+ * CDN 直接命中，不走 proxy。
  * ══════════════════════════════════════════════════════════════════ */
 
 /** 站点支持的最低浏览器版本，与 package.json 的 browserslist 保持一致 */
@@ -243,10 +245,4 @@ export const SITE_BROWSER_MINIMUMS = {
   firefox: 126,
   safari: 17.5,
   ios: 17.5,
-} as const;
-
-/** 浏览器版本过低重定向开关与提示页路径（public/ 下的静态 HTML） */
-export const SITE_BROWSER_CHECK = {
-  enabled: true,
-  unsupportedPath: '/browser-unsupported.html',
 } as const;
