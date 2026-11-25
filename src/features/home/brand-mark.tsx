@@ -9,7 +9,7 @@ export const BrandMark: React.FC<IBrandMarkProps> = (props) => (
     <text
       x="44"
       y="25"
-      fill="#fff"
+      fill="currentColor"
       style={{ fontFamily: 'var(--font-playful)' }}
       fontSize="26"
       fontWeight="700"

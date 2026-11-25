@@ -7,7 +7,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 import { BasicsProps } from '@/components/types';
 
-import { BrandMark } from './brand-mark';
 import { cn } from '@/lib/utils';
 import {
   ICP_LINK,
@@ -23,30 +22,38 @@ import Link from 'next/link';
 type IFooterProps = BasicsProps;
 
 export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
+  const creditParts = SITE_THEME_CREDIT.split(' ');
+  const creditBrand = creditParts.pop() ?? SITE_THEME_CREDIT;
+  const creditPrefix = creditParts.join(' ');
+
   return (
     <div className={cn('footer flex h-16 shrink-0 items-center gap-4 pl-[var(--desktop-edge-inset)] max-sm:h-auto max-sm:min-h-16 max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-3 max-sm:pt-6 max-sm:pb-4 max-sm:pl-0', className)} style={style}>
       <Tooltip>
         <TooltipTrigger asChild>
           <m.a
             href="/"
-            className={cn('flex-center font-playful relative cursor-pointer text-xs text-[#737373]/15 select-none', className)}
+            className="group flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1 select-none sm:h-auto sm:flex-col sm:items-start sm:justify-start sm:gap-0.5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            {SITE_THEME_CREDIT}
-            <BrandMark className="absolute h-7 [&>text]:fill-white/20" />
+            <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/40 transition-colors duration-300 group-hover:text-[color:var(--accent-ink)] max-sm:hidden sm:text-xs">
+              {creditPrefix}
+            </span>
+            <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/55 transition-colors duration-300 group-hover:text-[color:var(--accent-ink-strong)] sm:text-xs">
+              {creditBrand}
+            </span>
           </m.a>
         </TooltipTrigger>
-        <TooltipContent sideOffset={16}>{SITE_THEME_CREDIT_HOVER}</TooltipContent>
+        <TooltipContent sideOffset={12}>{SITE_THEME_CREDIT_HOVER}</TooltipContent>
       </Tooltip>
 
       <m.div className="max-sm:!hidden" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.1 } }} transition={{ duration: 0.2 }}>
-        <Separator orientation="vertical" className="!h-8 bg-white/20" />
+        <Separator orientation="vertical" className="!h-8 bg-[color:var(--hairline)]" />
       </m.div>
-      <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)]" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
-        <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-2" />
-        <div className="footer-text font-playful flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_p]:text-[color:var(--text-footer-color)]">
+      <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)] sm:translate-y-1" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
+        <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-1" />
+        <div className="footer-text font-playful flex gap-1 space-x-1 text-xs select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_a]:transition-colors [&_a]:duration-300 [&_a]:hover:text-[color:var(--accent-ink-strong)] [&_p]:text-[color:var(--text-footer-color)]">
           <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; {SITE_COPYRIGHT_START} - {new Date().getFullYear()}
             <Tooltip>

@@ -24,8 +24,8 @@ const IconButton: React.FC<IconButtonProps> = ({ label, className, children, ...
     aria-label={label}
     title={label}
     className={cn(
-      'grid size-7 shrink-0 place-items-center rounded-full text-white/65 transition-colors',
-      'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#37eff9]/70',
+      'grid size-7 shrink-0 place-items-center rounded-full text-white/55 transition-colors',
+      'hover:bg-white/[0.06] hover:text-[color:var(--accent-ink-strong)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
       className,
     )}
     {...props}
@@ -104,6 +104,7 @@ export const MusicPlayer: React.FC = () => {
   const pendingPlayRef = useRef(false);
 
   const [isDesktop, setIsDesktop] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [tracks, setTracks] = useState<readonly MusicTrack[]>(SITE_MUSIC_TRACKS);
   const [index, setIndex] = useState(() => readSavedIndex(SITE_MUSIC_TRACKS.length));
   const [playing, setPlaying] = useState(false);
@@ -227,13 +228,14 @@ export const MusicPlayer: React.FC = () => {
 
   return (
     <div
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
       className={cn(
-        'group fixed bottom-2 right-[var(--desktop-edge-inset)] z-40',
-        'flex items-center overflow-hidden rounded-full',
-        'transition-[max-width,height,padding,gap,border-color,background-color,box-shadow] duration-300 ease-out',
-        playing
-          ? 'h-[2.875rem] max-w-[calc(100vw-2rem)] gap-2 border border-white/10 bg-[#121720]/82 px-2 shadow-[0_14px_40px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:border-white/[0.06] sm:bg-[#121720]/40 sm:px-1.5 sm:shadow-none sm:backdrop-blur-md'
-          : 'h-[46px] max-w-[46px] gap-0 border border-transparent bg-transparent p-0 shadow-none',
+        'fixed bottom-2 right-[var(--desktop-edge-inset)] z-40 flex items-center overflow-hidden rounded-full',
+        'transition-[max-width,height,padding,gap,border-color,background-color] duration-300 ease-out',
+        expanded
+          ? 'h-[2.875rem] max-w-[calc(100vw-2rem)] gap-2 border border-[color:var(--hairline)] bg-[#121720]/45 px-1.5 backdrop-blur-md'
+          : 'h-[46px] max-w-[46px] gap-0 border border-transparent bg-transparent p-0',
       )}
     >
       <audio
@@ -255,17 +257,17 @@ export const MusicPlayer: React.FC = () => {
         title={playing ? '暂停音乐' : '播放音乐（Shift + M）'}
         className={cn(
           'relative grid shrink-0 place-items-center overflow-hidden rounded-full',
-          'bg-gradient-to-br from-[#37eff9]/25 via-[#0091e4]/25 to-[#64c6f4]/25',
-          'text-[#9ee4ff] ring-1 ring-white/10 transition-[width,height,transform] hover:scale-105',
-          'sm:from-[#37eff9]/15 sm:via-[#0091e4]/15 sm:to-[#64c6f4]/15 sm:ring-white/[0.06]',
-          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#37eff9]/80',
-          playing ? 'size-9' : 'size-[44px]',
+          'bg-gradient-to-br from-[#37eff9]/20 via-[#0091e4]/20 to-[#64c6f4]/20',
+          'text-[color:var(--accent-ink)] ring-1 ring-[color:var(--hairline)]',
+          'transition-[width,height,transform,color] hover:scale-105 hover:text-[color:var(--accent-ink-strong)]',
+          'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
+          expanded ? 'size-9' : 'size-[44px]',
         )}
       >
-        {current.cover ? (
+        {playing && current.cover ? (
           <span
             aria-hidden="true"
-            className={cn('size-full rounded-full bg-cover bg-center', playing && 'animate-spin')}
+            className="size-full animate-spin rounded-full bg-cover bg-center"
             style={{ backgroundImage: `url("${current.cover}")` }}
           />
         ) : (
@@ -278,14 +280,14 @@ export const MusicPlayer: React.FC = () => {
         onClick={toggle}
         className={cn(
           'min-w-0 text-left transition-[max-width,opacity] duration-300 ease-out focus-visible:outline-none',
-          playing ? 'max-w-[8.5rem] opacity-100' : 'max-w-0 opacity-0',
+          expanded ? 'max-w-[8.5rem] opacity-100' : 'max-w-0 opacity-0',
         )}
         aria-label={playing ? `暂停 ${current.title}` : `播放 ${current.title}`}
       >
-        <span className="block max-w-[8.5rem] truncate text-xs font-semibold text-white/85 sm:text-white/70">
+        <span className="block max-w-[8.5rem] truncate text-xs font-semibold text-white/70">
           {current.title}
         </span>
-        <span className="block max-w-[8.5rem] truncate text-[10px] leading-tight text-white/45 sm:text-white/40">
+        <span className="block max-w-[8.5rem] truncate text-[10px] leading-tight text-white/40">
           {current.artist || '未知歌手'}
         </span>
       </button>
@@ -293,12 +295,11 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={cn(
           'flex items-center gap-0.5 overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-out',
-          playing ? 'ml-1 max-w-[8rem] border-l border-white/10 pl-1 opacity-100 sm:border-white/[0.06]' : 'ml-0 max-w-0 opacity-0',
+          expanded ? 'ml-1 max-w-[8rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
         )}
       >
         <IconButton
           label="上一首"
-          className="hidden sm:grid"
           onClick={() => switchTrack(index - 1, playing)}
         >
           <PrevIcon />
@@ -309,19 +310,19 @@ export const MusicPlayer: React.FC = () => {
         <IconButton label="下一首" onClick={() => switchTrack(index + 1, playing)}>
           <NextIcon />
         </IconButton>
-        <IconButton label={muted ? '取消静音' : '静音'} className="hidden sm:grid" onClick={() => setMuted((value) => !value)}>
+        <IconButton label={muted ? '取消静音' : '静音'} onClick={() => setMuted((value) => !value)}>
           <VolumeIcon muted={muted} />
         </IconButton>
       </div>
 
       <div
         className={cn(
-          'pointer-events-none absolute bottom-0 h-px overflow-hidden rounded-full bg-white/10 transition-[left,right,opacity] duration-300 ease-out sm:bg-white/[0.06]',
-          playing ? 'left-4 right-4 opacity-100' : 'left-2 right-2 opacity-0',
+          'pointer-events-none absolute bottom-0 h-px overflow-hidden rounded-full bg-[color:var(--hairline)] transition-[left,right,opacity] duration-300 ease-out',
+          expanded ? 'left-3 right-3 opacity-100' : 'left-2 right-2 opacity-0',
         )}
       >
         <div
-          className="h-full bg-gradient-to-r from-[#37eff9]/80 to-[#64c6f4]/80 transition-[width] duration-200 sm:from-[#37eff9]/50 sm:to-[#64c6f4]/50"
+          className="h-full bg-gradient-to-r from-[#37eff9]/60 via-[#0091e4]/40 to-[#64c6f4]/60 transition-[width] duration-200"
           style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
         />
       </div>
