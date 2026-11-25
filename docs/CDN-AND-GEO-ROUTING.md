@@ -66,7 +66,7 @@
 
 ## 3. Service Worker（代码侧）
 
-实现文件：`public/sw.js`。缓存版本号由根目录 `bump-sw-version.mjs` 在每次 `npm run build` 前自动生成（形如 `site-v<mz8kx3-ab12cd>`；若 CI 设置了 `BUILD_ID` 则复用它），版本变化会在激活时清理旧缓存。无需手改 `CACHE_VERSION`。SW 只缓存同源资源，与访客被分到哪个平台无关。
+实现文件：`public/sw.js`。缓存版本号由 `scripts/build/bump-sw-version.mjs` 在每次 `npm run build` 前自动生成（形如 `site-v<mz8kx3-ab12cd>`；若 CI 设置了 `BUILD_ID` 则复用它），版本变化会在激活时清理旧缓存。无需手改 `CACHE_VERSION`。SW 只缓存同源资源，与访客被分到哪个平台无关。
 
 若 `/_next/static/` 返回 404（旧页面引用了已删除的 chunk），SW 会清空整站缓存并通知页面自动重载一次；首屏遮罩另有纯 CSS 的 12 秒兜底，即使 JS 完全没起来也不会长期白屏。
 
@@ -89,7 +89,7 @@
 2. 新版本 SW 安装后通过 `SKIP_WAITING` 立即接管；
 3. 页面发现 RSC 响应里的 buildId 与当前页面不一致时，Next.js 自动降级为 MPA 导航，加载新 bundle。
 
-`prepare-standalone.mjs` 会把 `BUILD_ID` 同步进 standalone 产物，保证本地 `npm run start:standalone` 与线上行为一致。
+`scripts/build/prepare-standalone.mjs` 会把 `BUILD_ID` 同步进 standalone 产物，保证本地 `npm run start:standalone` 与线上行为一致。
 
 ---
 

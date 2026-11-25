@@ -18,11 +18,11 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node bump-sw-version.mjs",
-    "sw:version": "node bump-sw-version.mjs",
+    "prebuild": "node scripts/build/bump-sw-version.mjs",
+    "sw:version": "node scripts/build/bump-sw-version.mjs",
     "build": "next build",
     "start": "next start",
-    "start:standalone": "node prepare-standalone.mjs && node .next/standalone/server.js",
+    "start:standalone": "node scripts/build/prepare-standalone.mjs && node .next/standalone/server.js",
     "type:check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

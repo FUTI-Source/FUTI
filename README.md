@@ -3,7 +3,7 @@
 基于 **Next.js 16 + React 19 + TypeScript** 构建的独立个人主页。
 
 - 线上地址：<https://www.zhang-wentao.tech>
-- CDN 配置与 DNS 分流指南：[CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)
+- CDN 配置与 DNS 分流指南：[CDN-AND-GEO-ROUTING.md](docs/CDN-AND-GEO-ROUTING.md)
 
 ## 功能特性
 
@@ -140,7 +140,7 @@ npx vercel deploy --prod --yes
 - **境外**：解析到 Vercel
 - **默认**：解析到 Vercel（兜底）
 
-完整配置步骤见 [CDN-AND-GEO-ROUTING.md](CDN-AND-GEO-ROUTING.md)。
+完整配置步骤见 [CDN-AND-GEO-ROUTING.md](docs/CDN-AND-GEO-ROUTING.md)。
 
 ## 常见问题
 
