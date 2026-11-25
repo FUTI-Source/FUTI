@@ -47,17 +47,9 @@
         min-height: 100%;
       }
 
-      html {
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-      }
-
       body {
         margin: 0;
-        padding: max(32px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
-          max(32px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+        padding: 32px 18px;
         color: #f4f7fb;
         font-family: 'Nunito Variable', 'ZCOOL KuaiLe', 'PingFang SC', 'Hiragino Sans GB',
           'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
@@ -172,21 +164,6 @@
         border-color: rgba(2, 149, 229, 0.55);
         background: rgba(2, 149, 229, 0.09);
         transform: translateY(-1px);
-      }
-
-      /* 触屏没有真实 hover：按下才高亮，避免点击后状态粘滞 */
-      @media (hover: none) and (pointer: coarse) {
-        .browser:hover {
-          border-color: rgba(255, 255, 255, 0.09);
-          background: rgba(255, 255, 255, 0.035);
-          transform: none;
-        }
-        .browser:active {
-          outline: none;
-          border-color: rgba(2, 149, 229, 0.55);
-          background: rgba(2, 149, 229, 0.14);
-          transform: scale(0.99);
-        }
       }
 
       .mark {

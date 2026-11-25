@@ -199,8 +199,6 @@ main {
     text-size-adjust: 100%;
     /* 只保留滚动，禁用双击缩放等浏览器手势 */
     touch-action: manipulation;
-    /* 去掉移动端点击时浏览器自带的蓝色高亮块，改用站点自己的 active 反馈 */
-    -webkit-tap-highlight-color: transparent;
     /* iOS Safari 的玻璃工具栏以页面底色为底：底色需铺在 html 画布上，
        取壁纸顶部实测色调，顶部工具栏才能与页面背景自然衔接 */
     background-color: #1d1e20;
@@ -218,30 +216,6 @@ main {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     @apply font-sans text-foreground flex flex-col;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   全站触屏适配
-   Tailwind v4 的 hover: 变体本身已包在 @media (hover: hover) 内，
-   触屏不会粘滞；这里补的是「按下瞬间」的统一反馈与安全区适配。
-   用 opacity 而非 transform，避免覆盖弹窗居中用的 translate 定位。
-   ═══════════════════════════════════════════════════════════════════ */
-@media (hover: none) and (pointer: coarse) {
-  a:active,
-  button:active,
-  [role='button']:active {
-    opacity: 0.78;
-    -webkit-tap-highlight-color: rgba(55, 239, 249, 0.16);
-  }
-
-  input:active, textarea:active, select:active {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* 站内所有按钮在触屏上保证 44px 最小可点高度（宽度由各自布局决定） */
-  button {
-    min-height: 2.75rem;
   }
 }
 
@@ -379,25 +353,12 @@ body [contenteditable=''] {
   right: clamp(0.5rem, 3vw, 1rem);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .site-dialog-content [data-slot='dialog-close'] {
-    /* 图标视觉保持 32px，但点击热区扩到 44px 满足触屏最小目标 */
-    width: 2.75rem;
-    height: 2.75rem;
-  }
-}
-
 .site-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
   padding: clamp(1rem, 5vw, 1.5rem);
-  padding-left: max(clamp(1rem, 5vw, 1.5rem), var(--safe-top));
-  padding-right: max(clamp(1rem, 5vw, 1.5rem), var(--safe-top));
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* iOS 惯性滚动 + 触屏滚动不触发元素拖拽 */
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
 }
 
 /* 手机端改为从下方轻微上浮，避免弹窗在屏幕中央「啪」地出现 */

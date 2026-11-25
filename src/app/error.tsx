@@ -20,7 +20,7 @@ export default function Error({
       <button
         type="button"
         onClick={reset}
-        className="min-h-11 rounded-md bg-[#0295e5] px-5 py-2 text-sm font-bold text-white shadow-[0_0_18px_rgba(2_149_229_0.45)] hover:bg-[#0295e5]/90 active:bg-[#0179bd]"
+        className="rounded-md bg-[#0295e5] px-5 py-2 text-sm font-bold text-white shadow-[0_0_18px_rgba(2_149_229_0.45)] hover:bg-[#0295e5]/90"
       >
         重新加载
       </button>
