@@ -20,6 +20,9 @@ const AvatarCore = lazy(() => import('./avatar-core.tsx'));
 /** 后台恢复后初始化超时：超时就退回静态形象，避免 WebGL context 未恢复时一直转圈 */
 const RESTORE_INIT_TIMEOUT_MS = 8000;
 
+/** context 丢失后的恢复超时：浏览器迟迟不给 restored 事件时同样退回静态形象 */
+const CONTEXT_LOST_FALLBACK_MS = 5000;
+
 type IAvatarProps = BasicsProps & {
   event$?: EventEmitter<AvatarEvent>;
 };
@@ -64,12 +67,22 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
     setInit(ready);
   }, []);
   const [instanceKey, setInstanceKey] = useState(0);
+  const contextLostTimerRef = useRef<number | undefined>(undefined);
+  const clearContextLostTimer = React.useCallback(() => {
+    if (contextLostTimerRef.current !== undefined) {
+      window.clearTimeout(contextLostTimerRef.current);
+      contextLostTimerRef.current = undefined;
+    }
+  }, []);
   const restart = React.useCallback(() => {
+    clearContextLostTimer();
     setInitState(false);
     setFailed(false);
     setInstanceKey((current) => current + 1);
     event$?.emit(AvatarEvent.LOADING);
-  }, [event$, setInitState]);
+  }, [clearContextLostTimer, event$, setInitState]);
+
+  useEffect(() => () => clearContextLostTimer(), [clearContextLostTimer]);
 
   // 后台恢复只认协调器的统一信号；restart 后加超时兜底，
   // 若 WebGL context 长时间后台丢失、初始化事件没回来，就退回静态形象而不是一直转圈。
@@ -101,6 +114,15 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
       case AvatarEvent.CONTEXT_LOST: {
         setInitState(false);
         event$?.emit(AvatarEvent.LOADING);
+        // 浏览器不一定能修复上下文：超过兜底时间仍未 restored 就退回静态形象，
+        // 避免 GPU 侧已放弃时页面一直停在转圈状态。
+        clearContextLostTimer();
+        contextLostTimerRef.current = window.setTimeout(() => {
+          contextLostTimerRef.current = undefined;
+          if (initRef.current) return;
+          setFailed(true);
+          event$?.emit(AvatarEvent.FAILED);
+        }, CONTEXT_LOST_FALLBACK_MS);
         break;
       }
       case AvatarEvent.CONTEXT_RESTORED: {
@@ -108,6 +130,7 @@ export const Avatar: React.FC<IAvatarProps> = ({ event$ }) => {
         break;
       }
       case AvatarEvent.INIT: {
+        clearContextLostTimer();
         setInitState(true);
         event$?.emit(AvatarEvent.INIT);
         // 模型已就绪：先让头像退出，模型延迟 0.2s 再淡入，避免两者叠加出现重影
