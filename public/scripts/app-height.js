@@ -20,11 +20,13 @@ if(vv&&vv.height>h)h=vv.height;
 var sh=window.screen.height;
 if(sh>h&&sh-h<=200)h=sh;
 }else if(vv&&vv.height>0){
-// 稳定后 PWA 没有浏览器工具栏，visualViewport.height 就是真实可视区域。
-// 原生状态栏显隐只会改变它；若继续取 innerHeight 的较大值，页面会比视口高而产生滚动。
+// 稳定后 PWA 没有浏览器工具栏，visualViewport.height 通常是真实可视区域。
+// 但 iOS 主屏应用在带底部指示条的机型上 vv.height 会排除指示条区域，
+// 直接采用会让 --app-height 偏小、body 高度不够，底部露出黑色画布。
+// 差值不大（状态栏/指示条，<140）时改用 innerHeight 铺满整个 WebView。
 h=vv.height;
-// 软键盘弹出时 visualViewport.height 会缩短（与 innerHeight 差值远大于状态栏）。
-// 此时不能把 --app-height 压小，否则键盘收起后页面比画布矮，底部留下黑色间隔。
+if(inner-h>0&&inner-h<140)h=inner;
+// 软键盘弹出时差值远大于状态栏，保留上一稳定高度，避免键盘收起后画布缩水留黑。
 if(inner-h>140)h=lastHeight||inner;
 }
 }

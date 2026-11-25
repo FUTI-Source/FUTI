@@ -205,6 +205,9 @@ main {
     background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, .2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
     background-blend-mode: overlay, normal;
     background-repeat: no-repeat;
+    /* 背景相对视口固定：即使 --app-height 与真实视口有瞬时差值，
+       也不会在底部露出未绘制背景的黑色画布 */
+    background-attachment: fixed;
   }
 
   .ui-transition * {
