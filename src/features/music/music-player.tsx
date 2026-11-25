@@ -36,6 +36,44 @@ const ROW_HEIGHT = 44;
 /** 虚拟列表上下缓冲行数：避免快速滞回时露白 */
 const OVERSCAN = 4;
 
+interface LyricLine {
+  time: number;
+  text: string;
+}
+
+function parseLrc(lrc: string): LyricLine[] {
+  const lines: LyricLine[] = [];
+  for (const rawLine of lrc.split(/\r?\n/)) {
+    const text = rawLine.replace(/\[[^\]]*\]/g, '').trim();
+    if (!text) continue;
+
+    for (const match of rawLine.matchAll(/\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/g)) {
+      const milliseconds = Number((match[3] ?? '0').padEnd(3, '0').slice(0, 3));
+      lines.push({
+        time: Number(match[1]) * 60 + Number(match[2]) + milliseconds / 1000,
+        text,
+      });
+    }
+  }
+  return lines.sort((a, b) => a.time - b.time);
+}
+
+function findActiveLyric(lines: readonly LyricLine[], time: number): number {
+  let low = 0;
+  let high = lines.length - 1;
+  let active = -1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (lines[middle].time <= time) {
+      active = middle;
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return active;
+}
+
 const readSavedIndex = (length: number): number => {
   if (typeof window === 'undefined' || length === 0) return 0;
   const saved = Number(window.localStorage.getItem(STORAGE_KEY));
@@ -148,6 +186,21 @@ const ListIcon: React.FC = () => (
   </svg>
 );
 
+const LyricsIcon: React.FC = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    className="size-3.5"
+  >
+    <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" />
+  </svg>
+);
+
 const ModeLoopIcon: React.FC<{ mode: PlayMode }> = ({ mode }) => (
   <svg
     viewBox="0 0 24 24"
@@ -173,10 +226,16 @@ export const MusicPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingPlayRef = useRef(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const lyricsRef = useRef<HTMLDivElement>(null);
+  const lyricsCacheRef = useRef(new Map<string, readonly LyricLine[]>());
 
   const [isDesktop, setIsDesktop] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [listOpen, setListOpen] = useState(false);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
+  const [lyricLines, setLyricLines] = useState<readonly LyricLine[]>([]);
+  const [lyricsStatus, setLyricsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [lyricsLoadedKey, setLyricsLoadedKey] = useState<string>();
   // 虚拟滞回：只渲染 [scrollTop, scrollTop + viewportH] 内的行 ± OVERSCAN 缓冲，
   // 避免长歌单一次挂几十个 <img> 触发 Edge LazyLoad intervention。
   const [scrollTop, setScrollTop] = useState(0);
@@ -190,6 +249,14 @@ export const MusicPlayer: React.FC = () => {
   const [mode, setMode] = useState<PlayMode>(readSavedMode);
 
   const current = tracks[index] ?? tracks[0];
+  const currentSrc = current?.src;
+  const currentLyrics = current?.lyrics;
+  const currentLyricId = current?.lyricId;
+  const lyricKey = currentLyrics
+    ? `local:${current.src}`
+    : currentLyricId
+      ? `online:${SITE_MUSIC_PLAYLIST.server}:${currentLyricId}`
+      : current?.src;
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 640px)');
@@ -232,6 +299,85 @@ export const MusicPlayer: React.FC = () => {
 
     return () => controller.abort();
   }, [isDesktop]);
+
+  useEffect(() => {
+    if (!lyricsOpen || !lyricKey) return;
+
+    const cached = lyricsCacheRef.current.get(lyricKey);
+    if (cached?.length) {
+      setLyricLines(cached);
+      setLyricsLoadedKey(lyricKey);
+      setLyricsStatus('ready');
+      return;
+    }
+
+    if (currentLyrics) {
+      const lines = parseLrc(currentLyrics);
+      lyricsCacheRef.current.set(lyricKey, lines);
+      setLyricLines(lines);
+      setLyricsLoadedKey(lyricKey);
+      setLyricsStatus('ready');
+      return;
+    }
+
+    if (!currentLyricId) {
+      setLyricLines([]);
+      setLyricsLoadedKey(lyricKey);
+      setLyricsStatus('ready');
+      return;
+    }
+
+    const controller = new AbortController();
+    setLyricLines([]);
+    setLyricsStatus('loading');
+
+    fetch(`/api/music/lyrics?id=${encodeURIComponent(currentLyricId)}`, {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (response.status === 404) return { lyric: '' };
+        return response.ok
+          ? response.json()
+          : Promise.reject(new Error('lyrics failed'));
+      })
+      .then((data: unknown) => {
+        const lyric = (data as { lyric?: unknown })?.lyric;
+        const lines = typeof lyric === 'string' ? parseLrc(lyric) : [];
+        if (lines.length > 0) lyricsCacheRef.current.set(lyricKey, lines);
+        if (controller.signal.aborted) return;
+        setLyricLines(lines);
+        setLyricsLoadedKey(lyricKey);
+        setLyricsStatus('ready');
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLyricsStatus('error');
+      });
+
+    return () => controller.abort();
+  }, [lyricsOpen, currentLyrics, currentLyricId, lyricKey]);
+
+  const displayedLyrics = lyricsLoadedKey === lyricKey ? lyricLines : [];
+  const activeLyricIndex = findActiveLyric(displayedLyrics, currentTime);
+
+  useEffect(() => {
+    if (!lyricsOpen || activeLyricIndex < 0) return;
+    const container = lyricsRef.current;
+    const activeLine = container?.querySelector<HTMLElement>('[data-active="true"]');
+    if (!container || !activeLine) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    activeLine.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'center',
+    });
+  }, [lyricsOpen, activeLyricIndex, lyricKey]);
+
+  const seekTo = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration)) return;
+    audio.currentTime = Math.min(Math.max(0, time), audio.duration);
+    setCurrentTime(audio.currentTime);
+  }, []);
 
   const switchTrack = useCallback(
     (nextIndex: number, autoplay: boolean) => {
@@ -281,14 +427,14 @@ export const MusicPlayer: React.FC = () => {
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !current) return;
+    if (!audio || !currentSrc) return;
 
     audio.load();
     if (!pendingPlayRef.current) return;
 
     pendingPlayRef.current = false;
     void audio.play().catch(() => setPlaying(false));
-  }, [current?.src]);
+  }, [currentSrc]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = muted;
@@ -391,6 +537,7 @@ export const MusicPlayer: React.FC = () => {
       onMouseLeave={() => {
         setExpanded(false);
         setListOpen(false);
+        setLyricsOpen(false);
       }}
       className="fixed bottom-5 right-[var(--desktop-edge-inset)] z-40 flex flex-col items-end gap-2"
     >
@@ -414,6 +561,59 @@ export const MusicPlayer: React.FC = () => {
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onError={() => setPlaying(false)}
       />
+
+      {lyricsOpen ? (
+        <div
+          id="site-music-lyrics"
+          role="dialog"
+          aria-label="同步歌词"
+          className={cn(
+            'w-[min(320px,calc(100vw-2rem))] overflow-hidden rounded-xl',
+            'border border-[color:var(--hairline)] bg-[#121720]/90 shadow-2xl backdrop-blur-md',
+          )}
+        >
+          <div className="border-b border-[color:var(--hairline)] px-4 py-3">
+            <p className="truncate text-xs font-semibold text-[color:var(--accent-ink-strong)]">
+              {current.title}
+            </p>
+            <p className="mt-0.5 truncate text-[10px] text-white/45">
+              {current.artist || '未知歌手'}
+            </p>
+          </div>
+          <div
+            ref={lyricsRef}
+            className="scrollbar-slim h-60 overflow-y-auto overscroll-contain px-3 py-24"
+          >
+            {lyricsStatus === 'loading' ? (
+              <p className="py-8 text-center text-xs text-white/45">歌词加载中…</p>
+            ) : lyricsStatus === 'error' ? (
+              <p className="py-8 text-center text-xs text-white/45">歌词加载失败，请关闭后重试</p>
+            ) : displayedLyrics.length === 0 ? (
+              <p className="py-8 text-center text-xs text-white/45">这首歌暂时没有同步歌词</p>
+            ) : (
+              displayedLyrics.map((line, lineIndex) => (
+                <button
+                  key={`${line.time}-${lineIndex}`}
+                  type="button"
+                  data-active={lineIndex === activeLyricIndex ? 'true' : undefined}
+                  aria-current={lineIndex === activeLyricIndex ? 'true' : undefined}
+                  aria-label={`跳转到 ${Math.floor(line.time / 60)} 分 ${Math.floor(line.time % 60)} 秒：${line.text}`}
+                  onClick={() => seekTo(line.time)}
+                  className={cn(
+                    'my-2 block min-h-7 w-full rounded-md px-2 py-1.5 text-center text-sm leading-6 transition-colors',
+                    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
+                    lineIndex === activeLyricIndex
+                      ? 'bg-white/[0.06] font-semibold text-[color:var(--accent-ink-strong)]'
+                      : 'text-white/40 hover:bg-white/[0.03] hover:text-white/70',
+                  )}
+                >
+                  {line.text}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {listOpen ? (
         <div
@@ -560,9 +760,8 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={cn(
           'flex items-center gap-0.5 overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-out',
-          // 6 颗 size-7 按钮 + 5 × gap-0.5 + pl-1 + border-l 共需≈183px，预留到 192px，
-          // 否则最后两颗（展开歌单 / 播放模式）会被 overflow-hidden 削掉。
-          expanded ? 'ml-1 max-w-[12rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
+          // 7 颗 size-7 按钮 + 6 × gap-0.5 + pl-1 + border-l 共需≈209px，预留到 224px。
+          expanded ? 'ml-1 max-w-[14rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
         )}
       >
         <IconButton
@@ -584,10 +783,25 @@ export const MusicPlayer: React.FC = () => {
           label={listOpen ? '收起歌单' : '展开歌单'}
           aria-expanded={listOpen}
           aria-controls="site-music-playlist"
-          onClick={() => setListOpen((value) => !value)}
+          onClick={() => {
+            setListOpen((value) => !value);
+            setLyricsOpen(false);
+          }}
           className={cn(listOpen && 'bg-white/[0.08] text-[color:var(--accent-ink-strong)]')}
         >
           <ListIcon />
+        </IconButton>
+        <IconButton
+          label={lyricsOpen ? '收起歌词' : '显示歌词'}
+          aria-expanded={lyricsOpen}
+          aria-controls="site-music-lyrics"
+          onClick={() => {
+            setLyricsOpen((value) => !value);
+            setListOpen(false);
+          }}
+          className={cn(lyricsOpen && 'bg-white/[0.08] text-[color:var(--accent-ink-strong)]')}
+        >
+          <LyricsIcon />
         </IconButton>
         <IconButton
           label={MODE_LABEL[mode]}

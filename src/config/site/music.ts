@@ -7,6 +7,10 @@ export interface MusicTrack {
   src: string;
   /** 封面地址，留空时播放器显示默认音符图标 */
   cover?: string;
+  /** 平台歌词 ID，用于打开歌词面板时按需获取 */
+  lyricId?: string;
+  /** 本地 LRC 歌词，配置后无需在线获取 */
+  lyrics?: string;
 }
 
 export type MetingServer = 'netease' | 'tencent' | 'kugou' | 'baidu' | 'kuwo';

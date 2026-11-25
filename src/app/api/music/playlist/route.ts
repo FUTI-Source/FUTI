@@ -35,6 +35,8 @@ interface MetingItem {
   artist?: unknown;
   url?: unknown;
   cover?: unknown;
+  lyric_id?: unknown;
+  lyric?: unknown;
 }
 
 function normalizeExternalPayload(payload: unknown): MusicTrack[] {
@@ -48,9 +50,14 @@ function normalizeExternalPayload(payload: unknown): MusicTrack[] {
     const src = toHttpsUrl(asString(item.url));
     const artist = asString(item.artist);
     const cover = toHttpsUrl(asString(item.cover));
+    const lyricId =
+      typeof item.lyric_id === 'string' || typeof item.lyric_id === 'number'
+        ? String(item.lyric_id)
+        : undefined;
+    const lyrics = asString(item.lyric);
 
     if (!title || !src) return [];
-    return [{ title, artist, src, cover }];
+    return [{ title, artist, src, cover, lyricId, lyrics }];
   });
 }
 

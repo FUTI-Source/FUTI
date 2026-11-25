@@ -100,7 +100,24 @@ async function resolveTrack(
     artist: artistToString(item.artist),
     src,
     cover,
+    lyricId:
+      item.lyric_id === undefined || item.lyric_id === null || item.lyric_id === ''
+        ? undefined
+        : String(item.lyric_id),
   };
+}
+
+export async function queryLocalLyric(
+  server: MetingServer,
+  id: string,
+): Promise<string | undefined> {
+  try {
+    const raw = await createMeting(server).lyric(id);
+    const lyric = parseFirst<{ lyric?: unknown }>(raw)?.lyric;
+    return typeof lyric === 'string' && lyric.trim() ? lyric : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** 项目内置 Meting 解析：不依赖外部 Meting API 服务 */
