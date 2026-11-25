@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { createSerwistRoute } from '@serwist/turbopack';
 
-import { SITE_PWA } from '~/site.config';
+import { SITE_PWA } from '@/config/site';
 
 // CI 可用 BUILD_ID（提交号）作为离线页版本；本地构建用随机值保证每次构建都是新修订。
 const revision = process.env.BUILD_ID ?? randomUUID();

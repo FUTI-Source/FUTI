@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG, SITE_PWA } from '~/site.config';
+import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG, SITE_PWA } from '@/config/site';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

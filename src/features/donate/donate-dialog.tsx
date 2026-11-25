@@ -22,8 +22,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-import { capturePaypalDonation, createDonation, DonateError, fetchDonateConfig, queryDonation } from './donate-api';
-import { trackDonationRevenue } from './revenue';
+import { capturePaypalDonation, createDonation, DonateError, fetchDonateConfig, queryDonation } from './client';
+import { trackDonationRevenue } from './analytics';
 import type {
   CreateDonationResponse,
   DonateChannel,
@@ -39,7 +39,7 @@ import {
   PAYPAL_CURRENCY,
   PAYPAL_MAX_AMOUNT,
   PAYPAL_MIN_AMOUNT,
-} from '~/site.config';
+} from '@/config/site';
 import { captureException, trackEvent } from '@/lib/umami';
 
 const CHANNELS = [

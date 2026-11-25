@@ -5,7 +5,7 @@ import * as m from 'motion/react-m';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { BasicsProps } from '@/components/types';
+import { BasicsProps } from '@/components/ui/types';
 
 import { cn } from '@/lib/utils';
 import {
@@ -14,7 +14,7 @@ import {
   SITE_AUTHOR_NAME,
   SITE_COPYRIGHT_START,
   SITE_JOB_TITLE_EN,
-} from '~/site.config';
+} from '@/config/site';
 import Link from 'next/link';
 
 type IFooterProps = BasicsProps;

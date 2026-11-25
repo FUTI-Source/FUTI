@@ -7,7 +7,7 @@ import { resolveClientId } from '@/lib/http/client-ip';
 import { donateCreateRateLimiter } from '@/lib/http/rate-limit';
 import { jsonError, rateLimited, readJsonBody } from '@/lib/http/api-response';
 import { logger } from '@/lib/logger';
-import { PAYPAL_CURRENCY } from '~/site.config';
+import { PAYPAL_CURRENCY } from '@/config/site';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

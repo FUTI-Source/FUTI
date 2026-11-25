@@ -1,7 +1,7 @@
 /**
  * 浏览器支持判定（服务端检测，供 src/proxy.ts 调用）。
  *
- * 最低版本基线来自 site.config.ts 的 SITE_BROWSER_MINIMUMS，
+ * 最低版本基线来自 src/config/site 的 SITE_BROWSER_MINIMUMS，
  * 与 package.json 的 browserslist 保持一致；改基线时两处一起改。
  *
  * 检测策略（按优先级）：
@@ -18,7 +18,7 @@
  *  4. 未能识别的 UA 一律放行——宁可漏判，也不能把正常用户挡在门外。
  */
 
-import { SITE_BROWSER_MINIMUMS } from '~/site.config';
+import { SITE_BROWSER_MINIMUMS } from '@/config/site';
 
 /** 常见爬虫 / 截图 / 自动化环境，不做版本判定 */
 const BOT_PATTERN =

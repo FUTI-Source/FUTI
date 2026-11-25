@@ -5,9 +5,9 @@ import * as m from 'motion/react-m';
 
 import { Separator } from '@/components/ui/separator';
 
-import { BasicsProps } from '@/components/types';
+import { BasicsProps } from '@/components/ui/types';
 
-import { SITE_AUTHOR_NAME } from '~/site.config';
+import { SITE_AUTHOR_NAME } from '@/config/site';
 import { cn } from '@/lib/utils';
 
 type INameProps = BasicsProps & MotionProps;

@@ -25,7 +25,7 @@ import {
   SITE_ANALYTICS_DOMAINS,
   SITE_ANALYTICS_URL,
   SITE_ANALYTICS_WEBSITE_ID,
-} from '~/site.config';
+} from '@/config/site';
 import { identifyUmami, initUmami, trackEvent } from '@/lib/umami';
 
 const loadMotionFeatures = () => import('@/components/ui/motion-features').then((module) => module.default);

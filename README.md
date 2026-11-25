@@ -52,45 +52,54 @@ npm run start:standalone  # 按 standalone 产物启动
 
 ```
 src/
-├── app/                          # App Router 入口
-│   ├── api/                      # Route Handlers
-│   │   ├── contact/              # 联系表单 → Webhook 通知
-│   │   └── donate/               # 打赏接口（创建/查询/回调）
-│   ├── layout.tsx / page.tsx     # 根布局与首页
-│   └── manifest.ts / robots.ts   # PWA / SEO
-├── components/                   # 通用 UI 组件
+├── app/                          # App Router 入口（api、serwist、~offline 均为路由契约）
+├── components/
+│   ├── ui/                       # 基础 UI 与跨 feature 的通用 props 类型
+│   └── site-interaction/         # 全局交互守卫与自定义光标
+├── config/
+│   ├── env.ts                    # 服务端环境变量（唯一密钥入口）
+│   ├── seo/                      # Next Metadata / Viewport 装配
+│   └── site/                     # 公开站点配置，按主题拆分
+│       ├── identity.ts           # 域名、语言、文案、备案、社交链接
+│       ├── seo.ts                # 图标、分享图、Apple 启动图
+│       ├── analytics.ts          # Umami
+│       ├── donation.ts           # 打赏 / PayPal 档位
+│       ├── cdn.ts                # CDN 缓存头
+│       ├── pwa.ts                # SW 路径、主题色、注册行为、CSP 白名单
+│       ├── browser.ts            # 浏览器最低版本
+│       ├── music.ts              # 音乐胶囊公开配置
+│       └── index.ts              # 统一 re-export
 ├── features/                     # 按业务域组织
-│   ├── home/                     # 首页、视差背景、自定义光标
-│   ├── avatar/                   # Live2D 头像
-│   ├── profile/                  # 名称、描述、社交链接
-│   ├── contact/                  # 联系表单
-│   ├── donate/                   # 打赏
-│   ├── music/                    # 全局音乐播放胶囊
-│   └── pwa/                      # Service Worker
+│   ├── home/ avatar/ profile/ contact/ donate/ music/ pwa/
 ├── hooks/                        # 通用 React hooks
-├── lib/                          # 站点工具（日志、通知、限流）
-└── styles/                       # 全局样式
+├── lib/                          # 跨业务通用工具（http、logger、utils 等）
+├── server/                       # 服务端专用逻辑（notify、dedupe）
+├── styles/                       # 全局样式
+└── types/                        # 第三方模块类型补丁
 public/                           # Live2D 模型、字体、图标、运行时脚本
 docs/                             # 部署与 CDN 配置文档
 licenses/                         # 内容等非代码资产协议
 scripts/                          # 构建与部署辅助脚本
-site.config.ts                    # 站点全局配置
+tooling/postcss/                  # PostCSS 插件
 LICENSE                           # 代码开源协议（BSD-3-Clause）
 ```
 
 ## 站点配置
 
-所有站点配置集中在 `site.config.ts`：
+所有公开配置集中在 `src/config/site/`，统一从 `@/config/site` 引入：
 
-| 分区 | 导出 | 作用 |
-|------|------|------|
-| 域名 | `SITE_URL` | 唯一对外域名 |
-| 文案 | `SITE_NAME` / `SITE_DESCRIPTION` | 标题、描述 |
-| 打赏 | `DONATION_MIN_AMOUNT` / `DONATION_MAX_AMOUNT` | 单笔金额上下限 |
-| 统计 | `SITE_ANALYTICS_URL` / `SITE_ANALYTICS_WEBSITE_ID` | Umami 配置 |
-| CDN | `SITE_CDN_CACHE` | 缓存策略配置 |
+| 模块 | 导出示例 | 作用 |
+|------|----------|------|
+| `identity.ts` | `SITE_URL` / `SITE_NAME` | 域名、语言、文案、备案 |
+| `seo.ts` | `SITE_ICON_PATH` / `SITE_APPLE_SPLASH_SCREENS` | 图标、分享图、启动图 |
+| `analytics.ts` | `SITE_ANALYTICS_URL` | Umami 配置 |
+| `donation.ts` | `DONATION_MIN_AMOUNT` | 打赏 / PayPal 档位 |
+| `cdn.ts` | `SITE_CDN_CACHE` | CDN 缓存策略 |
+| `pwa.ts` | `SITE_PWA` | SW 路径、主题色、注册行为、CSP 白名单 |
+| `browser.ts` | `SITE_BROWSER_MINIMUMS` | 浏览器最低版本 |
+| `music.ts` | `SITE_MUSIC_PLAYLIST` | 音乐胶囊公开配置 |
 
-**公开信息进文件，密钥进环境变量**。`site.config.ts` 被客户端组件引用，切勿写入任何密钥。
+**公开信息进文件，密钥进环境变量**。`src/config/site` 会被客户端组件引用，切勿写入任何密钥。
 
 ## 环境变量
 
@@ -121,11 +130,11 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 
 ### 在线歌单
 
-所有公开的音乐配置统一写在根目录 `site.config.ts` 的「9.6 音乐胶囊」：本地曲目 `SITE_MUSIC_TRACKS`、在线歌单 `SITE_MUSIC_PLAYLIST`、外部 API 地址 `SITE_MUSIC_API_BASE`。在线歌单使用 HeoMusic / MetingJS 相同参数：`server`、`type`、`id`。
+所有公开的音乐配置统一写在 `src/config/site/music.ts`：本地曲目 `SITE_MUSIC_TRACKS`、在线歌单 `SITE_MUSIC_PLAYLIST`、外部 API 地址 `SITE_MUSIC_API_BASE`。在线歌单使用 HeoMusic / MetingJS 相同参数：`server`、`type`、`id`。
 
 项目已内置 `@meting/core` 自建解析，`SITE_MUSIC_API_BASE` 留空时不依赖外部公共 API。浏览器只请求 `/api/music/playlist`，由服务端解析并统一转换为播放器数据。
 
-以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `site.config.ts`：
+以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `src/config/site`：
 
 | 变量 | 必填 | 说明 |
 |------|------|------|

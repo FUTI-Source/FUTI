@@ -3,10 +3,10 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MusicPlayer } from '@/features/music/music-player';
 import { PageRestoreCoordinator } from '@/features/pwa/page-restore-coordinator';
 import { PwaRegistration } from '@/features/pwa/pwa-registration';
-import { SiteInteractionGuard } from '@/components/site-interaction-guard';
+import { SiteInteractionGuard } from '@/components/site-interaction/guard';
 import { SitePreloader } from '@/components/site-preloader';
-import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
-import { SITE_ANALYTICS_URL, SITE_LANG } from '~/site.config';
+import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/config/seo/metadata';
+import { SITE_ANALYTICS_URL, SITE_LANG } from '@/config/site';
 
 import './globals.css';
 

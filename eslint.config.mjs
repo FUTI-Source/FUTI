@@ -29,10 +29,14 @@ export default [
       'coverage/**',
       'public/**',
       'scripts/**',
+      // 构建工具插件按 Node 全局书写，不参与浏览器端规则校验
+      'tooling/**',
       // Live2D Cubism 官方运行时，不属于本项目可维护代码
       'src/features/avatar/live2d/**',
-      // 根目录配置文件按 Node 全局书写，不参与校验
-      '*.config.{js,mjs,cjs,ts}',
+      // 仅忽略根级框架配置，不跳过 src/config 下的业务配置
+      'next.config.{js,mjs,cjs,ts}',
+      'postcss.config.{js,mjs,cjs,ts}',
+      'eslint.config.{js,mjs,cjs,ts}',
     ],
   },
   ...nextCoreWebVitals,

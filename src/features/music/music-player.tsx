@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 import { cn } from '@/lib/utils';
 
-import { SITE_MUSIC_PLAYLIST, SITE_MUSIC_TRACKS, type MusicTrack } from '~/site.config';
+import { SITE_MUSIC_PLAYLIST, SITE_MUSIC_TRACKS, type MusicTrack } from '@/config/site';
 
 const STORAGE_KEY = 'site-music-index';
 

@@ -2,7 +2,8 @@ import { randomBytes } from 'node:crypto';
 import { withSerwist } from '@serwist/turbopack';
 import type { NextConfig } from 'next';
 
-import { SITE_CDN_CACHE, SITE_PWA } from './site.config';
+import { SITE_CDN_CACHE } from './src/config/site/cdn';
+import { SITE_PWA } from './src/config/site/pwa';
 
 // Vercel 在构建时注入 VERCEL=1；它按自己的产物模型托管 Next.js，
 // standalone 输出只在火山引擎 IGA Pages（自包含 server.js）这条链路上需要。
@@ -53,10 +54,6 @@ const nextConfig: NextConfig = {
   // 隐藏 X-Powered-By，减少无谓的响应头
   poweredByHeader: false,
   allowedDevOrigins,
-  experimental: {
-    // lucide-react 图标库按需编译，缩短构建时间并减小产物体积
-    optimizePackageImports: ['lucide-react'],
-  },
   images: {
     // Serve local WebP assets directly; FaaS runtimes cannot reliably persist
     // Next.js's on-demand image optimization cache.

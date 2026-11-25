@@ -5,8 +5,8 @@ import { defaultCache } from '@serwist/turbopack/worker';
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist';
 import { NetworkOnly, Serwist } from 'serwist';
 
-// SW 由 esbuild 单独编译，不能用 tsconfig 的 ~ 别名，使用相对路径引入站点配置。
-import { SITE_PWA } from '../../site.config';
+// SW 由 esbuild 单独编译，不能用 tsconfig 路径别名，使用相对路径引入配置。
+import { SITE_PWA } from '../config/site/pwa';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {

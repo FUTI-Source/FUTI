@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getOpenidCookieKey } from '@/config/env';
 import { logger } from '@/lib/logger';
-import { SITE_URL } from '~/site.config';
+import { SITE_URL } from '@/config/site';
 import {
   exchangeWechatOpenid,
   getWechatJsapiConfig,

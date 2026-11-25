@@ -3,7 +3,7 @@
 import { SerwistProvider } from '@serwist/turbopack/react';
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { SITE_PWA } from '~/site.config';
+import { SITE_PWA } from '@/config/site';
 
 /**
  * 迁移清理：旧版本把 SW 注册在 /sw.js，文件删除后浏览器仍会尝试更新它并报 404。

@@ -6,7 +6,7 @@ import {
   IconRss,
 } from '@/components/icons';
 
-import { SITE_SOCIAL_LINKS } from '~/site.config';
+import { SITE_SOCIAL_LINKS } from '@/config/site';
 
 interface ILink {
   /** 稳定的英文标识，用于埋点与逻辑判断，避免依赖展示文案 */
@@ -18,7 +18,7 @@ interface ILink {
 }
 
 /**
- * 社交链接：完全由 site.config.ts 的 SITE_SOCIAL_LINKS 驱动。
+ * 社交链接：完全由 src/config/site 的 SITE_SOCIAL_LINKS 驱动。
  * 地址留空时按钮仍会渲染，但置灰并提示“链接尚未配置”。
  */
 const SOCIAL_LINKS: ILink[] = [

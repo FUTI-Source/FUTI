@@ -7,7 +7,7 @@ import * as m from 'motion/react-m';
 
 import { Loading } from './loading';
 
-import { BasicsProps } from '@/components/types';
+import { BasicsProps } from '@/components/ui/types';
 
 import useEventEmitter, { EventEmitter } from '@/hooks/use-event-emitter';
 import useExternal from '@/hooks/use-external';

@@ -1,7 +1,7 @@
-import { createDedupe } from '@/lib/dedupe';
+import { createDedupe } from '@/server/dedupe';
 import { logger } from '@/lib/logger';
-import { isWebhookConfigured, notifyOwner } from '@/lib/notify';
-import { SITE_NAME, SITE_URL } from '~/site.config';
+import { isWebhookConfigured, notifyOwner } from '@/server/notify';
+import { SITE_NAME, SITE_URL } from '@/config/site';
 
 import type { DonateChannel } from '../types';
 

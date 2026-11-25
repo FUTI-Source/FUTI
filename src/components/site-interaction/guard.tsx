@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-import { initCustomCursor } from '@/features/home/custom-cursor';
+import { initCustomCursor } from '@/components/site-interaction/custom-cursor';
 
 const EDITABLE_SELECTOR =
   'input, textarea, select, [contenteditable="true"], [contenteditable=""]';

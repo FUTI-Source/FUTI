@@ -16,7 +16,7 @@ export interface CreateDonationRequest {
   channel: DonateChannel;
   /**
    * 金额：支付宝/微信单位为元（整数），PayPal 单位为 PAYPAL_CURRENCY（最多 2 位小数）。
-   * 范围由 site.config.ts 的 DONATION_* 与 PAYPAL_* 档位决定
+   * 范围由 src/config/site 的 DONATION_* 与 PAYPAL_* 档位决定
    */
   amount: number;
   /** 仅微信支付有效：微信内用 jsapi，其他环境用 native 扫码 */

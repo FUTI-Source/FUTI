@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as m from 'motion/react-m';
 
 import { DynamicText } from '@/components/ui/dynamic-text';
-import type { BasicsProps } from '@/components/types';
+import type { BasicsProps } from '@/components/ui/types';
 import { cn } from '@/lib/utils';
 
 type IHeaderProps = BasicsProps<'header'>;

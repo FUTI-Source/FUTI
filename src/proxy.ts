@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { isBrowserSupported } from '@/lib/browser-support';
-import { SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '~/site.config';
+import { SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '@/config/site';
 
 /**
  * 站点级请求处理：

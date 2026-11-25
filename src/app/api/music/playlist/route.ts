@@ -5,9 +5,9 @@ import {
   type MetingServer,
   type MetingType,
   type MusicTrack,
-} from '~/site.config';
+} from '@/config/site';
 import { jsonError } from '@/lib/http/api-response';
-import { queryLocalMeting } from '@/lib/music/meting';
+import { queryLocalMeting } from '@/features/music/server/meting';
 
 const SERVERS = new Set<MetingServer>(['netease', 'tencent', 'kugou', 'baidu', 'kuwo']);
 const TYPES = new Set<MetingType>(['song', 'playlist', 'album', 'artist', 'search']);

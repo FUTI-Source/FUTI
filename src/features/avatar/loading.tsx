@@ -3,7 +3,7 @@ import React from 'react';
 import type { DOMMotionComponents, MotionProps } from 'motion/react';
 import * as m from 'motion/react-m';
 
-import { AsComp, BasicsProps } from '@/components/types';
+import { AsComp, BasicsProps } from '@/components/ui/types';
 
 import { cn } from '@/lib/utils';
 

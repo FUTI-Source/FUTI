@@ -6,7 +6,7 @@ import {
   PAYPAL_CURRENCY,
   PAYPAL_MAX_AMOUNT,
   PAYPAL_MIN_AMOUNT,
-} from '~/site.config';
+} from '@/config/site';
 
 export const donateChannelSchema = z.enum(['alipay', 'wechat', 'paypal']);
 

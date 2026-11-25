@@ -5,7 +5,7 @@
 1. **CDN / 浏览器缓存**：代码里如何设定缓存头、Service Worker 如何缓存资源；
 2. **分流**：境内与境外共用同一个对外域名，分流只在 DNS 分线路完成。
 
-所有代码侧开关集中在根目录 `site.config.ts`，改完需要**两个平台各自重新部署**才生效（配置在构建期求值）。DNS 记录在云解析控制台维护，与代码部署互不依赖。
+所有代码侧开关集中在 `src/config/site`，改完需要**两个平台各自重新部署**才生效（配置在构建期求值）。DNS 记录在云解析控制台维护，与代码部署互不依赖。
 
 ---
 
@@ -38,7 +38,7 @@
 
 ### 2.1 配置入口
 
-`site.config.ts` 的 `SITE_CDN_CACHE` 定义四档策略，`next.config.ts` 的 `headers()` 把它们写到对应路径。规则只按路径匹配，不区分线路与平台，因此两条部署链路上的同一域名表现一致：
+`src/config/site` 的 `SITE_CDN_CACHE` 定义四档策略，`next.config.ts` 的 `headers()` 把它们写到对应路径。规则只按路径匹配，不区分线路与平台，因此两条部署链路上的同一域名表现一致：
 
 | 路径 | 策略 | 响应头 | 说明 |
 |------|------|--------|------|
@@ -66,7 +66,7 @@
 
 ## 3. Service Worker（代码侧）
 
-离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）。所有 PWA 配置集中在 `site.config.ts` 的 `SITE_PWA`：路径、主题色、图标、注册行为、SW 生命周期与 CSP 白名单都从这里读取，其他文件不再写死这些常量。
+离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）。所有 PWA 配置集中在 `src/config/site` 的 `SITE_PWA`：路径、主题色、图标、注册行为、SW 生命周期与 CSP 白名单都从这里读取，其他文件不再写死这些常量。
 
 - `src/app/sw.ts`：Service Worker 源码，使用 `defaultCache` 提供的 Next.js 推荐运行时策略（HTML/RSC 走 NetworkFirst，带 hash 的静态资源走 CacheFirst/StaleWhileRevalidate）；`/api/*` 被前置规则强制 NetworkOnly，不缓存支付与留言接口。
 - `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/~offline` 的预缓存清单，并从 `/serwist/sw.js` 提供。
@@ -83,7 +83,7 @@
 
 ### 4.1 配置入口
 
-分流**不在代码、不在环境变量、不在 `site.config.ts`**，而是在云解析 DNS 控制台给同一个主机名加分线路记录。IGA 与 Vercel 两侧都要绑定 `www.zhang-wentao.tech`（及裸域，如需分流裸域），平台侧预览域名不参与。
+分流**不在代码、不在环境变量、不在 `src/config/site`**，而是在云解析 DNS 控制台给同一个主机名加分线路记录。IGA 与 Vercel 两侧都要绑定 `www.zhang-wentao.tech`（及裸域，如需分流裸域），平台侧预览域名不参与。
 
 ### 4.2 记录清单
 
@@ -125,7 +125,7 @@
 
 - `iga.json` 固定 `installCommand: npm ci`、`buildCommand: npm run build`；
 - Node.js 版本选 **24.x**（`package.json` 要求 ≥24）；
-- 环境变量（密钥）在项目设置里配置，公开配置全部在 `site.config.ts`；
+- 环境变量（密钥）在项目设置里配置，公开配置全部在 `src/config/site`；
 - 绑定自定义域名 `www.zhang-wentao.tech`，但 DNS 记录由云解析控制台统一管理，不要在 IGA 里另配跳转；
 - 不需要额外指定输出目录，平台按 Next.js 模式处理 standalone 产物；
 - 不要手工在控制台覆盖 `Cache-Control`，代码里的值已经过权衡。
@@ -191,4 +191,4 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 | 出现跨域名跳转 | 当前代码已无地域跳转逻辑：检查平台控制台跳转规则、老版本产物是否仍在线，及 DNS 是否解析到旧部署 |
 | 支付回调异常 | `proxy.ts` 的 matcher 已排除 `/api/*`；单域名下回调地址按 `SITE_URL` 拼接，确认两侧密钥一致 |
 | DNS 改了不生效 | 免费版 TTL 最小 600 秒，等待至少 10 分钟再用 `dig +subnet` 复核 |
-| 改了 `site.config.ts` 不生效 | 配置在构建期求值，IGA 与 Vercel 两条链路要分别重新部署 |
+| 改了 `src/config/site` 不生效 | 配置在构建期求值，IGA 与 Vercel 两条链路要分别重新部署 |

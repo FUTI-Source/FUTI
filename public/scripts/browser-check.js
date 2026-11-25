@@ -1,6 +1,6 @@
 (function () {
   try {
-    /* 最低版本必须与 site.config.ts 的 SITE_BROWSER_MINIMUMS 保持一致。
+    /* 最低版本必须与 src/config/site 的 SITE_BROWSER_MINIMUMS 保持一致。
      * 这里不能用 ES6+ 写法：旧内核要能先执行这段脚本，再决定是否跳转。 */
     var MIN = {
       chrome: 125,

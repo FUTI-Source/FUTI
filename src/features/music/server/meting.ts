@@ -5,7 +5,7 @@ import Meting, {
 } from '@meting/core';
 
 import { getMetingCookie } from '@/config/env';
-import type { MetingServer, MetingType, MusicTrack } from '~/site.config';
+import type { MetingServer, MetingType, MusicTrack } from '@/config/site';
 
 const MAX_TRACKS = 40;
 const BATCH_SIZE = 5;

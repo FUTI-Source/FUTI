@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import type Parallax from 'parallax-js';
 
-import { BasicsProps } from '@/components/types';
+import { BasicsProps } from '@/components/ui/types';
 
 import backgroundLeftImage from '@/assets/background-left.webp';
 import backgroundRightImage from '@/assets/background-right.webp';

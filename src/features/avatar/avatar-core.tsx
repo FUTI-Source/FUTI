@@ -11,7 +11,7 @@ import { Live2DModel } from '@/features/avatar/live2d';
 
 import { AvatarEvent } from './events';
 
-import { BasicsProps } from '@/components/types';
+import { BasicsProps } from '@/components/ui/types';
 
 import { EventEmitter } from '@/hooks/use-event-emitter';
 

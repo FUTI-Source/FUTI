@@ -1,13 +1,13 @@
 import { getPaypalEnv, type PaypalEnv } from '@/config/env';
 import { logger } from '@/lib/logger';
 
-import { PAYPAL_CURRENCY } from '~/site.config';
+import { PAYPAL_CURRENCY } from '@/config/site';
 
 /**
  * PayPal Orders API v2（REST）的最小封装：下单、扣款、查单、Webhook 验签。
  *
  * 与微信 / 支付宝模块并列的第三条渠道；金额单位是 PayPal 币种（默认 USD），
- * 与人民币渠道互不换算，档位见 site.config.ts 的 PAYPAL_*。
+ * 与人民币渠道互不换算，档位见 src/config/site 的 PAYPAL_*。
  */
 
 const API_BASE = {
@@ -28,7 +28,7 @@ export class PayPalError extends Error {
 /** PayPal 是否已配置（前端据此决定渠道可用性） */
 export const isPaypalConfigured = (): boolean => getPaypalEnv() !== null;
 
-/** PayPal 收款币种（来自 site.config.ts） */
+/** PayPal 收款币种（来自 src/config/site） */
 export const getPaypalCurrency = (): string => PAYPAL_CURRENCY;
 
 /* ------------------------------ 访问令牌 ------------------------------ */
