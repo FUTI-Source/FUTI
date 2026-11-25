@@ -166,7 +166,7 @@ export const PAYPAL_MAX_AMOUNT = 500;
  * ══════════════════════════════════════════════════════════════════ */
 
 /** 版权起始年份，页脚会渲染成「2017 - 当前年」 */
-export const SITE_COPYRIGHT_START = 2017;
+export const SITE_COPYRIGHT_START = 2016;
 export const SITE_THEME_CREDIT = 'Drawn by NAVILAB';
 /** 悬停时显示的别名，用于给画师/模型来源留不同署名 */
 export const SITE_THEME_CREDIT_HOVER = 'Drawn by Navigator Kepler';
