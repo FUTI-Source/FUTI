@@ -1,15 +1,85 @@
-(function(){try{
-/* 浏览器内核语法能力检测（服务端 UA 判定的兜底）。
- * 部分浏览器（如 360 安全/极速浏览器）默认上报伪造的高版本 Chrome UA，
- * 服务端按 UA 放行后，页面 JS 产物（ES2022）在旧内核上解析阶段即抛
- * "Uncaught SyntaxError" 且无法运行。这里用极小的 ES5 脚本实测语法能力：
- * 通过 new Function 编译一段含可选链(?.)、空值合并(??)、逻辑赋值(||=)、
- * 静态类字段(class static)的代码——Chrome 125+ / Safari 17.5+ / Firefox 126+
- * （即 browserslist 最低基线）全部支持，旧内核会在解析阶段抛 SyntaxError。
- * 实测不达标立即跳转到版本过低页，避免白屏或半渲染页面。 */
-var p=window.location&&window.location.pathname||'';
-if(p.indexOf('/browser-unsupported')===0)return;
-var ok=false;
-try{ok=new Function('var o={a:1};o||={};class C{static s=1};return (o.a??0)+(C&&C.s||0);')()===2;}catch(e){ok=false;}
-if(!ok&&window.location)window.location.replace('/browser-unsupported.html?from=runtime-check');
-}catch(e){}})();
+(function () {
+  try {
+    /* 最低版本必须与 site.config.ts 的 SITE_BROWSER_MINIMUMS 保持一致。
+     * 这里不能用 ES6+ 写法：旧内核要能先执行这段脚本，再决定是否跳转。 */
+    var MIN = {
+      chrome: 125,
+      edge: 125,
+      firefox: 126,
+      safari: 17.5,
+      ios: 17.5
+    };
+    var BOT_PATTERN =
+      /(bot|crawl|spider|slurp|facebookexternalhit|lighthouse|pagespeed|headlesschrome)/i;
+
+    var p = window.location && window.location.pathname || '';
+    if (p.indexOf('/browser-unsupported') === 0) return;
+
+    var ua = window.navigator && window.navigator.userAgent || '';
+    if (!ua || BOT_PATTERN.test(ua)) return;
+
+    function redirect() {
+      if (window.location) {
+        window.location.replace('/browser-unsupported.html?from=runtime-check');
+      }
+    }
+
+    function parseVersion(userAgent, pattern) {
+      var match = userAgent.match(pattern);
+      if (!match) return null;
+      var version = parseFloat(match[1]);
+      return isFinite(version) ? version : null;
+    }
+
+    function parseIosVersion(userAgent) {
+      var safariVersion = parseVersion(userAgent, /\bVersion\/(\d+(?:\.\d+)?)/);
+      if (safariVersion !== null) return safariVersion;
+
+      var match = userAgent.match(/\b(?:iPhone OS|CPU OS) (\d+)(?:[_.](\d+))?/i);
+      if (!match) return null;
+      return parseFloat(match[1] + '.' + (match[2] || '0'));
+    }
+
+    function versionUnsupported(userAgent) {
+      if (/MSIE\s|Trident\//.test(userAgent)) return true;
+      if (/\bEdge\/\d/.test(userAgent) && !/\bEdg\/\d/.test(userAgent)) return true;
+
+      /* iOS / iPadOS 上所有浏览器都走系统 WebKit：优先 Version/，
+       * 微信等 WebView 没有 Version/ 时读 iPhone OS / CPU OS。 */
+      if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        var ios = parseIosVersion(userAgent);
+        return ios !== null ? ios < MIN.ios : false;
+      }
+
+      /* Edge 必须在 Chrome 之前判断，因为 Edge UA 里同时带 Edg/ 和 Chrome/。 */
+      var edge = parseVersion(userAgent, /\bEdg(?:e|A|iOS)?\/(\d+(?:\.\d+)?)/);
+      if (edge !== null) return edge < MIN.edge;
+
+      /* Chrome 及 Chromium 系套壳浏览器统一按 Chrome 内核版本判断。 */
+      var chrome = parseVersion(userAgent, /\bChrome\/(\d+(?:\.\d+)?)/);
+      if (chrome !== null) return chrome < MIN.chrome;
+
+      var firefox = parseVersion(userAgent, /\bFirefox\/(\d+(?:\.\d+)?)/);
+      if (firefox !== null) return firefox < MIN.firefox;
+
+      var safari = parseVersion(userAgent, /\bVersion\/(\d+(?:\.\d+)?)/);
+      if (safari !== null && /Safari\//.test(userAgent)) return safari < MIN.safari;
+
+      return false;
+    }
+
+    function syntaxSupported() {
+      try {
+        /* 实测可选链、空值合并、逻辑赋值与静态类字段，
+         * 用来兜住伪造高版本 UA、但内核实际过旧的浏览器。 */
+        return new Function(
+          'var o={a:1};o||={};class C{static s=1};return (o.a??0)+(C&&C.s||0);'
+        )() === 2;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    if (versionUnsupported(ua) || !syntaxSupported()) redirect();
+  } catch (e) {}
+})();

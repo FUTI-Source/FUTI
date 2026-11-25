@@ -233,7 +233,7 @@ export const SITE_SOCIAL_LINKS = {
  * 请求上执行：不达标的浏览器 302 重定向到版本过低页
  * public/browser-unsupported.html（路径在 proxy.ts 内定死，无需配置；
  * 纯静态 HTML、零 JS，旧内核浏览器不会再加载任何框架产物，
- * /scripts/browser-check.js 会在首帧前做内核语法实测兜底）。
+ * /scripts/browser-check.js 会在首帧前做版本与内核语法能力兜底）。
  * API 与静态资源不在 proxy 的 matcher 里，不受影响；.html 路径由
  * CDN 直接命中，不走 proxy。
  * ══════════════════════════════════════════════════════════════════ */

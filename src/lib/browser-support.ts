@@ -47,6 +47,18 @@ function parseMajor(ua: string, pattern: RegExp): number | null {
   return Number.isFinite(major) ? major : null;
 }
 
+/** 解析 iOS / iPadOS 的 WebKit 版本：优先 Safari Version/，其次系统版本 */
+function parseIosVersion(ua: string): number | null {
+  const safariVersion = parseMajor(ua, /\bVersion\/(\d+(?:\.\d+)?)/);
+  if (safariVersion !== null) return safariVersion;
+
+  const match = ua.match(/\b(?:iPhone OS|CPU OS) (\d+)(?:[_.](\d+))?/i);
+  if (!match) return null;
+
+  const version = Number.parseFloat(`${match[1]}.${match[2] ?? '0'}`);
+  return Number.isFinite(version) ? version : null;
+}
+
 /**
  * 判定当前请求的浏览器是否达到站点最低版本要求。
  *
@@ -69,12 +81,10 @@ export function isBrowserSupported(ua: string, secChUa?: string | null): boolean
   // 全部按同一基线（SITE_BROWSER_MINIMUMS.ios）判定。
   // 1. 常规 UA 带 Version/（≈ Safari 版本），直接使用；
   // 2. 微信、企业微信等 WebView 的 UA 不带 Version/，回退读
-  //    「CPU iPhone OS 17_5」里的系统版本号（17_5 → 17，主版本即可比较）；
+  //    「CPU iPhone OS 17_5」或「CPU OS 17_5」里的系统版本号（17_5 → 17.5）；
   // 3. 两者都拿不到时放行，避免误伤非标准 UA。
   if (/iPhone|iPad|iPod/i.test(ua)) {
-    const ios =
-      parseMajor(ua, /\bVersion\/(\d+(?:\.\d+)?)/) ??
-      parseMajor(ua, /\biPhone OS (\d+(?:_\d+)*)/i);
+    const ios = parseIosVersion(ua);
     return ios === null ? true : ios >= SITE_BROWSER_MINIMUMS.ios;
   }
 
