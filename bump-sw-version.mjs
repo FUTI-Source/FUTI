@@ -10,7 +10,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.dirname(fileURLToPath(import.meta.url));
 const swPath = path.join(root, 'public', 'sw.js');
 
 /** CI 若显式给了 BUILD_ID 就复用它，保证 SW 与 Next 构建版本一致 */
