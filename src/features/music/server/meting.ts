@@ -5,7 +5,8 @@ import Meting, {
 } from '@meting/core';
 
 import { getMetingCookie } from '@/config/env';
-import type { MetingServer, MetingType, MusicTrack } from '@/config/site';
+import type { MetingServer, MetingType, MusicServer, MusicTrack } from '@/config/site';
+import { queryMiguLyric, queryMiguMusic } from './migu';
 
 const MAX_TRACKS = 40;
 const BATCH_SIZE = 5;
@@ -108,9 +109,11 @@ async function resolveTrack(
 }
 
 export async function queryLocalLyric(
-  server: MetingServer,
+  server: MusicServer,
   id: string,
 ): Promise<string | undefined> {
+  if (server === 'migu') return queryMiguLyric(id);
+
   try {
     const raw = await createMeting(server).lyric(id);
     const lyric = parseFirst<{ lyric?: unknown }>(raw)?.lyric;
@@ -120,12 +123,14 @@ export async function queryLocalLyric(
   }
 }
 
-/** 项目内置 Meting 解析：不依赖外部 Meting API 服务 */
-export async function queryLocalMeting(
-  server: MetingServer,
+/** 项目内置音乐解析：不依赖外部公共 API 服务 */
+export async function queryLocalMusic(
+  server: MusicServer,
   type: MetingType,
   id: string,
 ): Promise<MusicTrack[]> {
+  if (server === 'migu') return queryMiguMusic(type, id);
+
   const baseTracks = (await loadBaseTracks(createMeting(server), type, id)).slice(0, MAX_TRACKS);
   const tracks: MusicTrack[] = [];
 

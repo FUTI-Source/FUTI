@@ -3,13 +3,16 @@ import { NextResponse, type NextRequest } from 'next/server';
 import {
   SITE_MUSIC_API_BASE,
   type MetingServer,
+  type MusicServer,
   type MetingType,
   type MusicTrack,
 } from '@/config/site';
 import { jsonError } from '@/lib/http/api-response';
-import { queryLocalMeting } from '@/features/music/server/meting';
+import { queryLocalMusic } from '@/features/music/server/meting';
 
-const SERVERS = new Set<MetingServer>(['netease', 'tencent', 'kugou', 'baidu', 'kuwo']);
+export const runtime = 'nodejs';
+
+const SERVERS = new Set<MusicServer>(['netease', 'tencent', 'kugou', 'kuwo', 'migu']);
 const TYPES = new Set<MetingType>(['song', 'playlist', 'album', 'artist', 'search']);
 
 const asString = (value: unknown): string | undefined =>
@@ -97,9 +100,9 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const server = params.get('server');
   const rawType = params.get('type') ?? 'playlist';
-  const id = params.get('id');
+  const id = params.get('id')?.trim();
 
-  if (!server || !SERVERS.has(server as MetingServer)) {
+  if (!server || !SERVERS.has(server as MusicServer)) {
     return jsonError(400, 'INVALID_SERVER', '不支持的音乐平台');
   }
   if (!TYPES.has(rawType as MetingType)) {
@@ -109,18 +112,18 @@ export async function GET(request: NextRequest) {
     return jsonError(400, 'INVALID_ID', '歌单 ID 不合法');
   }
 
-  const typedServer = server as MetingServer;
+  const typedServer = server as MusicServer;
   const typedType = rawType as MetingType;
   const base = SITE_MUSIC_API_BASE.trim();
 
   let tracks: MusicTrack[];
-  if (base) {
+  if (base && typedServer !== 'migu') {
     const result = await queryExternalMeting(base, typedServer, typedType, id);
     if (result instanceof Response) return result;
     tracks = result;
   } else {
     try {
-      tracks = await queryLocalMeting(typedServer, typedType, id);
+      tracks = await queryLocalMusic(typedServer, typedType, id);
     } catch {
       return jsonError(502, 'LOCAL_METING_FAILED', '解析在线歌单失败，请稍后重试');
     }

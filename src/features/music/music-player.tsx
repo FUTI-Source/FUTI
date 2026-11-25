@@ -331,7 +331,11 @@ export const MusicPlayer: React.FC = () => {
     setLyricLines([]);
     setLyricsStatus('loading');
 
-    fetch(`/api/music/lyrics?id=${encodeURIComponent(currentLyricId)}`, {
+    const params = new URLSearchParams({
+      server: SITE_MUSIC_PLAYLIST.server,
+      id: currentLyricId,
+    });
+    fetch(`/api/music/lyrics?${params.toString()}`, {
       signal: controller.signal,
     })
       .then((response) => {

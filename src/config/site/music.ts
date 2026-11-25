@@ -13,12 +13,13 @@ export interface MusicTrack {
   lyrics?: string;
 }
 
-export type MetingServer = 'netease' | 'tencent' | 'kugou' | 'baidu' | 'kuwo';
+export type MusicServer = 'netease' | 'tencent' | 'kugou' | 'kuwo' | 'migu';
+export type MetingServer = Exclude<MusicServer, 'migu'>;
 export type MetingType = 'song' | 'playlist' | 'album' | 'artist' | 'search';
 
 export interface MusicPlaylistSource {
   /** 音乐平台 */
-  server: MetingServer;
+  server: MusicServer;
   /** 资源类型 */
   type: MetingType;
   /** 资源 ID，从歌单/歌曲分享链接里取 */

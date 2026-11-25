@@ -130,7 +130,7 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 
 所有公开的音乐配置统一写在 `src/config/site/music.ts`：本地曲目 `SITE_MUSIC_TRACKS`、在线歌单 `SITE_MUSIC_PLAYLIST`、外部 API 地址 `SITE_MUSIC_API_BASE`。在线歌单使用 HeoMusic / MetingJS 相同参数：`server`、`type`、`id`。
 
-项目已内置 `@meting/core` 自建解析，`SITE_MUSIC_API_BASE` 留空时不依赖外部公共 API。浏览器只请求 `/api/music/playlist`，由服务端解析并统一转换为播放器数据。
+项目已内置 `@meting/core` 自建解析网易云、QQ、酷狗和酷我；咪咕音乐由项目内的服务端适配器实现，不安装第三方咪咕 SDK，也不依赖外部 API 服务。`SITE_MUSIC_API_BASE` 留空时完全不依赖公共 API，浏览器只请求 `/api/music/playlist`，由服务端解析并统一转换为播放器数据。
 
 以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `src/config/site`：
 
@@ -139,10 +139,11 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 | `METING_NETEASE_COOKIE` | 否 | 网易云 Cookie，可提高会员/受限歌曲解析成功率 |
 | `METING_TENCENT_COOKIE` | 否 | QQ 音乐 Cookie，可提高会员/受限歌曲解析成功率 |
 | `METING_KUGOU_COOKIE` | 否 | 酷狗 Cookie |
-| `METING_BAIDU_COOKIE` | 否 | 百度音乐 Cookie |
 | `METING_KUWO_COOKIE` | 否 | 酷我 Cookie |
 
 前端不会直接访问任何第三方 API，也不会接触这些 Cookie。
+
+咪咕对接基于非官方协议，仅供学习研究；音乐资源版权归原平台所有，请勿用于商业或大规模抓取。
 
 ---
 

@@ -185,7 +185,6 @@ const METING_COOKIE_ENV: Record<string, string> = {
   netease: 'METING_NETEASE_COOKIE',
   tencent: 'METING_TENCENT_COOKIE',
   kugou: 'METING_KUGOU_COOKIE',
-  baidu: 'METING_BAIDU_COOKIE',
   kuwo: 'METING_KUWO_COOKIE',
 };
 
