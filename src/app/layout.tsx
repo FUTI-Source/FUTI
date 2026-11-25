@@ -1,8 +1,8 @@
+import { SerwistProvider } from '@serwist/turbopack/react';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MusicPlayer } from '@/features/music/music-player';
 import { PageRestoreCoordinator } from '@/features/pwa/page-restore-coordinator';
-import { ServiceWorkerRegistration } from '@/features/pwa/service-worker-registration';
 import { SiteInteractionGuard } from '@/components/site-interaction-guard';
 import { SitePreloader } from '@/components/site-preloader';
 import { qqSharingMeta, siteMetadata, siteViewport, structuredData } from '@/lib/seo';
@@ -48,29 +48,36 @@ export default function RootLayout({
         <meta name="description" itemProp="description" content={qqSharingMeta.description} />
       </head>
       <body>
-        <PageRestoreCoordinator />
-        <SitePreloader />
-        <script
-          id="structured-data"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
-          }}
-        />
-        {children}
-        <MusicPlayer />
-        <ServiceWorkerRegistration />
-        <SiteInteractionGuard />
-        {/* Vercel 统计只在 Vercel 部署注入：IGA 侧加载同一个脚本只会多一次无归属的境外请求。
-            预览部署记为 development，避免 PR / 预览流量计入生产数据。 */}
-        {process.env.VERCEL === '1' ? (
-          <>
-            <Analytics
-              mode={process.env.VERCEL_ENV === 'production' ? 'production' : 'development'}
-            />
-            <SpeedInsights />
-          </>
-        ) : null}
+        <SerwistProvider
+          swUrl="/serwist/sw.js"
+          disable={process.env.NODE_ENV !== 'production'}
+          cacheOnNavigation={false}
+          reloadOnOnline={false}
+          options={{ scope: '/', updateViaCache: 'none' }}
+        >
+          <PageRestoreCoordinator />
+          <SitePreloader />
+          <script
+            id="structured-data"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+            }}
+          />
+          {children}
+          <MusicPlayer />
+          <SiteInteractionGuard />
+          {/* Vercel 统计只在 Vercel 部署注入：IGA 侧加载同一个脚本只会多一次无归属的境外请求。
+              预览部署记为 development，避免 PR / 预览流量计入生产数据。 */}
+          {process.env.VERCEL === '1' ? (
+            <>
+              <Analytics
+                mode={process.env.VERCEL_ENV === 'production' ? 'production' : 'development'}
+              />
+              <SpeedInsights />
+            </>
+          ) : null}
+        </SerwistProvider>
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { withSerwist } from '@serwist/turbopack';
 import type { NextConfig } from 'next';
 
 import { SITE_CDN_CACHE } from './site.config';
@@ -89,15 +90,6 @@ const nextConfig: NextConfig = {
 
     return [
       {
-        source: '/sw.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: SW_CACHE,
-          },
-        ],
-      },
-      {
         // 接口响应与支付回调必须实时，CDN/浏览器都不能缓存
         source: '/api/:path*',
         headers: [{ key: 'Cache-Control', value: API_CACHE }],
@@ -120,6 +112,25 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Serwist 通过 Route Handler 在 /serwist/sw.js 提供 Service Worker。
+        // 放在通用规则之后，严格 CSP 才会覆盖页面的宽松 CSP。
+        source: '/serwist/:path*',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: SW_CACHE,
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; script-src 'self'",
+          },
+        ],
+      },
+      {
         source: '/fonts/:path*',
         headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
       },
@@ -139,4 +150,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// 把 esbuild 声明为 serverExternalPackages，确保 Serwist 在 Next 的服务端构建中
+// 能动态加载原生 esbuild 来编译 app/sw.ts。
+export default withSerwist(nextConfig);

@@ -22,7 +22,7 @@
   │
   ▼
 平台 CDN / Edge（两个平台按同一套路径规则写 Cache-Control）
-  ├─ /sw.js 永不缓存；/api/* 永不缓存
+  ├─ /serwist/sw.js 永不缓存；/api/* 永不缓存
   └─ 静态资源按 immutable / static 两档缓存
   │
   ▼
@@ -44,9 +44,9 @@
 |------|------|--------|------|
 | `/fonts/*`、`/launch/*` | `immutable` | `public, max-age=31536000, s-maxage=31536000, immutable` | 字体、iOS 启动图，内容不可变，浏览器和 CDN 都存一年 |
 | `/live2d/*`、`/docs/*` | `static` | `public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, stale-if-error=604800` | 模型、文档配图，可能随版本更新 |
-| `/sw.js` | `serviceWorker` | `no-cache, no-store, must-revalidate, no-transform` | 永不缓存，否则新版本推不下去 |
+| `/serwist/sw.js` | `serviceWorker` | `no-cache, no-store, must-revalidate, no-transform` | 永不缓存，否则新版本推不下去 |
 | `/api/*` | `api` | `no-store, no-cache, must-revalidate, private` | 支付回调、订单查询、Webhook，禁止任何缓存 |
-| 其他页面 | 无显式缓存头 | 由 Next.js / SW 决定 | 首页走 SW 的 network-first |
+| 其他页面 | 无显式缓存头 | 由 Next.js 决定 | 页面由 Serwist 按 NetworkFirst 处理，离线时回退缓存 |
 
 ### 2.2 三个关键指令的解释
 
@@ -66,30 +66,15 @@
 
 ## 3. Service Worker（代码侧）
 
-实现文件：`public/sw.js`。缓存版本号由 `scripts/build/bump-sw-version.mjs` 在每次 `npm run build` 前自动生成（形如 `site-v<mz8kx3-ab12cd>`；若 CI 设置了 `BUILD_ID` 则复用它），版本变化会在激活时清理旧缓存。无需手改 `CACHE_VERSION`。SW 只缓存同源资源，与访客被分到哪个平台无关。
+离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）：
 
-若 `/_next/static/` 返回 404（旧页面引用了已删除的 chunk），SW 会清空整站缓存并通知页面自动重载一次；首屏遮罩另有纯 CSS 的 12 秒兜底，即使 JS 完全没起来也不会长期白屏。
+- `src/app/sw.ts`：Service Worker 源码，使用 `defaultCache` 提供的 Next.js 推荐运行时策略（HTML/RSC 走 NetworkFirst，带 hash 的静态资源走 CacheFirst/StaleWhileRevalidate）；`/api/*` 被前置规则强制 NetworkOnly，不缓存支付与留言接口。
+- `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/~offline` 的预缓存清单，并从 `/serwist/sw.js` 提供。
+- `src/app/~offline/page.tsx`：文档请求离线且无缓存时的兜底页。
+- `src/app/layout.tsx`：`SerwistProvider` 仅在生产环境注册 SW；关闭 `reloadOnOnline` 与 `cacheOnNavigation`，避免后台恢复/网络恢复时自动刷新造成白屏。
+- `next.config.ts`：用 `withSerwist` 包装配置，把 esbuild 声明为 `serverExternalPackages`；为 `/serwist/:path*` 设置 `Content-Type`、永不缓存的 `Cache-Control` 与严格 CSP。
 
-### 3.1 三类请求的处理
-
-| 请求 | 策略 | 行为 |
-|------|------|------|
-| 页面导航 | 网络优先 + 8 秒超时 | 成功就写缓存并返回；超时或失败则依次回退到缓存页面 / `/` / `/offline.html` |
-| 可变资源（`/live2d/`、`/docs/`） | stale-while-revalidate | 命中缓存立即返回，后台异步拉取新版本写回缓存 |
-| 不可变资源（带哈希的 `/_next/static/`、字体、脚本等） | 缓存优先 | 命中缓存直接返回，不产生多余回源 |
-
-### 3.2 两个重要保护
-
-- **范围请求不缓存**：带 `Range` 头的请求（如 Live2D 模型分段加载）只返回部分内容，写入缓存会污染后续完整请求，因此代码里直接跳过缓存写入。
-- **导航超时兜底**：弱网下导航最长等 8 秒，超时就用缓存渲染，避免白屏无限等待。
-
-### 3.3 版本更新链路
-
-1. `next.config.ts` 的 `generateBuildId` 每次构建写入唯一 `.next/BUILD_ID`；
-2. 新版本 SW 安装后通过 `SKIP_WAITING` 立即接管；
-3. 页面发现 RSC 响应里的 buildId 与当前页面不一致时，Next.js 自动降级为 MPA 导航，加载新 bundle。
-
-`scripts/build/prepare-standalone.mjs` 会把 `BUILD_ID` 同步进 standalone 产物，保证本地 `npm run start:standalone` 与线上行为一致。
+之前手写的 `CacheFirst / stale-cache` 逻辑、版本戳脚本、`public/sw.js` 和手动注册组件均已删除。页面从后台恢复的可见性处理仍由 `PageRestoreCoordinator` 统一广播，与 SW 解耦。`scripts/build/prepare-standalone.mjs` 会把 `BUILD_ID` 同步进 standalone 产物，保证本地 `npm run start:standalone` 与线上行为一致。
 
 ---
 
@@ -165,7 +150,7 @@ curl -sI https://www.example.com/live2d/live2dcubismcore.min.js | grep -i "cache
 curl -sI https://www.example.com/fonts/nunito-latin-variable.woff2 | grep -i "cache-control"
 # 期望：含 immutable
 
-curl -sI https://www.example.com/sw.js | grep -i "cache-control"
+curl -sI https://www.example.com/serwist/sw.js | grep -i "cache-control"
 # 期望：no-cache, no-store, must-revalidate
 
 curl -sI https://www.example.com/api/donate/config | grep -i "cache-control"
@@ -187,9 +172,9 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 
 浏览器侧再确认：
 
-- DevTools → Application → Cache Storage：当前 `site-v…` 之外的旧缓存应在新 SW 激活后被清除（当前版本号见 `public/sw.js` 的 `CACHE_VERSION`）；
-- Network 面板：`/sw.js` 永远不是 from disk cache；
-- PWA 更新后软刷新能替换客户端 JS bundle（不再需要手动强刷）；
+- DevTools → Application → Service Workers：`/serwist/sw.js` 处于 Activated 状态，Unsafe requests 为 0；
+- DevTools → Application → Cache Storage：出现 `serwist-precache` 与 `pages*` 等缓存，旧的 `site-*` 缓存不再被写入；
+- Network 面板：`/serwist/sw.js` 永远不是 from disk cache；断网刷新首页仍能渲染，未缓存路由显示 `/~offline` 兜底页；
 - 境内/境外访问地址栏始终是同一个域名，没有 307 跨域跳转。
 
 ---
@@ -199,7 +184,7 @@ curl -sI -H "Host: www.example.com" -H "x-vercel-ip-country: CN" \
 | 现象 | 排查方向 |
 |------|----------|
 | 换了模型但一直看到旧文件 | 检查 `/live2d/` 是否返回新的 `Cache-Control`；CDN 控制台刷新目录；必要时给模型文件换名 |
-| `/sw.js` 命中缓存，新版本推不下去 | 确认响应头是 `no-cache, no-store`；检查平台控制台有没有覆盖缓存规则 |
+| `/serwist/sw.js` 命中缓存，新版本推不下去 | 确认响应头是 `no-cache, no-store`；检查平台控制台有没有覆盖缓存规则 |
 | 境内访客被分到 Vercel（慢） | 用 `dig +subnet` 确认 DNS 中国内地线路是否命中 IGA；免费版 DNS 的境外 NS 节点可能导致 ECS 判断偏差 |
 | 境外访客被分到 IGA | 检查「全球（不含中国内地）」与默认线路记录；免费版境内 NS 的 ECS 偏差见 4.3，单域名下代码不会纠正分流 |
 | 出现跨域名跳转 | 当前代码已无地域跳转逻辑：检查平台控制台跳转规则、老版本产物是否仍在线，及 DNS 是否解析到旧部署 |

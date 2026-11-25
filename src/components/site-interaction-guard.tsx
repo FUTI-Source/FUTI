@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
-import { SOFT_REFRESH_EVENT } from '@/lib/app-events';
 import { initCustomCursor } from '@/features/home/custom-cursor';
 
 const EDITABLE_SELECTOR =
@@ -95,12 +94,6 @@ export const SiteInteractionGuard = () => {
   useEffect(() => {
     const destroyCustomCursor = initCustomCursor();
 
-    // router.refresh() 只重新获取 RSC payload 并重新渲染，不卸载文档，
-    // 因此全屏状态、音频播放等页面级状态都能保留。
-    const softRefresh = () => {
-      routerRef.current.refresh();
-    };
-
     // 刷新后恢复全屏：浏览器会丢掉 DOM 全屏状态，只能靠 sessionStorage 里的意图还原。
     function cleanupRetry() {
       document.removeEventListener('pointerdown', retryWithGesture, true);
@@ -182,7 +175,7 @@ export const SiteInteractionGuard = () => {
       if (isRefreshShortcut(event)) {
         event.preventDefault();
         event.stopPropagation();
-        softRefresh();
+        routerRef.current.refresh();
         return;
       }
 
@@ -209,7 +202,6 @@ export const SiteInteractionGuard = () => {
     });
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    window.addEventListener(SOFT_REFRESH_EVENT, softRefresh);
 
     // Ctrl/⌘ + 滚轮与触控板捏合会缩放页面，这里一并拦截；普通滚动不受影响。
     const handleWheel = (event: WheelEvent) => {
@@ -237,7 +229,6 @@ export const SiteInteractionGuard = () => {
       });
       document.removeEventListener('keydown', handleKeyDown, true);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      window.removeEventListener(SOFT_REFRESH_EVENT, softRefresh);
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('mousedown', handleMouseDown, true);
       cleanupRetry();

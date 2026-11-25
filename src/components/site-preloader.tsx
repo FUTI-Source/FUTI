@@ -74,7 +74,7 @@ export const SitePreloader = () => {
       timers.push(window.setTimeout(resolve, MAX_WAIT_MS));
     });
 
-    void Promise.race([Promise.all([fontsReady, imagesReady]), timedOut]).then(reveal);
+    void Promise.race([Promise.all([fontsReady, imagesReady]), timedOut]).then(() => reveal());
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
