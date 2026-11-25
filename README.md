@@ -68,8 +68,12 @@ src/
 ├── hooks/                        # 通用 React hooks
 ├── lib/                          # 站点工具（日志、通知、限流）
 └── styles/                       # 全局样式
-public/                           # Live2D 模型、字体、图标、iOS 启动图
+public/                           # Live2D 模型、字体、图标、运行时脚本
+docs/                             # 部署与 CDN 配置文档
+licenses/                         # 内容等非代码资产协议
+scripts/                          # 构建与部署辅助脚本
 site.config.ts                    # 站点全局配置
+LICENSE                           # 代码开源协议（BSD-3-Clause）
 ```
 
 ## 站点配置
@@ -148,3 +152,10 @@ npx vercel deploy --prod --yes
 - **Live2D 不显示**：确认 `public/live2d/` 目录已完整部署，浏览器支持 WebGL
 - **打赏下单 502**：检查密钥格式（`\n` 是否还原）、证书序列号、AppID 与商户号绑定
 - **改了配置不生效**：配置在构建期求值，需要分别重新部署
+
+## 许可协议
+
+- **站点代码**：BSD-3-Clause License，详见 [LICENSE](LICENSE)
+- **站点内容**：文字、图片、设计素材等采用 CC BY-NC 4.0，详见 [licenses/CONTENT-LICENSE.txt](licenses/CONTENT-LICENSE.txt)
+
+代码与内容使用不同协议。二次使用、转载或商用前请分别查看对应协议条款。
