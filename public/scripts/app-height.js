@@ -1,107 +1,53 @@
-(function(){try{
-var root=document.documentElement;
-var nav=window.navigator;
-var ios=/iPad|iPhone|iPod/.test(nav.userAgent)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
-var standalone=window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||nav.standalone===true;
-var homeScreen=ios&&standalone;
-if(homeScreen)root.classList.add('ios-standalone');
-var standaloneQuery=window.matchMedia('(display-mode: standalone)');
-var wcoQuery=window.matchMedia('(display-mode: window-controls-overlay)');
-var lastWidth=0,lastHeight=0,pending=0,first=true;
-var measure=function(){
-var w=window.innerWidth||0;
-var inner=window.innerHeight||0;
-var vv=window.visualViewport;
-var h=inner;
-if(homeScreen){
-if(first){
-// 首帧冷启动：innerHeight 可能还带 Safari 工具栏高度，取较大值并用屏幕高度兜底。
-if(vv&&vv.height>h)h=vv.height;
-var sh=window.screen.height;
-if(sh>h&&sh-h<=200)h=sh;
-}else if(vv&&vv.height>0){
-// 稳定后 PWA 没有浏览器工具栏，visualViewport.height 通常是真实可视区域。
-// 但 iOS 主屏应用在带底部指示条的机型上 vv.height 会排除指示条区域，
-// 直接采用会让 --app-height 偏小、body 高度不够，底部露出黑色画布。
-// 差值不大（状态栏/指示条，<140）时改用 innerHeight 铺满整个 WebView。
-h=vv.height;
-if(inner-h>0&&inner-h<140)h=inner;
-// 软键盘弹出时差值远大于状态栏，保留上一稳定高度，避免键盘收起后画布缩水留黑。
-if(inner-h>140)h=lastHeight||inner;
-}
-}
-// 软键盘弹出时 visualViewport 明显小于 innerHeight：普通移动浏览器同样要保护，
-// 否则 --app-height 被压小，键盘收起后画布比视口矮，底部露出一段黑色区域。
-if(!homeScreen&&vv&&vv.height>0&&inner-vv.height>140)h=lastHeight||inner;
-return {w:w,h:h};
-};
-var apply=function(m){
-if(!m||!m.w||!m.h)return;
-if(m.h===lastHeight&&m.w===lastWidth)return;
-lastWidth=m.w;lastHeight=m.h;
-root.style.setProperty('--app-height',m.h+'px');
-};
-var update=function(){
-var m=measure();
-if(!m.w||!m.h)return;
-// 首次、变高或宽度变化立即应用；变低延迟确认后再应用，
-// 既能跟随原生状态栏切换，又能跳过 iOS 冷启动瞬时偏小的视口。
-if(first){
-first=false;apply(m);
-// 首帧兜底可能比真实视口高（状态栏已显示时）；补一次复查收敛到真实高度。
-setTimeout(function(){pending=0;update();},300);
-return;
-}
-if(m.h>lastHeight||m.w!==lastWidth){apply(m);return;}
-if(m.h===lastHeight){if(pending){clearTimeout(pending);pending=0;}return;}
-if(pending)clearTimeout(pending);
-// 延时确认时重新测量，避免应用已经恢复的旧值。
-pending=setTimeout(function(){pending=0;apply(measure());},120);
-};
-update();
-window.addEventListener('resize',update);
-window.addEventListener('orientationchange',update);
-window.addEventListener('pageshow',update);
-// iOS 软键盘收起后文档可能停留在被上推的位置，底部露出一段黑色画布。
-// 收起过程会持续调整视口，因此分两次复查：先归零文档滚动，再校正画布高度。
-var keyboardTimers=[];
-var scheduleKeyboardReset=function(){
-keyboardTimers.forEach(clearTimeout);
-keyboardTimers=[];
-[120,400].forEach(function(delay){
-keyboardTimers.push(setTimeout(function(){
-if(window.scrollY)window.scrollTo(0,0);
-var scroller=document.querySelector('[data-slot="scroll-area"]');
-if(scroller)scroller.scrollTop=0;
-// 弹窗内部滚动区同样归零：键盘顶起后它可能停留在滚动位置，收起后底部留黑。
-var dialogBodies=document.querySelectorAll('.site-dialog-body');
-for(var i=0;i<dialogBodies.length;i++)dialogBodies[i].scrollTop=0;
-// 强制跳过变低时的 debounce，直接把画布恢复到真实视口高度。
-pending=0;first=false;apply(measure());update();
-},delay));
-});
-};
-if(window.visualViewport){
-var lastVvHeight=window.visualViewport.height;
-window.visualViewport.addEventListener('resize',function(){
-var h=window.visualViewport.height;
-// 视觉视口明显变高即软键盘收起，同样归零滚动并复查高度
-if(h-lastVvHeight>140)scheduleKeyboardReset();
-lastVvHeight=h;
-update();
-});
-}
-// 隐藏/恢复原生标题栏会切换 display-mode，resize 可能晚于媒体查询变化。
-// 桌面 WCO 切换原生标题栏/进出全屏时，媒体查询与 fullscreenchange 可能早于窗口尺寸稳定，
-// 因此都补一次延迟复查；退出 WCO 后脚本值重新生效，这一步保证不会沿用旧高度。
-var recheck=function(){update();setTimeout(function(){pending=0;update();},300)};
-standaloneQuery.addEventListener('change',recheck);
-wcoQuery.addEventListener('change',recheck);
-document.addEventListener('fullscreenchange',recheck);
-document.addEventListener('visibilitychange',function(){if(!document.hidden)update()});
-document.addEventListener('focusout',function(event){
-var tag=event.target&&event.target.tagName;
-if(tag!=='INPUT'&&tag!=='TEXTAREA'&&tag!=='SELECT')return;
-scheduleKeyboardReset();
-},true);
-}catch(e){console.error(e)}})();
+/* 视口稳定性脚本
+ *
+ * 历史问题：早期版本用 JS 测量 innerHeight / visualViewport.height 并写入
+ * --app-height，试图手动适配 iOS 主屏应用、键盘、状态栏、冷启动等各种场景。
+ * 但 JS 测量永远存在时序差，每种场景都要打补丁，且相互冲突，最终导致
+ * 键盘收起或冷启动时画布比视口矮、底部露出黑色区域。
+ *
+ * 现在的方案：视口高度完全交给 CSS 原生 100dvh（见 styles/index.css），
+ * 浏览器会实时、原子地更新，不存在 JS 测量时序问题。本脚本只做两件事：
+ *   1. 给 iOS 主屏应用标记 class，用于顶部状态栏的视觉补偿；
+ *   2. 键盘收起后复位被顶起的滚动位置（dvh 会自动恢复高度，这里只清残留滚动）。
+ */
+(function () { try {
+  var root = document.documentElement;
+  var nav = window.navigator;
+  var ios = /iPad|iPhone|iPod/.test(nav.userAgent) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+  var standalone = window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    nav.standalone === true;
+  if (ios && standalone) root.classList.add('ios-standalone');
+
+  var keyboardTimers = [];
+  var scheduleScrollReset = function () {
+    keyboardTimers.forEach(clearTimeout);
+    keyboardTimers = [];
+    // 键盘收起是渐进过程，分两次复查确保滚动归零
+    [120, 400].forEach(function (delay) {
+      keyboardTimers.push(setTimeout(function () {
+        if (window.scrollY) window.scrollTo(0, 0);
+        var scroller = document.querySelector('[data-slot="scroll-area"]');
+        if (scroller) scroller.scrollTop = 0;
+        var dialogBodies = document.querySelectorAll('.site-dialog-body');
+        for (var i = 0; i < dialogBodies.length; i++) dialogBodies[i].scrollTop = 0;
+      }, delay));
+    });
+  };
+
+  if (window.visualViewport) {
+    var lastVvHeight = window.visualViewport.height;
+    window.visualViewport.addEventListener('resize', function () {
+      var h = window.visualViewport.height;
+      // 视觉视口明显变高 = 软键盘收起
+      if (h - lastVvHeight > 140) scheduleScrollReset();
+      lastVvHeight = h;
+    });
+  }
+
+  document.addEventListener('focusout', function (event) {
+    var tag = event.target && event.target.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
+    scheduleScrollReset();
+  }, true);
+} catch (e) { console.error(e); } })();

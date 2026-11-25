@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // 首帧脚本会在 hydration 前给 <html> 写入 --app-height，
-    // React 会把它当成属性差异报警，这里只抑制该元素自身的属性校验。
+    // 首帧脚本会给 iOS 主屏应用标记 class（用于状态栏补偿），
+    // 该 DOM 变化发生在 hydration 前，React 会当作属性差异报警，这里仅抑制该元素的校验。
     <html lang={SITE_LANG} translate="no" suppressHydrationWarning>
       <head>
         {/* 禁止浏览器把页面自动翻译成其他语言，避免中文文案被改写 */}
@@ -30,13 +30,10 @@ export default function RootLayout({
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
             必须同步：不达标浏览器应在新语法代码执行前被重定向 */}
         <script src="/scripts/browser-check.js" />
-        {/* 首帧前用真实视口高度校正 --app-height：
-            1. iOS 主屏应用冷启动时 innerHeight 仍是带 Safari 工具栏的高度，首帧用 screen.height 兜底；
-            2. Safari/iPadOS 横屏时 dvh 会少算工具栏高度，导致页面底部留白，
-               这里取 innerHeight 与 visualViewport.height 的较大值，保证铺满画布；
-            3. 之后视口稳定收缩（如原生状态栏出现）也要跟随，避免页面高于可视区域产生滚动。 */}
+        {/* 视口稳定性：给 iOS 主屏应用标记 class，并在软键盘收起后复位残留滚动。
+            页面高度本身由 CSS 100dvh 原生跟随，脚本不再测量/写入高度。 */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
-            必须同步：改的是首帧高度，异步加载会先按错误高度画一帧再抖回去 */}
+            必须同步：ios-standalone class 要在首帧绘制前就位，避免状态栏补偿闪一下 */}
         <script src="/scripts/app-height.js" />
         <link
           rel="preconnect"

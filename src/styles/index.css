@@ -43,9 +43,12 @@
   unicode-range: U+00A9, U+00B7, U+2018-201D, U+2026, U+2122, U+2E80-2FFF, U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
 }
 
-/* 首帧前的兜底值；真实的像素高度由 layout 中的内联脚本按 visualViewport 写入 */
+/* 视口高度基准：完全交给浏览器原生 dvh 实时计算，
+   不再由 JS 测量写入，从根源消除各种时序差导致的底部黑区。
+   用 @supports 显式回退：自定义属性对无效值是宽松存储，
+   不能靠相邻双重声明做渐进增强。 */
 :root {
-  --app-height: 100dvh;
+  --app-height: 100vh;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   /* 桌面端页头时间与页脚共用同一个左外边距，避免两处视觉不对齐 */
@@ -61,6 +64,13 @@
   --accent-ink-strong: rgba(55, 239, 249, 0.72);
   --hairline: rgba(255, 255, 255, 0.07);
   color-scheme: dark;
+}
+
+/* 支持 dvh 的浏览器用原生动态视口高度覆盖回退值 */
+@supports (height: 100dvh) {
+  :root {
+    --app-height: 100dvh;
+  }
 }
 
 /* iOS 26.1+ 会在主屏应用的状态栏区域强制绘制深色渐变遮罩，网页侧无法关闭；
@@ -92,17 +102,15 @@ main {
 }
 
 /* PWA 独立窗口：滚动已在 base 层全局交给内部 ScrollArea，
-   这里无需重复设置；原生状态栏显隐切换视口高度由 app-height.js 处理。 */
+   这里无需重复设置；原生状态栏显隐切换视口高度由 100dvh 原生跟随。 */
 
 /* WCO 模式：覆盖 safe-top，使用窗口标题栏高度 */
 @media (display-mode: window-controls-overlay) {
   :root {
     --safe-top: 0px;
     /* WCO 没有浏览器工具栏，让浏览器用 100% 自动跟随窗口和原生标题栏。
-       不用 dvh：切换标题栏时 dvh 可能不更新，页面会比可视区域高而产生滚动。
-       必须带 !important 压过脚本写在 <html> 上的内联像素值，否则切回原生标题栏后
-       页面仍沿用全屏时的大高度，底部会被窗口边缘遮住。 */
-    --app-height: 100% !important;
+       不用 dvh：切换标题栏时 dvh 可能不更新，页面会比可视区域高而产生滚动。 */
+    --app-height: 100%;
     /* 各终端标题栏高度不同（Windows 较高、macOS 较矮），统一成变量供高度与字号共用 */
     --wco-titlebar-height: max(env(titlebar-area-height, 0px), 2rem);
     --wco-titlebar-x: env(titlebar-area-x, 0px);
@@ -178,9 +186,8 @@ main {
      桌面端锁定文档级滚动；触摸设备放开——iOS 的橡皮筋回弹是文档级的，
      overflow:hidden 会把它整个禁掉，而一屏布局下内部容器没有滚动余量、
      同样不产生回弹，导致移动端完全没有弹性手感。
-     放开后文档高度恰好一屏，不会出现真实滚动条，只有原生回弹；
-     iOS 键盘顶起后的滚动残留由 app-height.js 的 focusout / visualViewport
-     复查（scrollTo(0,0) + 高度校正）兜底，底部黑色间隔不会回归。 */
+     高度由 --app-height(100dvh) 原生跟随视口，键盘收起后自动恢复；
+     app-height.js 只在 focusout / visualViewport 回调里复位残留滚动。 */
   html,
   body {
     overflow: hidden;
@@ -205,8 +212,7 @@ main {
     background-image: radial-gradient(23rem 23rem at 70% 30%, hsla(0, 0%, 100%, .2), hsla(0, 0%, 100%, 0)), linear-gradient(#22252b 20rem, #15161a 62rem);
     background-blend-mode: overlay, normal;
     background-repeat: no-repeat;
-    /* 背景相对视口固定：即使 --app-height 与真实视口有瞬时差值，
-       也不会在底部露出未绘制背景的黑色画布 */
+    /* 背景相对视口固定，避免 iOS 上 dvh 更新瞬间露出未绘制的画布 */
     background-attachment: fixed;
   }
 
