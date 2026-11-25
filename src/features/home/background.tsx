@@ -62,17 +62,18 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
     { wait: 100 },
   );
 
+  // 直接模糊图片，不用 backdrop-filter：Firefox 在透明层叠上下文中取样时可能得到灰色蒙层。
   return (
     <div
       ref={node}
-      className="fixed top-[calc(-1*var(--safe-top))] right-0 bottom-[calc(-1*var(--safe-bottom))] left-0 z-[-1] overflow-hidden after:absolute after:top-0 after:left-0 after:size-full after:backdrop-blur"
+      className="fixed top-[calc(-1*var(--safe-top))] right-0 bottom-[calc(-1*var(--safe-bottom))] left-0 z-[-1] overflow-hidden"
     >
       <Image
         ref={leftImage}
         src={backgroundLeftImage}
         alt=""
         className={cn(
-          'absolute !-top-8 !-left-20 h-[calc(100%+4rem)] w-[35vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!-left-10 max-sm:object-cover max-sm:object-right',
+          'absolute !-top-8 !-left-20 h-[calc(100%+4rem)] w-[35vw] blur-[8px] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!-left-10 max-sm:object-cover max-sm:object-right',
           isLeftLoaded ? 'opacity-100' : 'opacity-0',
         )}
         data-depth="0.2"
@@ -87,7 +88,7 @@ export const DetroitBackground: React.FC<IDetroitBackgroundProps> = () => {
         src={backgroundRightImage}
         alt=""
         className={cn(
-          'absolute !-top-[2rem] !left-[26vw] h-[calc(100%+5rem)] w-[80vw] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left',
+          'absolute !-top-[2rem] !left-[26vw] h-[calc(100%+5rem)] w-[80vw] blur-[8px] bg-linear-to-b from-gray-50/20 to-gray-200/20 transition-opacity duration-500 ease-out max-sm:!left-[20vw] max-sm:object-cover max-sm:object-left',
           isRightLoaded ? 'opacity-100' : 'opacity-0',
         )}
         data-depth="0.3"
