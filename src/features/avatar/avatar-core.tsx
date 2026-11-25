@@ -35,6 +35,7 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
 
     let disposed = false;
     let initialized = false;
+    let contextLost = false;
     let pixiApp: Application | null = null;
     let model: Live2DModel | null = null;
     let initialization: Promise<void> | null = null;
@@ -49,25 +50,48 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
     };
 
     const handleContextLost = (contextEvent: Event) => {
+      // 必须 preventDefault，浏览器才会尝试恢复上下文；否则 canvas 永久失效
       contextEvent.preventDefault();
+      contextLost = true;
+      // 上下文已经失效，继续跑 ticker 只会在失效的 GL 上反复提交绘制
+      pixiApp?.ticker.stop();
       event$?.emit(AvatarEvent.CONTEXT_LOST);
     };
     const handleContextRestored = () => {
+      contextLost = false;
       event$?.emit(AvatarEvent.CONTEXT_RESTORED);
+    };
+
+    // 页面不可见时暂停渲染：后台标签页仍持续跑每帧绘制会占住 GPU，
+    // 在 GPU 重置 / 休眠唤醒时更容易触发 "WebGL context was lost"。
+    const syncTicker = () => {
+      if (!pixiApp || contextLost) return;
+      if (document.visibilityState === 'hidden') {
+        pixiApp.ticker.stop();
+      } else {
+        pixiApp.ticker.start();
+      }
     };
 
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    document.addEventListener('visibilitychange', syncTicker);
 
     const destroy = () => {
-      if (model) {
-        model.parent?.removeChild(model);
-        model.destroy({ children: true, texture: false, baseTexture: false });
-        model = null;
-      }
+      try {
+        if (model) {
+          model.parent?.removeChild(model);
+          model.destroy({ children: true, texture: false, baseTexture: false });
+        }
 
-      if (pixiApp && initialized) {
-        pixiApp.destroy(false, { children: true });
+        if (pixiApp && initialized) {
+          pixiApp.destroy(false, { children: true });
+        }
+      } catch (error) {
+        // 上下文丢失后销毁纹理/渲染器可能抛错，组件即将整体重建，忽略即可
+        logger.debug('虚拟形象销毁时出错（已忽略）', error);
+      } finally {
+        model = null;
         pixiApp = null;
         initialized = false;
       }
@@ -83,8 +107,13 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
           backgroundAlpha: 0,
           resolution: 1,
           antialias: true,
+          // Live2D 只有一层 2D 合成，用集显更省电也更稳：
+          // 双显卡笔记本切独显时，驱动重置是 Firefox 丢 context 的常见来源
+          powerPreference: 'low-power',
+          preserveDrawingBuffer: false,
         });
         initialized = true;
+        syncTicker();
 
         if (disposed) {
           destroy();
@@ -135,6 +164,7 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
       resizeObserver.disconnect();
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+      document.removeEventListener('visibilitychange', syncTicker);
       if (initialization) {
         void initialization.then(destroy);
       } else {
