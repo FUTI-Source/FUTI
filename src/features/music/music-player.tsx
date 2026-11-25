@@ -415,7 +415,9 @@ export const MusicPlayer: React.FC = () => {
       <div
         className={cn(
           'flex items-center gap-0.5 overflow-hidden transition-[max-width,opacity,margin] duration-300 ease-out',
-          expanded ? 'ml-1 max-w-[8rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
+          // 5 个 size-7 按钮 + gap-0.5 + pl-1 + border-l 共需≈153px，预留到 160px，
+          // 否则最后一颗「展开歌单」会被 overflow-hidden 削掉。
+          expanded ? 'ml-1 max-w-[10rem] border-l border-[color:var(--hairline)] pl-1 opacity-100' : 'ml-0 max-w-0 opacity-0',
         )}
       >
         <IconButton
