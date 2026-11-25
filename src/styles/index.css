@@ -223,6 +223,22 @@ main {
   background-image: linear-gradient(90deg, rgba(55, 239, 249, 0.22), rgba(0, 145, 228, 0.1), rgba(100, 198, 244, 0.22), rgba(60, 60, 60, 0.08));
 }
 
+/* 页脚交互高亮：鼠标设备用 hover，触屏用 active 即时反馈，
+   避免触屏点击后 :hover 粘滞导致高亮一直不消失。 */
+@media (hover: hover) {
+  .footer-credit:hover .footer-credit-label { color: var(--accent-ink); }
+  .footer-credit:hover .footer-credit-brand { color: var(--accent-ink-strong); }
+  .footer-text a:hover { color: var(--accent-ink-strong); }
+  .footer-text p:hover { color: var(--accent-ink); }
+}
+
+@media (hover: none) {
+  .footer-credit:active .footer-credit-label { color: var(--accent-ink); }
+  .footer-credit:active .footer-credit-brand { color: var(--accent-ink-strong); }
+  .footer-text a:active { color: var(--accent-ink-strong); }
+  .footer-text p:active { color: var(--accent-ink); }
+}
+
 .profile-line {
   background-image: linear-gradient(to right, rgb(55, 239, 249), rgb(0, 145, 228), rgb(100, 198, 244), rgb(100, 192, 236));
 }

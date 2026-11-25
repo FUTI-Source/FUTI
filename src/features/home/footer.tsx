@@ -25,15 +25,15 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <m.div
-            className="group flex h-7 shrink-0 items-center justify-center gap-1 select-none sm:h-auto sm:flex-col sm:items-start sm:justify-start sm:gap-0.5"
+            className="footer-credit flex h-7 shrink-0 items-center justify-center gap-1 select-none sm:h-auto sm:flex-col sm:items-start sm:justify-start sm:gap-0.5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 1 } }}
             transition={{ duration: 0.2 }}
           >
-            <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/40 transition-colors duration-300 group-hover:text-[color:var(--accent-ink)] max-sm:hidden sm:text-xs">
+            <span className="footer-credit-label font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/40 transition-colors duration-300 max-sm:hidden sm:text-xs">
               Drawn by
             </span>
-            <span className="font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/55 transition-colors duration-300 group-hover:text-[color:var(--accent-ink-strong)] sm:text-xs">
+            <span className="footer-credit-brand font-playful text-[15px] leading-tight tracking-[0.04em] whitespace-nowrap text-white/55 transition-colors duration-300 sm:text-xs">
               NAVILAB
             </span>
           </m.div>
@@ -46,7 +46,7 @@ export const Footer: React.FC<IFooterProps> = ({ className, style }) => {
       </m.div>
       <m.div className="max-sm:w-full max-sm:px-[clamp(0.75rem,4vw,1.5rem)] sm:translate-y-1" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.2 } }} transition={{ duration: 0.2 }}>
         <Separator className="footer-line mb-0.5 h-[3px] rounded bg-transparent max-sm:my-1" />
-        <div className="footer-text font-playful flex gap-1 space-x-1 text-[13px] select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_a]:transition-colors [&_a]:duration-300 [&_a]:hover:text-[color:var(--accent-ink-strong)] [&_p]:text-[color:var(--text-footer-color)] [&_p]:transition-colors [&_p]:duration-300 [&_p:hover]:text-[color:var(--accent-ink)]">
+        <div className="footer-text font-playful flex gap-1 space-x-1 text-[13px] select-none max-sm:w-full max-sm:flex-col max-sm:items-center max-sm:gap-2 max-sm:pb-0 max-sm:text-center [&_a]:cursor-pointer [&_a]:font-bold [&_a]:text-[color:var(--text-footer-link-color)] [&_a]:transition-colors [&_a]:duration-300 [&_p]:text-[color:var(--text-footer-color)] [&_p]:transition-colors [&_p]:duration-300">
           <p className="max-sm:max-w-full max-sm:text-center">
             Copyright &copy; {SITE_COPYRIGHT_START} - {new Date().getFullYear()}
             <Tooltip>
