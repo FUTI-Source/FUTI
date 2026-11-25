@@ -41,13 +41,28 @@ export const SITE_PWA = {
   navigationPreload: true,
   apiPrefix: '/api/',
 
-  /** SW 内部 fetch 放行的跨域来源，next.config.ts 据此生成 connect-src */
-  connectOrigins: [
-    SITE_ANALYTICS_URL,
-    'wss://cloud.umami.is',
-    'https://va.vercel-scripts.com',
-    'https://*.paypal.com',
-    'https://music.126.net',
-    'https://*.music.126.net',
-  ],
+  /**
+   * CSP 跨域白名单的单一数据源：next.config.ts 据此分别生成页面 CSP 与 SW CSP，
+   * 避免两处手写重复导致漂移。按用途分档，页面与 SW 各取所需：
+   *  - script / frame：页面加载 <script> 与 iframe 需要的来源；
+   *  - connectShared：页面与 SW 都要 fetch 的来源；
+   *  - connectSwOnly：仅 SW 直连的来源（音乐 CDN 由 worker 跨域取，页面只请求同源 /api，故不放进页面 CSP）。
+   */
+  csp: {
+    script: [
+      SITE_ANALYTICS_URL,
+      'https://va.vercel-scripts.com',
+      'https://www.paypal.com',
+      'https://www.paypalobjects.com',
+      'https://*.paypal.com',
+    ],
+    frame: ['https://www.paypal.com', 'https://*.paypal.com'],
+    connectShared: [
+      SITE_ANALYTICS_URL,
+      'wss://cloud.umami.is',
+      'https://va.vercel-scripts.com',
+      'https://*.paypal.com',
+    ],
+    connectSwOnly: ['https://music.126.net', 'https://*.music.126.net'],
+  },
 } as const;

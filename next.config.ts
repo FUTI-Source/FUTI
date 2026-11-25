@@ -23,13 +23,19 @@ const STATIC_CACHE = SITE_CDN_CACHE.static;
 /** Service Worker 必须永不缓存，否则新版本推不下去 */
 const SW_CACHE = SITE_CDN_CACHE.serviceWorker;
 /**
+ * CSP 跨域白名单统一来自 SITE_PWA.csp（见 src/config/site/pwa.ts），
+ * 这里只负责按页面 / SW 两种作用域组装成最终头字符串。
+ *
  * SW 自身的 CSP：Serwist 会在 worker 内部 fetch 跨域资源（统计脚本、音乐 CDN），
- * 只写 default-src 'self' 会让这些请求被 connect-src 回退规则拦掉。
+ * 只写 default-src 'self' 会让这些请求被 connect-src 回退规则拦掉，
+ * 因此 SW 的 connect-src 需要额外放行 connectSwOnly（音乐 CDN 由 worker 直连，
+ * 页面只请求同源 /api，故不进入页面 CSP）。
  */
+const SW_CONNECT_SRC = [...SITE_PWA.csp.connectShared, ...SITE_PWA.csp.connectSwOnly].join(' ');
 const SW_CSP = [
   "default-src 'self'",
   "script-src 'self'",
-  `connect-src 'self' ${SITE_PWA.connectOrigins.join(' ')}`,
+  `connect-src 'self' ${SW_CONNECT_SRC}`,
 ].join('; ');
 /** SW 脚本及其 source map 共用同一组响应头，路径由 SITE_PWA.swUrl 派生 */
 const SW_HEADER_SOURCE = `${SITE_PWA.swUrl.slice(0, SITE_PWA.swUrl.lastIndexOf('/'))}/:path*`;
@@ -69,23 +75,29 @@ const nextConfig: NextConfig = {
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
 
-    // CSP：生产环境强制启用，开发环境用 Report-Only 避免阻断调试
+    // CSP：生产环境强制启用，开发环境用 Report-Only 避免阻断调试。
+    // 跨域来源集中在 SITE_PWA.csp 维护，这里按指令拼装：
+    //  - script/frame：页面直接加载 <script> 与 iframe（PayPal 收银台）所需；
+    //  - connect：页面 fetch/WebSocket 上报（音乐 CDN 只在 SW 里出现，不放进页面 CSP）。
     // va.vercel-scripts.com 只在 Vercel 统计的调试链路（mode=development，即预览部署）上加载脚本与上报；
     // 生产走同源 /_vercel/insights/*、/_vercel/speed-insights/*，由 'self' 覆盖。漏配不会报错，只会让统计静默归零。
     // PayPal：打赏的 PayPal Buttons 是跨域 iframe 收银台，SDK 脚本、上报、弹窗框架都要放行
     // *.paypal.com；paypalobjects.com 是 SDK 的静态资源域名，blob: 是 SDK 内部 Web Worker 所需。
+    const PAGE_SCRIPT_SRC = SITE_PWA.csp.script.join(' ');
+    const PAGE_CONNECT_SRC = SITE_PWA.csp.connectShared.join(' ');
+    const PAGE_FRAME_SRC = SITE_PWA.csp.frame.join(' ');
     const cspHeader = {
       key: isProd ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
       value: [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cloud.umami.is https://va.vercel-scripts.com https://www.paypal.com https://www.paypalobjects.com https://*.paypal.com",
+        `script-src 'self' 'unsafe-eval' 'unsafe-inline' ${PAGE_SCRIPT_SRC}`,
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob: https:",
         "media-src 'self' data: blob: https:",
         "font-src 'self' data:",
-        "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is https://va.vercel-scripts.com https://*.paypal.com",
+        `connect-src 'self' ${PAGE_CONNECT_SRC}`,
         "worker-src 'self' blob:",
-        "frame-src https://www.paypal.com https://*.paypal.com",
+        `frame-src ${PAGE_FRAME_SRC}`,
         "manifest-src 'self'",
         "frame-ancestors 'none'",
         'base-uri \'self\'',
