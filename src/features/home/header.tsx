@@ -44,7 +44,7 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
       )} 
       style={style}
     >
-      <div className="absolute top-0 left-0 h-px w-full bg-gradient-to-r from-[#37eff9]/60 via-[#0091e4]/60 to-[#64c6f4]/60" />
+      <div className="footer-line absolute top-0 left-0 h-px w-full" />
 
       <DynamicText
         as={m.p}
@@ -52,8 +52,8 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
         text={ready ? time : PLACEHOLDER}
         onAnimationComplete={() => setReady(true)}
         className={cn(
-          // 基础排版
-          'header-no-drag header-time text-shadow-soft font-playful my-0 select-none text-[color:var(--text-time-color)]',
+          // 基础排版：与页脚共用字体、低对比色与字距，去掉投影保持克制
+          'header-no-drag header-time font-playful my-0 select-none text-[color:var(--text-time-color)] tracking-[0.04em]',
           'tabular-nums inline-block whitespace-nowrap',
           // 桌面：与页脚共用左外边距、最小宽度、左对齐
           'pl-[var(--desktop-edge-inset)] min-w-[19ch] text-left',

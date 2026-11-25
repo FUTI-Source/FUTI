@@ -455,9 +455,15 @@ body [contenteditable=''] {
   }
 }
 
-/* 页头时间：字号随视口自适应，避免大屏显小、小屏显挤 */
+/* 页头时间：移动端 20px、桌面端 15px */
 .header-time {
-  font-size: clamp(1.125rem, 1rem + 0.55vw, 1.375rem);
+  font-size: 20px;
+}
+
+@media (min-width: 640px) {
+  .header-time {
+    font-size: 15px;
+  }
 }
 
 .flex-center {
