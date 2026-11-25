@@ -11,14 +11,12 @@ import {
   SITE_LANG,
   SITE_LOCALE,
   SITE_NAME,
+  SITE_PWA,
   SITE_SOCIAL_IMAGE,
   SITE_SOCIAL_LINKS,
   SITE_TWITTER_HANDLE,
   SITE_URL,
 } from '~/site.config';
-
-/** Safari 顶部工具栏着色固定，不随站点配置变化 */
-const BROWSER_THEME_COLOR = '#1d1e20';
 
 /** 分享卡片图，1200×630，各平台（微信/QQ/Twitter）通用 */
 const SOCIAL_IMAGE = {
@@ -205,5 +203,5 @@ export const siteViewport: Viewport = {
   viewportFit: 'cover',
   colorScheme: 'dark',
   // 与壁纸顶部实测色调一致，让 Safari 顶部工具栏着色融入页面背景
-  themeColor: BROWSER_THEME_COLOR,
+  themeColor: SITE_PWA.browserThemeColor,
 };

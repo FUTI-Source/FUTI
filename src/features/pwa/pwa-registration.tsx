@@ -3,7 +3,7 @@
 import { SerwistProvider } from '@serwist/turbopack/react';
 import { useEffect, useState, type ReactNode } from 'react';
 
-const LEGACY_SW_PATH = '/sw.js';
+import { SITE_PWA } from '~/site.config';
 
 /**
  * 迁移清理：旧版本把 SW 注册在 /sw.js，文件删除后浏览器仍会尝试更新它并报 404。
@@ -19,7 +19,7 @@ async function cleanupLegacyServiceWorker() {
             [registration.installing, registration.waiting, registration.active].some((worker) => {
               if (!worker) return false;
               try {
-                return new URL(worker.scriptURL).pathname === LEGACY_SW_PATH;
+                return new URL(worker.scriptURL).pathname === SITE_PWA.legacySwPath;
               } catch {
                 return false;
               }
@@ -36,7 +36,9 @@ async function cleanupLegacyServiceWorker() {
   try {
     const names = await caches.keys();
     await Promise.all(
-      names.filter((name) => name.startsWith('site-')).map((name) => caches.delete(name)),
+      names
+        .filter((name) => name.startsWith(SITE_PWA.legacyCachePrefix))
+        .map((name) => caches.delete(name)),
     );
   } catch {
     // 隐私模式下 Cache Storage 可能不可用，忽略即可
@@ -64,11 +66,11 @@ export function PwaRegistration({ children }: { children: ReactNode }) {
 
   return (
     <SerwistProvider
-      swUrl="/serwist/sw.js"
+      swUrl={SITE_PWA.swUrl}
       disable={!isProduction}
-      cacheOnNavigation={false}
-      reloadOnOnline={false}
-      options={{ scope: '/', updateViaCache: 'none' }}
+      cacheOnNavigation={SITE_PWA.cacheOnNavigation}
+      reloadOnOnline={SITE_PWA.reloadOnOnline}
+      options={{ scope: SITE_PWA.scope, updateViaCache: SITE_PWA.updateViaCache }}
     >
       {children}
     </SerwistProvider>

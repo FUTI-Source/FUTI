@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { withSerwist } from '@serwist/turbopack';
 import type { NextConfig } from 'next';
 
-import { SITE_CDN_CACHE } from './site.config';
+import { SITE_CDN_CACHE, SITE_PWA } from './site.config';
 
 // Vercel 在构建时注入 VERCEL=1；它按自己的产物模型托管 Next.js，
 // standalone 输出只在火山引擎 IGA Pages（自包含 server.js）这条链路上需要。
@@ -28,8 +28,10 @@ const SW_CACHE = SITE_CDN_CACHE.serviceWorker;
 const SW_CSP = [
   "default-src 'self'",
   "script-src 'self'",
-  "connect-src 'self' https://cloud.umami.is wss://cloud.umami.is https://va.vercel-scripts.com https://*.paypal.com https://music.126.net https://*.music.126.net",
+  `connect-src 'self' ${SITE_PWA.connectOrigins.join(' ')}`,
 ].join('; ');
+/** SW 脚本及其 source map 共用同一组响应头，路径由 SITE_PWA.swUrl 派生 */
+const SW_HEADER_SOURCE = `${SITE_PWA.swUrl.slice(0, SITE_PWA.swUrl.lastIndexOf('/'))}/:path*`;
 /** 接口一律 no-store：支付回调、订单状态与 Webhook 不能被 CDN 复用 */
 const API_CACHE = SITE_CDN_CACHE.api;
 
@@ -123,7 +125,7 @@ const nextConfig: NextConfig = {
       {
         // Serwist 通过 Route Handler 在 /serwist/sw.js 提供 Service Worker。
         // 放在通用规则之后，严格 CSP 才会覆盖页面的宽松 CSP。
-        source: '/serwist/:path*',
+        source: SW_HEADER_SOURCE,
         headers: [
           {
             key: 'Content-Type',

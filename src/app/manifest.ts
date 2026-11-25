@@ -1,9 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG } from '~/site.config';
-
-/** PWA 主题色固定，不随站点配置变化 */
-const THEME_COLOR = '#15161a';
+import { SITE_AUTHOR_NAME, SITE_DESCRIPTION, SITE_LANG, SITE_PWA } from '~/site.config';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -23,37 +20,15 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: 'any',
     // 便于应用商店/浏览器归类，提升安装面板的展示质量。
     categories: ['personalization', 'portfolio'],
-    theme_color: THEME_COLOR,
-    background_color: THEME_COLOR,
-    icons: [
-      {
-        src: '/icon-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any',
-      },
-      {
-        src: '/icon-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any',
-      },
-    ],
-    screenshots: [
-      {
-        src: '/screenshot-desktop.png',
-        sizes: '1280x627',
-        type: 'image/png',
-        form_factor: 'wide',
-        label: `${SITE_AUTHOR_NAME}个人主页桌面端`,
-      },
-      {
-        src: '/screenshot-mobile.png',
-        sizes: '390x751',
-        type: 'image/png',
-        form_factor: 'narrow',
-        label: `${SITE_AUTHOR_NAME}个人主页移动端`,
-      },
-    ],
+    theme_color: SITE_PWA.themeColor,
+    background_color: SITE_PWA.themeColor,
+    icons: SITE_PWA.icons.map((icon) => ({ ...icon })),
+    screenshots: SITE_PWA.screenshots.map((screenshot) => ({
+      src: screenshot.src,
+      sizes: screenshot.sizes,
+      type: screenshot.type,
+      form_factor: screenshot.formFactor,
+      label: `${SITE_AUTHOR_NAME}个人主页${screenshot.formFactor === 'wide' ? '桌面端' : '移动端'}`,
+    })),
   };
 }

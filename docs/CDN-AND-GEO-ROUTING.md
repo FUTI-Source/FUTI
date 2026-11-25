@@ -66,7 +66,7 @@
 
 ## 3. Service Worker（代码侧）
 
-离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）：
+离线能力由 [Serwist](https://serwist.pages.dev/docs/next/turbo) 提供（Next 16 默认 Turbopack，使用 `@serwist/turbopack` 集成）。所有 PWA 配置集中在 `site.config.ts` 的 `SITE_PWA`：路径、主题色、图标、注册行为、SW 生命周期与 CSP 白名单都从这里读取，其他文件不再写死这些常量。
 
 - `src/app/sw.ts`：Service Worker 源码，使用 `defaultCache` 提供的 Next.js 推荐运行时策略（HTML/RSC 走 NetworkFirst，带 hash 的静态资源走 CacheFirst/StaleWhileRevalidate）；`/api/*` 被前置规则强制 NetworkOnly，不缓存支付与留言接口。
 - `src/app/serwist/[path]/route.ts`：`createSerwistRoute` 在构建时用 esbuild 编译 `sw.ts`，注入 `.next/static`、`public` 与 `/~offline` 的预缓存清单，并从 `/serwist/sw.js` 提供。
