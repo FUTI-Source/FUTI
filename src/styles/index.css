@@ -48,6 +48,8 @@
   --app-height: 100dvh;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* 桌面端页头时间与页脚共用同一个左外边距，避免两处视觉不对齐 */
+  --desktop-edge-inset: 2.5rem;
   /* 主体头像尺寸：随视口收缩，短屏笔记本与手机都不再占满首屏 */
   --profile-size: clamp(9.5rem, min(48vw, 30vh), 15rem);
   /* 文字色统一收敛为令牌，移动端只改令牌值，保证各终端观感一致 */

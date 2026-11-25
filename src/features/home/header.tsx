@@ -55,8 +55,8 @@ export const Header: React.FC<IHeaderProps> = ({ className, style }) => {
           // 基础排版
           'header-no-drag header-time text-shadow-soft font-playful my-0 select-none text-[color:var(--text-time-color)]',
           'tabular-nums inline-block whitespace-nowrap',
-          // 桌面：左内边距、最小宽度、左对齐
-          'pl-10 min-w-[19ch] text-left',
+          // 桌面：与页脚共用左外边距、最小宽度、左对齐
+          'pl-[var(--desktop-edge-inset)] min-w-[19ch] text-left',
           // 移动端：去掉间距、取消最小宽度、居中（字号由样式表统一控制）
           'max-sm:pl-0 max-sm:min-w-0 max-sm:text-center',
         )}
