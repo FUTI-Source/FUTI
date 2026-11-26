@@ -181,7 +181,7 @@ export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
 
 #### 会员歌曲与跨平台找源
 
-原平台没有返回音链的歌曲不会从列表中消失，而是保留并显示 `会员`。点击时播放器才请求 `/api/music/track`：先按配置的音质顺序重试原平台，再依次到 QQ、酷狗、咪咕搜索同名歌曲，优先使用同歌手的原唱，匹配到不同版本时才允许替代录音。跨平台音源会显示 `替代源`；所有平台都无可用音源时提示原因并暂停，不会卡在加载状态。
+原平台没有返回音链的歌曲不会从列表中消失，而是保留并显示 `会员`。使用项目内置解析时，点击后播放器才请求 `/api/music/track`：先按配置的音质顺序重试原平台，再依次到 QQ、酷狗、咪咕搜索同名歌曲，优先使用同歌手的原唱，匹配到不同版本时才允许替代录音。跨平台音源会显示 `替代源`；所有平台都无可用音源时提示原因并暂停，不会卡在加载状态。
 
 可在 `src/config/site/music.ts` 调整策略：
 
@@ -208,7 +208,7 @@ export const SITE_MUSIC_FALLBACK: MusicFallbackConfig = {
 
 | 路由 | 参数 | 说明 |
 |------|------|------|
-| `GET /api/music/playlist` | `server`、`type`（默认 `playlist`）、`id` | 返回 `{ tracks }`；无 HTTPS 音链时返回 502 `EMPTY_PLAYLIST` |
+| `GET /api/music/playlist` | `server`、`type`（默认 `playlist`）、`id` | 返回 `{ tracks }`；歌单为空或没有可解析曲目时返回 502 `EMPTY_PLAYLIST` |
 | `GET /api/music/track` | `server`、`id` | 按需解析单曲；受限曲目会尝试音质降级与跨平台找源 |
 | `GET /api/music/lyrics` | `id`、可选 `server`（默认取 `SITE_MUSIC_PLAYLIST.server`） | 返回 `{ lyric }`；无歌词返回 404 `LYRIC_NOT_FOUND` |
 

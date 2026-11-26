@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (tracks.length === 0) {
-    return jsonError(502, 'EMPTY_PLAYLIST', '歌单里没有可播放的 HTTPS 音频');
+    return jsonError(502, 'EMPTY_PLAYLIST', '歌单为空或没有可解析的曲目');
   }
 
   return NextResponse.json({ tracks });
