@@ -463,9 +463,10 @@ export const MusicPlayer: React.FC = () => {
       setCurrentTime(0);
       setDuration(0);
 
-      // 目标曲目没有音源（会员专享）：先按需解析，解析成功后由 src 变化触发播放。
+      // 目标曲目没有音源（会员专享）：仅在请求播放时按需解析，
+      // 暂停状态下切歌只选中曲目，不提前触发跨平台搜索。
       const target = tracks[normalized];
-      if (target && !target.src) {
+      if (autoplay && target && !target.src) {
         void resolveTrackAt(normalized).then((resolved) => {
           if (resolved) {
             setNotice(undefined);
@@ -533,9 +534,9 @@ export const MusicPlayer: React.FC = () => {
   }, [current, currentPosition, resolveTrackAt]);
 
   useEffect(() => {
-    if (!isDesktop || typeof window === 'undefined') return;
+    if (!isDesktop || tracks.length === 0 || typeof window === 'undefined') return;
     window.localStorage.setItem(STORAGE_KEY, String(index));
-  }, [isDesktop, index]);
+  }, [isDesktop, index, tracks.length]);
 
   useEffect(() => {
     if (!notice) return;
