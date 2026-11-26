@@ -27,7 +27,7 @@
 | 打赏 | qrcode · 微信 APIv3 / 支付宝 RSA2 / PayPal Orders API v2 |
 | 部署 | Vercel 单源站（GitHub 自动构建）· 火山引擎 DCDN 境内加速 |
 
-**运行环境要求 Node.js 24.x**（`package.json` 的 `engines` 已锁 `24.x`，升级 major 请手动改）
+**运行环境要求 Node.js 26.x**（`package.json` 的 `engines` 已锁 `26.x`，升级 major 请手动改）
 
 ## 快速开始
 
@@ -340,7 +340,7 @@ npx vercel deploy --prod --yes
 ### Vercel 配置要点
 
 - `vercel.json` 声明 `framework: nextjs`、`buildCommand: npm run build`、`installCommand: npm ci --registry=https://registry.npmjs.org`；
-- Node.js 版本 **24.x**（`package.json` 的 `engines` 已锁定，防止自动升到新 major）；
+- Node.js 版本 **26.x**（`package.json` 的 `engines` 已锁定，防止自动升到新 major）；
 - 环境变量在 Settings → Environment Variables 配置，Production / Preview / Development 都要覆盖；新增 `DCDN_ORIGIN_SECRET`（见下）；
 - Domains 里绑定 `www.zhang-wentao.tech` 与裸域，回调地址按 `SITE_URL` 拼接。
 
