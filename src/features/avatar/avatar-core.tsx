@@ -14,6 +14,7 @@ import { AvatarEvent } from './events';
 import { BasicsProps } from '@/components/ui/types';
 
 import { EventEmitter } from '@/hooks/use-event-emitter';
+import { PAGE_RESTORE_EVENT } from '@/lib/app-events';
 
 extensions.add(BatchRenderer, TickerPlugin);
 Live2DModel.registerTicker(Ticker);
@@ -76,6 +77,9 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
     document.addEventListener('visibilitychange', syncTicker);
+    // bfcache 恢复不一定触发 visibilitychange：这里补一次 ticker 校正，
+    // 避免健康实例因为「恢复时不再重建」而停在暂停状态。
+    window.addEventListener(PAGE_RESTORE_EVENT, syncTicker);
 
     const destroy = () => {
       try {
@@ -165,6 +169,7 @@ const AvatarCore: React.FC<IAvatarCoreProps> = ({ event$, ...rest }) => {
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       document.removeEventListener('visibilitychange', syncTicker);
+      window.removeEventListener(PAGE_RESTORE_EVENT, syncTicker);
       if (initialization) {
         void initialization.then(destroy);
       } else {
