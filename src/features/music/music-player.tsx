@@ -246,8 +246,12 @@ export const MusicPlayer: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [mode, setMode] = useState<PlayMode>(readSavedMode);
+  const [resolvingIndex, setResolvingIndex] = useState<number | undefined>(undefined);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
+  const consecutiveFailuresRef = useRef(0);
 
   const current = tracks[index] ?? tracks[0];
+  const currentPosition = current ? tracks.indexOf(current) : -1;
   const currentSrc = current?.src;
   const currentLyrics = current?.lyrics;
   const currentLyricId = current?.lyricId;
@@ -382,6 +386,44 @@ export const MusicPlayer: React.FC = () => {
     setCurrentTime(audio.currentTime);
   }, []);
 
+  /**
+   * 受限歌曲按需解析：先试原平台（配置了平台 Cookie 时可直接解锁），
+   * 仍取不到音源时服务端会跨平台找同名可播版本。解析成功就把音源写回列表。
+   */
+  const resolveTrackAt = useCallback(
+    async (targetIndex: number): Promise<boolean> => {
+      const track = tracks[targetIndex];
+      if (!track) return false;
+      if (track.src) return true;
+      if (!track.ref) return false;
+
+      setResolvingIndex(targetIndex);
+      try {
+        const params = new URLSearchParams({ server: track.ref.server, id: track.ref.id });
+        const response = await fetch(`/api/music/track?${params.toString()}`);
+        if (!response.ok) return false;
+
+        const data = (await response.json()) as { track?: MusicTrack };
+        const resolved = data.track;
+        if (!resolved?.src) return false;
+
+        setTracks((previous) =>
+          previous.map((item, position) =>
+            position === targetIndex
+              ? { ...item, ...resolved, restricted: undefined }
+              : item,
+          ),
+        );
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setResolvingIndex(undefined);
+      }
+    },
+    [tracks],
+  );
+
   const switchTrack = useCallback(
     (nextIndex: number, autoplay: boolean) => {
       if (tracks.length === 0) return;
@@ -391,6 +433,21 @@ export const MusicPlayer: React.FC = () => {
       // 必须手动接同一下行逻辑，避免乐观 playing 与真实 audio 状态失同步。
       if (normalized === index) {
         const audio = audioRef.current;
+        const target = tracks[normalized];
+        if (target && !target.src) {
+          pendingPlayRef.current = true;
+          setPlaying(true);
+          void resolveTrackAt(normalized).then((resolved) => {
+            if (resolved) {
+              setNotice(undefined);
+              return;
+            }
+            pendingPlayRef.current = false;
+            setPlaying(false);
+            setNotice('该歌曲为平台会员专享，暂无可播放音源');
+          });
+          return;
+        }
         if (audio && autoplay && audio.paused) {
           setPlaying(true);
           void audio.play().catch(() => setPlaying(false));
@@ -405,13 +462,65 @@ export const MusicPlayer: React.FC = () => {
       setIndex(normalized);
       setCurrentTime(0);
       setDuration(0);
+
+      // 目标曲目没有音源（会员专享）：先按需解析，解析成功后由 src 变化触发播放。
+      const target = tracks[normalized];
+      if (target && !target.src) {
+        void resolveTrackAt(normalized).then((resolved) => {
+          if (resolved) {
+            setNotice(undefined);
+            return;
+          }
+          pendingPlayRef.current = false;
+          setPlaying(false);
+          setNotice('该歌曲为平台会员专享，暂无可播放音源');
+        });
+      }
     },
-    [tracks.length, index],
+    [tracks, index, resolveTrackAt],
   );
+
+  // 音源失效（链接过期、平台限制）：自动跳到下一首有音源的曲目。
+  const handleAudioError = useCallback(() => {
+    setPlaying(false);
+    if (!currentSrc || tracks.length === 0) return;
+
+    consecutiveFailuresRef.current += 1;
+    if (consecutiveFailuresRef.current > tracks.length) {
+      setNotice('连续多首播放失败，已暂停播放');
+      return;
+    }
+
+    for (let step = 1; step <= tracks.length; step += 1) {
+      const next = (index + step) % tracks.length;
+      if (tracks[next]?.src) {
+        setNotice('音源播放失败，已自动切换到下一首');
+        switchTrack(next, true);
+        return;
+      }
+    }
+    setNotice('没有可播放的下一首');
+  }, [currentSrc, index, tracks, switchTrack]);
 
   const toggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !current) return;
+
+    // 受限歌曲还没有音源：先按需解析，拿到音源后由 src 变化自动起播。
+    if (!current.src) {
+      pendingPlayRef.current = true;
+      setPlaying(true);
+      void resolveTrackAt(currentPosition).then((resolved) => {
+        if (resolved) {
+          setNotice(undefined);
+          return;
+        }
+        pendingPlayRef.current = false;
+        setPlaying(false);
+        setNotice('该歌曲为平台会员专享，暂无可播放音源');
+      });
+      return;
+    }
 
     if (audio.paused) {
       // 乐观翻转：胶囊与列表行里的图标立刻变，play() 失败时 catch 回平。
@@ -421,7 +530,7 @@ export const MusicPlayer: React.FC = () => {
       setPlaying(false);
       audio.pause();
     }
-  }, [current]);
+  }, [current, currentPosition, resolveTrackAt]);
 
   useEffect(() => {
     if (!isDesktop || typeof window === 'undefined') return;
@@ -429,8 +538,22 @@ export const MusicPlayer: React.FC = () => {
   }, [isDesktop, index]);
 
   useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(undefined), 5000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
+  useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentSrc) return;
+    if (!audio) return;
+
+    // 切到还没有音源的曲目：停掉上一首，避免继续播旧音频。
+    if (!currentSrc) {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      return;
+    }
 
     audio.load();
     if (!pendingPlayRef.current) return;
@@ -525,6 +648,14 @@ export const MusicPlayer: React.FC = () => {
   if (!isDesktop || !current) return null;
 
   const progress = Number.isFinite(duration) && duration > 0 ? (currentTime / duration) * 100 : 0;
+  const resolvingCurrent = resolvingIndex === currentPosition;
+  const toggleLabel = resolvingCurrent
+    ? '解析音源'
+    : playing
+      ? '暂停音乐'
+      : current.restricted
+        ? '尝试解析会员歌曲'
+        : '播放音乐';
 
   // 歌单虚拟滞回范围：上下各多渲 OVERSCAN 行做缓冲，viewportH 首次读取失败时退回 CSS max-h（420）
   const listViewportH = viewportH || 420;
@@ -546,24 +677,42 @@ export const MusicPlayer: React.FC = () => {
     >
       <audio
         ref={audioRef}
-        src={current.src}
+        src={current.src || undefined}
         preload="metadata"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
+        onCanPlay={() => {
+          consecutiveFailuresRef.current = 0;
+        }}
         onEnded={() => {
           // 单曲循环走 audio.loop，不会 fire ended；这里只需处理 list / shuffle
           if (mode === 'shuffle' && tracks.length > 1) {
-            let n = index;
-            while (n === index) n = Math.floor(Math.random() * tracks.length);
-            switchTrack(n, true);
+            const playable = tracks
+              .map((track, position) => ({ track, position }))
+              .filter(({ track }) => Boolean(track.src));
+            if (playable.length === 0) return;
+            let picked = playable[0];
+            while (picked.position === index && playable.length > 1) {
+              picked = playable[Math.floor(Math.random() * playable.length)];
+            }
+            switchTrack(picked.position, true);
             return;
           }
           switchTrack(index + 1, true);
         }}
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-        onError={() => setPlaying(false)}
+        onError={handleAudioError}
       />
+
+      {notice ? (
+        <p
+          role="status"
+          className="max-w-[min(320px,calc(100vw-2rem))] rounded-lg border border-[color:var(--hairline)] bg-[#121720]/90 px-3 py-2 text-[11px] leading-snug text-white/70 backdrop-blur-md"
+        >
+          {notice}
+        </p>
+      ) : null}
 
       {lyricsOpen ? (
         <div
@@ -641,17 +790,26 @@ export const MusicPlayer: React.FC = () => {
               const idx = vStart + i;
               const active = idx === index;
               return (
-                <li key={`${track.src}-${idx}`} style={{ height: ROW_HEIGHT }}>
+                <li key={`${track.ref?.id ?? track.src}-${idx}`} style={{ height: ROW_HEIGHT }}>
                   <button
                     type="button"
                     aria-current={active ? 'true' : undefined}
+                    aria-label={`${track.title}${track.restricted ? '，会员专享，点击尝试解析' : ''}`}
+                    disabled={resolvingIndex === idx}
                     onClick={() => switchTrack(idx, true)}
+                    title={
+                      track.restricted
+                        ? '平台会员专享，点击尝试跨平台解析'
+                        : track.alternate
+                          ? `已使用${track.sourceServer ? ` ${track.sourceServer} ` : ''}替代音源`
+                          : undefined
+                    }
                     className={cn(
                       'flex h-full w-full items-center gap-2.5 px-2.5 text-left transition-colors',
                       active
                         ? 'bg-white/[0.06]'
                         : 'hover:bg-white/[0.04] focus-visible:bg-white/[0.06]',
-                      'focus-visible:outline-none',
+                      'focus-visible:outline-none disabled:cursor-wait disabled:opacity-60',
                     )}
                   >
                     <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-md bg-white/[0.05] text-white/60">
@@ -690,6 +848,17 @@ export const MusicPlayer: React.FC = () => {
                         {track.artist || '未知歌手'}
                       </span>
                     </span>
+                    {resolvingIndex === idx ? (
+                      <span className="shrink-0 text-[10px] text-white/45">解析中</span>
+                    ) : track.restricted ? (
+                      <span className="shrink-0 rounded border border-white/15 px-1.5 py-0.5 text-[9px] text-white/45">
+                        会员
+                      </span>
+                    ) : track.alternate ? (
+                      <span className="shrink-0 rounded border border-white/15 px-1.5 py-0.5 text-[9px] text-white/45">
+                        替代源
+                      </span>
+                    ) : null}
                     {active ? (
                       <span
                         aria-hidden="true"
@@ -718,13 +887,14 @@ export const MusicPlayer: React.FC = () => {
           <button
             type="button"
             onClick={toggle}
-            aria-label={playing ? '暂停音乐' : '播放音乐'}
+            aria-label={toggleLabel}
+            disabled={resolvingCurrent}
             className={cn(
               'relative grid shrink-0 place-items-center overflow-hidden rounded-full',
               'bg-gradient-to-br from-[#37eff9]/20 via-[#0091e4]/20 to-[#64c6f4]/20',
               'text-[color:var(--accent-ink)] ring-1 ring-[color:var(--hairline)]',
               'transition-[width,height,transform,color] hover:scale-105 hover:text-[color:var(--accent-ink-strong)]',
-              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)]',
+              'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--accent-ink)] disabled:cursor-wait',
               expanded ? 'size-9' : 'size-[44px]',
             )}
           >
@@ -739,7 +909,7 @@ export const MusicPlayer: React.FC = () => {
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent sideOffset={12}>{playing ? '暂停音乐' : '播放音乐（Shift + M）'}</TooltipContent>
+        <TooltipContent sideOffset={12}>{toggleLabel}{!resolvingCurrent && !playing ? '（Shift + M）' : ''}</TooltipContent>
       </Tooltip>
 
       <button
@@ -750,6 +920,7 @@ export const MusicPlayer: React.FC = () => {
           expanded ? 'max-w-[8.5rem] opacity-100' : 'max-w-0 opacity-0',
         )}
         aria-label={playing ? `暂停 ${current.title}` : `播放 ${current.title}`}
+        disabled={resolvingCurrent}
       >
         <span className="block max-w-[8.5rem] truncate text-xs font-semibold text-white/70">
           {current.title}
@@ -772,7 +943,7 @@ export const MusicPlayer: React.FC = () => {
         >
           <PrevIcon />
         </IconButton>
-        <IconButton label={playing ? '暂停' : '播放'} onClick={toggle}>
+        <IconButton label={resolvingCurrent ? '解析音源' : playing ? '暂停' : '播放'} onClick={toggle} disabled={resolvingCurrent}>
           {playing ? <PauseIcon /> : <PlayIcon />}
         </IconButton>
         <IconButton label="下一首" onClick={() => switchTrack(index + 1, playing)}>

@@ -10,7 +10,7 @@
 - **联系表单**：react-hook-form + zod 校验，POST JSON Webhook 通知，带 IP 限流与蜜罐反滥用
 - **打赏**：微信支付、支付宝、PayPal，无状态订单令牌，扫码/跳转支付、回调验签通知站长
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕与桌面 WCO
-- **音乐胶囊**：右下角悬浮播放器，支持本地曲目与在线歌单（网易云 / QQ / 酷狗 / 酷我 / 咪咕）、同步 LRC 歌词、列表循环 / 单曲循环 / 随机播放
+- **音乐胶囊**：右下角悬浮播放器，支持本地曲目与在线歌单（网易云 / QQ / 酷狗 / 酷我 / 咪咕）、会员曲目按需解析与跨平台找源、同步 LRC 歌词、列表循环 / 单曲循环 / 随机播放
 - **统计**：Umami 自建统计（隐私友好），Vercel 部署时额外注入 Vercel Analytics
 - **SEO**：Metadata API、robots.ts、sitemap.ts、OG 分享图与结构化数据
 
@@ -135,6 +135,8 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 | `SITE_MUSIC_TRACKS` | `readonly MusicTrack[]` | 本地曲目列表；配置在线歌单后会被在线歌单覆盖 |
 | `SITE_MUSIC_PLAYLIST` | `MusicPlaylistSource` | 在线歌单来源：平台 / 资源类型 / 资源 ID |
 | `SITE_MUSIC_API_BASE` | `string` | 外部 Meting API 地址，留空即用项目内置解析 |
+| `SITE_MUSIC_QUALITIES` | `readonly number[]` | 原平台音质降级顺序，默认 320 / 192 / 128 kbps |
+| `SITE_MUSIC_FALLBACK` | `MusicFallbackConfig` | 受限曲目的跨平台找源开关与平台顺序 |
 
 #### 本地曲目
 
@@ -177,6 +179,23 @@ export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
 
 `id` 取自对应平台的分享链接：`playlist` 用歌单 ID、`song` 用歌曲 ID、`album` 用专辑 ID、`artist` 用歌手 ID、`search` 用搜索关键词。单次最多取 40 首。
 
+#### 会员歌曲与跨平台找源
+
+原平台没有返回音链的歌曲不会从列表中消失，而是保留并显示 `会员`。点击时播放器才请求 `/api/music/track`：先按配置的音质顺序重试原平台，再依次到 QQ、酷狗、咪咕搜索同名歌曲，优先使用同歌手的原唱，匹配到不同版本时才允许替代录音。跨平台音源会显示 `替代源`；所有平台都无可用音源时提示原因并暂停，不会卡在加载状态。
+
+可在 `src/config/site/music.ts` 调整策略：
+
+```ts
+export const SITE_MUSIC_QUALITIES: readonly number[] = [320, 192, 128];
+
+export const SITE_MUSIC_FALLBACK: MusicFallbackConfig = {
+  enabled: true,
+  servers: ['tencent', 'kugou', 'migu'], // 按顺序尝试
+};
+```
+
+跨平台匹配不能保证每首歌都有可用录音。需要播放原平台会员歌曲时，最可靠的方式仍是配置带有合法账号登录态的平台 Cookie；`METING_*_COOKIE` 只在服务端使用，不会下发给浏览器。
+
 #### 咪咕音乐
 
 咪咕对接基于非官方协议，代码在 `src/features/music/server/migu.ts`（协议参考 MIT 项目 Domdkw/miguMusic-api-enhanced 后独立实现）：**不安装第三方 SDK，也不依赖外部 API 服务**。支持歌单 / 单曲 / 专辑 / 歌手 / 搜索五类资源，匿名态解析音链与 LRC 歌词；请求带单请求 10 秒、总预算 25 秒的超时，限制响应体大小与并发数，音链只接受 HTTPS 且保留签名参数。
@@ -190,6 +209,7 @@ export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
 | 路由 | 参数 | 说明 |
 |------|------|------|
 | `GET /api/music/playlist` | `server`、`type`（默认 `playlist`）、`id` | 返回 `{ tracks }`；无 HTTPS 音链时返回 502 `EMPTY_PLAYLIST` |
+| `GET /api/music/track` | `server`、`id` | 按需解析单曲；受限曲目会尝试音质降级与跨平台找源 |
 | `GET /api/music/lyrics` | `id`、可选 `server`（默认取 `SITE_MUSIC_PLAYLIST.server`） | 返回 `{ lyric }`；无歌词返回 404 `LYRIC_NOT_FOUND` |
 
 两个接口都只在服务端解析平台资源并统一转换成播放器数据。`/api/music/playlist` 在配置了 `SITE_MUSIC_API_BASE` 时，非咪咕平台改走该外部接口；咪咕始终走项目内置适配器。

@@ -272,7 +272,6 @@ async function resolveTrack(song: MiguSong, deadline: AbortSignal): Promise<Musi
   if (!isRecord(payload.data)) return null;
 
   const src = normalizeHttpsUrl(payload.data.url);
-  if (!src) return null;
 
   const audioSong = parseSong(payload.data.song);
   const singers = (audioSong?.singerList ?? song.singerList)
@@ -280,12 +279,28 @@ async function resolveTrack(song: MiguSong, deadline: AbortSignal): Promise<Musi
     .filter((name): name is string => Boolean(name))
     .join(' / ');
 
+  // 匿名态取不到音链时保留曲目，标记受限并留 ref，供前端按需重新解析。
+  if (!src) {
+    return {
+      title: audioSong?.songName ?? song.songName,
+      artist: singers || undefined,
+      src: '',
+      cover: normalizeHttpsUrl(song.img1, COVER_ORIGIN),
+      lyricId: song.contentId,
+      sourceServer: 'migu',
+      restricted: true,
+      ref: { server: 'migu', id: song.contentId },
+    };
+  }
+
   return {
     title: audioSong?.songName ?? song.songName,
     artist: singers || undefined,
     src,
     cover: normalizeHttpsUrl(audioSong?.img1 ?? song.img1, COVER_ORIGIN),
     lyricId: song.contentId,
+    sourceServer: 'migu',
+    ref: { server: 'migu', id: song.contentId },
   };
 }
 
