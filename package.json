@@ -21,7 +21,6 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "start:standalone": "node scripts/build/prepare-standalone.mjs && node .next/standalone/server.js",
     "type:check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

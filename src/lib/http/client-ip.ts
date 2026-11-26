@@ -1,22 +1,19 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
+import { SITE_DCDN_ORIGIN } from '@/config/site';
+
 /**
- * 解析真实客户端 IP。
+ * 解析真实客户端 IP（Vercel 单源站 + 火山 DCDN 境内加速）。
  *
- * `x-forwarded-for` 左侧条目由客户端自己写入，可以任意伪造；边缘节点会把
- * 它实际看到的对端地址追加到最右侧，因此取值优先级为：
- * 平台专有的可信头 → XFF 最右侧条目 → 其余候选头。
+ * 取值优先级：
+ * 1. 经 DCDN 回源且回源鉴权头正确 → 信任 DCDN 写入的访客 IP 头；
+ * 2. Vercel 写入的 x-real-ip（Vercel 会覆盖客户端自带的同名头）；
+ * 3. x-forwarded-for 最右侧公网条目（左侧条目可被客户端伪造）。
+ *
+ * 不再信任 cf-connecting-ip / true-client-ip 等第三方 CDN 头：源站只有 Vercel，
+ * 这些头不会由任何可信节点写入，直连请求可以任意伪造。
  * 取不到合法 IP 时返回 null，由调用方决定降级策略。
  */
-
-/** 各 CDN/边缘平台的权威客户端地址头，由平台写入、客户端无法覆盖 */
-const TRUSTED_IP_HEADERS = [
-  'cf-connecting-ip',
-  'true-client-ip',
-  'x-azure-clientip',
-  'x-nf-client-connection-ip',
-  'x-forwarded-client-ip',
-] as const;
-
-const FALLBACK_HEADERS = ['x-real-ip', 'x-client-ip'] as const;
 
 /** IPv4 / IPv6 的宽松校验，避免把任意字符串当作限流桶键 */
 const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
@@ -33,11 +30,26 @@ function normalize(value: string | null | undefined): string | null {
   return ip;
 }
 
+/** 先做定长摘要再比较，避免长度差异与逐字节比较泄露密钥信息 */
+function digest(value: string): Buffer {
+  return createHash('sha256').update(value).digest();
+}
+
+function isTrustedDcdnRequest(headers: Headers): boolean {
+  const secret = process.env.DCDN_ORIGIN_SECRET;
+  const provided = headers.get(SITE_DCDN_ORIGIN.authHeader);
+  if (!secret || !provided) return false;
+  return timingSafeEqual(digest(secret), digest(provided));
+}
+
 export function resolveClientId(headers: Headers): string | null {
-  for (const name of TRUSTED_IP_HEADERS) {
-    const ip = normalize(headers.get(name));
+  if (isTrustedDcdnRequest(headers)) {
+    const ip = normalize(headers.get(SITE_DCDN_ORIGIN.clientIpHeader));
     if (ip) return ip;
   }
+
+  const realIp = normalize(headers.get('x-real-ip'));
+  if (realIp) return realIp;
 
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
@@ -46,19 +58,13 @@ export function resolveClientId(headers: Headers): string | null {
       .map((entry) => normalize(entry))
       .filter((entry): entry is string => entry !== null);
 
-    // 从右往左：最右侧是边缘节点实际观测到的对端地址
     for (let i = chain.length - 1; i >= 0; i -= 1) {
       if (!NON_PUBLIC.test(chain[i])) return chain[i];
     }
 
-    // 全部是私网（本地开发或链路配置异常）时退回最右侧，仍优于取可伪造的最左侧
+    // 全部是私网（本地开发）时退回最右侧，仍优于取可伪造的最左侧
     const last = chain[chain.length - 1];
     if (last) return last;
-  }
-
-  for (const name of FALLBACK_HEADERS) {
-    const ip = normalize(headers.get(name));
-    if (ip) return ip;
   }
 
   return null;

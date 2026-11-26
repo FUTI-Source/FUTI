@@ -8,8 +8,9 @@ import { SITE_DOMAIN, SITE_HOSTNAME, SITE_WWW_REDIRECT } from '@/config/site';
  * 1. 主机名归一化：裸域自动补 www。
  * 2. 浏览器版本检查：低于最低版本的浏览器重定向到版本过低页。
  *
- * 单域名架构下，境内 IGA Pages 与境外 Vercel 共用 SITE_HOSTNAME，分流完全
- * 由 DNS 分线路完成；这里不做地域判定、跨域跳转或 site-region Cookie。
+ * Vercel 是唯一源站：境内经 DNS 中国内地线路进火山 DCDN 再回源 Vercel，
+ * 境外直连 Vercel，两条链路共用 SITE_HOSTNAME（DCDN 回源保留原 Host）。
+ * 分流完全由 DNS 完成；这里不做地域判定、跨域跳转或 site-region Cookie。
  * proxy 在每个命中的请求上运行，Next 16 起固定跑在 Node.js 运行时。
  *
  * 裸域规则由 SITE_URL 派生的主机名动态生成；localhost、平台预览域名
