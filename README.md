@@ -10,7 +10,7 @@
 - **联系表单**：react-hook-form + zod 校验，POST JSON Webhook 通知，带 IP 限流与蜜罐反滥用
 - **打赏**：微信支付、支付宝、PayPal，无状态订单令牌，扫码/跳转支付、回调验签通知站长
 - **PWA**：可安装、离线页与静态资源缓存，适配 iOS 主屏幕与桌面 WCO
-- **音乐胶囊**：右下角悬浮播放器，支持本地曲目与 Meting 在线歌单
+- **音乐胶囊**：右下角悬浮播放器，支持本地曲目与在线歌单（网易云 / QQ / 酷狗 / 酷我 / 咪咕）、同步 LRC 歌词、列表循环 / 单曲循环 / 随机播放
 - **统计**：Umami 自建统计（隐私友好），Vercel 部署时额外注入 Vercel Analytics
 - **SEO**：Metadata API、robots.ts、sitemap.ts、OG 分享图与结构化数据
 
@@ -126,13 +126,77 @@ LICENSE                           # 代码开源协议（BSD-3-Clause）
 | `PAYPAL_CLIENT_ID` | PayPal 必填 | Client ID |
 | `PAYPAL_CLIENT_SECRET` | 必填 | 对应 Secret |
 
-### 在线歌单
+### 音乐胶囊
 
-所有公开的音乐配置统一写在 `src/config/site/music.ts`：本地曲目 `SITE_MUSIC_TRACKS`、在线歌单 `SITE_MUSIC_PLAYLIST`、外部 API 地址 `SITE_MUSIC_API_BASE`。在线歌单使用 HeoMusic / MetingJS 相同参数：`server`、`type`、`id`。
+音乐胶囊的全部公开配置集中在 `src/config/site/music.ts`。浏览器不直连任何音乐平台，资源解析统一在服务端完成，前端只拿到 HTTPS 音链、封面与歌词。
 
-项目已内置 `@meting/core` 自建解析网易云、QQ、酷狗和酷我；咪咕音乐由项目内的服务端适配器实现，不安装第三方咪咕 SDK，也不依赖外部 API 服务。`SITE_MUSIC_API_BASE` 留空时完全不依赖公共 API，浏览器只请求 `/api/music/playlist`，由服务端解析并统一转换为播放器数据。
+| 导出 | 类型 | 说明 |
+|------|------|------|
+| `SITE_MUSIC_TRACKS` | `readonly MusicTrack[]` | 本地曲目列表；配置在线歌单后会被在线歌单覆盖 |
+| `SITE_MUSIC_PLAYLIST` | `MusicPlaylistSource` | 在线歌单来源：平台 / 资源类型 / 资源 ID |
+| `SITE_MUSIC_API_BASE` | `string` | 外部 Meting API 地址，留空即用项目内置解析 |
 
-以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `src/config/site`：
+#### 本地曲目
+
+```ts
+export const SITE_MUSIC_TRACKS: readonly MusicTrack[] = [
+  {
+    title: '曲目标题',
+    artist: '歌手',
+    src: '/music/example.mp3',
+    cover: '/music/example.jpg',
+    lyricId: undefined,
+    lyrics: '[00:00.00]第一行歌词',
+  },
+];
+```
+
+- `src` / `cover` 建议放到 `public/music/` 下，站内相对路径即可；
+- `cover` 留空时播放器显示默认音符图标；
+- `lyrics` 填 LRC 原文后无需联网取歌词；`lyricId` 用于在线取歌词（对应平台的歌词 ID）。
+
+#### 在线歌单
+
+```ts
+export const SITE_MUSIC_PLAYLIST: MusicPlaylistSource = {
+  server: 'netease', // netease | tencent | kugou | kuwo | migu
+  type: 'playlist', // song | playlist | album | artist | search
+  id: '8152976493',
+};
+```
+
+| 平台 | `server` | 实现方式 |
+|------|----------|----------|
+| 网易云音乐 | `netease` | 内置 `@meting/core` 自建解析 |
+| QQ 音乐 | `tencent` | 内置 `@meting/core` 自建解析 |
+| 酷狗音乐 | `kugou` | 内置 `@meting/core` 自建解析 |
+| 酷我音乐 | `kuwo` | 内置 `@meting/core` 自建解析 |
+| 咪咕音乐 | `migu` | 项目内服务端适配器 `src/features/music/server/migu.ts` |
+
+> 百度音乐已移除，不再支持。
+
+`id` 取自对应平台的分享链接：`playlist` 用歌单 ID、`song` 用歌曲 ID、`album` 用专辑 ID、`artist` 用歌手 ID、`search` 用搜索关键词。单次最多取 40 首。
+
+#### 咪咕音乐
+
+咪咕对接基于非官方协议，代码在 `src/features/music/server/migu.ts`（协议参考 MIT 项目 Domdkw/miguMusic-api-enhanced 后独立实现）：**不安装第三方 SDK，也不依赖外部 API 服务**。支持歌单 / 单曲 / 专辑 / 歌手 / 搜索五类资源，匿名态解析音链与 LRC 歌词；请求带单请求 10 秒、总预算 25 秒的超时，限制响应体大小与并发数，音链只接受 HTTPS 且保留签名参数。
+
+#### 歌词
+
+点击播放器的歌词按钮展开同步歌词面板：LRC 按时间戳逐行高亮并自动滚动。歌词在面板打开时才请求 `/api/music/lyrics?id=<lyricId>&server=<歌单平台>`（平台取 `SITE_MUSIC_PLAYLIST.server`），结果按「平台 + 歌词 ID」缓存，切回已加载的歌曲不重复拉取。
+
+#### 接口
+
+| 路由 | 参数 | 说明 |
+|------|------|------|
+| `GET /api/music/playlist` | `server`、`type`（默认 `playlist`）、`id` | 返回 `{ tracks }`；无 HTTPS 音链时返回 502 `EMPTY_PLAYLIST` |
+| `GET /api/music/lyrics` | `id`、可选 `server`（默认取 `SITE_MUSIC_PLAYLIST.server`） | 返回 `{ lyric }`；无歌词返回 404 `LYRIC_NOT_FOUND` |
+
+两个接口都只在服务端解析平台资源并统一转换成播放器数据。`/api/music/playlist` 在配置了 `SITE_MUSIC_API_BASE` 时，非咪咕平台改走该外部接口；咪咕始终走项目内置适配器。
+
+#### 环境变量
+
+以下 Cookie 属于敏感信息，只走服务端环境变量，不会写进 `src/config/site`（读取入口：`src/config/env.ts` 的 `getMetingCookie`）：
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
