@@ -52,8 +52,8 @@ export default function RootLayout({
           {children}
           <MusicPlayer />
           <SiteInteractionGuard />
-          {/* Vercel 统计只在 Vercel 部署注入：IGA 侧加载同一个脚本只会多一次无归属的境外请求。
-              预览部署记为 development，避免 PR / 预览流量计入生产数据。 */}
+          {/* Vercel 统计只在 Vercel 构建注入（本地 next dev 不上报）。境内流量经 DCDN 回源，
+              同源 /_vercel/* 上报同样透传到 Vercel。预览部署记为 development，避免预览流量计入生产数据。 */}
           {process.env.VERCEL === '1' ? (
             <>
               <Analytics

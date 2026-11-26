@@ -5,10 +5,6 @@ import type { NextConfig } from 'next';
 import { SITE_CDN_CACHE } from './src/config/site/cdn';
 import { SITE_PWA } from './src/config/site/pwa';
 
-// Vercel 在构建时注入 VERCEL=1；它按自己的产物模型托管 Next.js，
-// standalone 输出只在火山引擎 IGA Pages（自包含 server.js）这条链路上需要。
-const isVercel = process.env.VERCEL === '1';
-
 // Next 16 默认拦截跨域 dev 请求；预览沙箱的代理域名通过 .env.local 注入，
 // 避免把环境专属主机名写进仓库。
 const allowedDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? '')
@@ -42,6 +38,11 @@ const SW_HEADER_SOURCE = `${SITE_PWA.swUrl.slice(0, SITE_PWA.swUrl.lastIndexOf('
 /** 接口一律 no-store：支付回调、订单状态与 Webhook 不能被 CDN 复用 */
 const API_CACHE = SITE_CDN_CACHE.api;
 
+const cacheHeaders = (value: string) => [
+  { key: 'Cache-Control', value },
+  { key: 'CDN-Cache-Control', value },
+];
+
 // 软刷新走 router.refresh()，只换 RSC 数据，不会重新加载客户端 JS bundle。
 // Next.js 会在 RSC 响应里比对 buildId，不一致才降级为 MPA 导航去取新 bundle；
 // 因此每次构建都要写入新的 .next/BUILD_ID（不依赖构建平台是否复用旧产物）。
@@ -54,8 +55,6 @@ const nextConfig: NextConfig = {
   generateBuildId,
   // 不输出浏览器 source map：避免源码经 DCDN 公开，同时减小部署产物与上传体积
   productionBrowserSourceMaps: false,
-  // 部署产物依赖 framework standalone 输出（自包含 server.js）
-  output: isVercel ? undefined : 'standalone',
   devIndicators: false,
   // 隐藏 X-Powered-By，减少无谓的响应头
   poweredByHeader: false,
@@ -71,7 +70,8 @@ const nextConfig: NextConfig = {
   },
   // 裸域自动补 www 放在 src/proxy.ts：主机名需要「不带 www 就加 www」的
   // 通用判断，next.config 的 redirects 只能按写死的 host 精确匹配，换域名
-  // 就得改规则。单域名分流在 DNS 层完成，这里不配置平台/地域跳转。
+  // 就得改规则。境内走 DCDN、境外直连 Vercel 的分流在 DNS 层完成，
+  // 这里不配置平台/地域跳转。
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
 
@@ -150,17 +150,19 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // 可缓存档位同时写 CDN-Cache-Control：否则 Vercel 会剥掉 s-maxage / stale-*，
+      // 回源的火山 DCDN 只能看到浏览器那部分指令（见 src/config/site/cdn.ts）。
       {
         source: '/fonts/:path*',
-        headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
+        headers: cacheHeaders(IMMUTABLE_CACHE),
       },
       {
         source: '/launch/:path*',
-        headers: [{ key: 'Cache-Control', value: IMMUTABLE_CACHE }],
+        headers: cacheHeaders(IMMUTABLE_CACHE),
       },
       {
         source: '/live2d/:path*',
-        headers: [{ key: 'Cache-Control', value: STATIC_CACHE }],
+        headers: cacheHeaders(STATIC_CACHE),
       },
     ];
   },
