@@ -5,6 +5,7 @@ import "./globals.css";
 import "./menca.css";
 import { site } from "@/lib/site.config";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { Lightbox } from "@/components/Lightbox";
 
 const jost = Jost({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="content" aria-label="Content">
           {children}
         </main>
+        <Footer />
         <Lightbox />
       </body>
     </html>
