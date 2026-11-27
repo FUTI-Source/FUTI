@@ -1,0 +1,3 @@
+/* UnoCSS 入口：PostCSS 插件 @unocss/postcss 会将这些指令展开为生成的样式。
+   加载顺序在 globals.css / menca.css 之前，现有语义化样式优先级更高，视觉零回归。 */
+@unocss default;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Jost } from "next/font/google";
+import "./uno.css";
 import "./globals.css";
 import "./menca.css";
 import { site } from "@/lib/site.config";

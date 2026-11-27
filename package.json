@@ -4,10 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "predev": "bun run gen-css",
     "gen-static": "bun scripts/gen-static.ts",
-    "gen-css": "sass --load-path=styles/menca/sass styles/menca/main.scss app/menca.css --no-source-map",
-    "prebuild": "bun run gen-static && bun run gen-css",
+    "prebuild": "bun run gen-static",
     "build": "next build",
     "start": "next start"
   },
@@ -28,7 +26,8 @@
     "@types/node": "^26.6.11",
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
-    "sass": "^1.108.2",
-    "typescript": "^7.0.2"
+    "@unocss/postcss": "^66.13.0",
+    "typescript": "^7.0.2",
+    "unocss": "^66.13.0"
   }
 }
