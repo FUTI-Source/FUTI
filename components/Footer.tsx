@@ -11,10 +11,11 @@ export function Footer() {
             <div className="col col-12">
               <div className="footer__info-box">
                 <div className="copyright">
-                  {new Date().getFullYear()} &copy; <Link href="/">{site.title}</Link>. Crafted &amp; Designed by{" "}
-                  <a href="https://jekyllthemes.io/developers/artem-sheludko" target="_blank" rel="noopener noreferrer">
-                    Artem Sheludko
-                  </a>.
+                  {new Date().getFullYear()} &copy; <Link href="/">{site.title}</Link>.
+                  <br />
+                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+                    晋ICP备2026019630号
+                  </a>
                 </div>
                 <BackToTop />
               </div>
