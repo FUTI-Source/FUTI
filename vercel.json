@@ -1,4 +1,16 @@
 {
   "installCommand": "bun install",
-  "buildCommand": "bun run build"
+  "buildCommand": "bun run build",
+  "framework": "nextjs",
+  "functions": {
+    "app/**/page.ts": {
+      "runtime": "bun"
+    },
+    "app/**/page.tsx": {
+      "runtime": "bun"
+    },
+    "app/**/route.ts": {
+      "runtime": "bun"
+    }
+  }
 }
