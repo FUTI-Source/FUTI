@@ -5,9 +5,7 @@ import { site } from "@/lib/site.config";
 import { formatDate, toISO } from "@/lib/format";
 import { Markdown } from "@/components/Markdown";
 import { MencaImage } from "@/components/MencaImage";
-import { ShareButtons } from "@/components/ShareButtons";
 import { RelatedPosts } from "@/components/RelatedPosts";
-import { Disqus } from "@/components/Disqus";
 
 export const dynamicParams = false;
 
@@ -105,16 +103,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <div className="container animate">
         <article className="post">
           <Markdown>{post.content}</Markdown>
-          <ShareButtons
-            slug={post.slug}
-            title={post.title}
-            description={post.description}
-            image={post.image}
-          />
         </article>
       </div>
       <RelatedPosts post={post} />
-      <Disqus slug={post.slug} title={post.title} />
     </>
   );
 }

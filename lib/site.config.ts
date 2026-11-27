@@ -56,9 +56,6 @@ export const site = {
     // 沿用原站 Formspree 端点
     formAction: "https://formspree.io/f/mdorzaaz",
   },
-  disqus: {
-    shortname: "demo-menca",
-  },
   // 原站留空，保持可配置但默认不启用
   googleAnalytics: "",
   mailchimp: "",
