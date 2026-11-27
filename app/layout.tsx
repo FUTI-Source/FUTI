@@ -4,9 +4,9 @@ import { Jost } from "next/font/google";
 import "./globals.css";
 import "./menca.css";
 import { site } from "@/lib/site.config";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { Lightbox } from "@/components/Lightbox";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { Lightbox } from "@/components/ui/Lightbox";
 
 const jost = Jost({
   subsets: ["latin"],

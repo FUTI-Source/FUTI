@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getAllTags, getPostsByTag } from "@/lib/content";
 import { site } from "@/lib/site.config";
-import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleCard } from "@/components/post/ArticleCard";
 
 export const metadata: Metadata = {
   title: "Tags",

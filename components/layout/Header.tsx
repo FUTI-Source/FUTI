@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { site } from "@/lib/site.config";
-import { ThemeToggle } from "./ThemeToggle";
-import { Search } from "./Search";
+import { ThemeToggle } from "../ui/ThemeToggle";
+import { Search } from "../ui/Search";
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);

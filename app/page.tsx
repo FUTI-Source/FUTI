@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getPaginatedPosts, getAllTags, getPostsByTag } from "@/lib/content";
-import { PostList } from "@/components/PostList";
-import { Pagination } from "@/components/Pagination";
-import { MencaImage } from "@/components/MencaImage";
+import { PostList } from "@/components/post/PostList";
+import { Pagination } from "@/components/post/Pagination";
+import { MencaImage } from "@/components/ui/MencaImage";
 
 export default function HomePage() {
   const { posts, totalPages } = getPaginatedPosts(1);

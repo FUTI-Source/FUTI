@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Post } from "@/lib/content";
 import { formatDate, makeExcerpt, toISO } from "@/lib/format";
-import { MencaImage } from "./MencaImage";
+import { MencaImage } from "../ui/MencaImage";
 
 export function ArticleCard({ post }: { post: Post }) {
   return (

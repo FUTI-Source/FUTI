@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/content";
-import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleCard } from "@/components/post/ArticleCard";
 
 export default function NotFound() {
   const recentPosts = getAllPosts().slice(0, 3);

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPage } from "@/lib/content";
 import { site } from "@/lib/site.config";
-import { Markdown } from "@/components/Markdown";
-import { MencaImage } from "@/components/MencaImage";
+import { Markdown } from "@/components/ui/Markdown";
+import { MencaImage } from "@/components/ui/MencaImage";
 
 export function generateMetadata(): Metadata {
   const page = getPage("elements");

@@ -1,6 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { Mail, BookOpen } from "lucide-react";
-import { XIcon, LinkedinIcon, PinterestIcon } from "@/components/icons";
+import { XIcon, LinkedinIcon, PinterestIcon } from "@/components/ui/icons";
 
 export interface SocialLink {
   label: string;

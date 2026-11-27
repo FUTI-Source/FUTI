@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts, getAllTags, getPaginatedPosts, getPostsByTag, PER_PAGE } from "@/lib/content";
 import { site } from "@/lib/site.config";
-import { PostList } from "@/components/PostList";
-import { Pagination } from "@/components/Pagination";
-import { MencaImage } from "@/components/MencaImage";
+import { PostList } from "@/components/post/PostList";
+import { Pagination } from "@/components/post/Pagination";
+import { MencaImage } from "@/components/ui/MencaImage";
 
 export const dynamicParams = false;
 

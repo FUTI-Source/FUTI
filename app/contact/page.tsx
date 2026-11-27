@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/lib/site.config";
-import { MencaImage } from "@/components/MencaImage";
+import { MencaImage } from "@/components/ui/MencaImage";
 
 export const metadata: Metadata = {
   title: "Contact",

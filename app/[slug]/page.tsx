@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getPostSlugs } from "@/lib/content";
 import { site } from "@/lib/site.config";
 import { formatDate, toISO } from "@/lib/format";
-import { Markdown } from "@/components/Markdown";
-import { MencaImage } from "@/components/MencaImage";
-import { RelatedPosts } from "@/components/RelatedPosts";
+import { Markdown } from "@/components/ui/Markdown";
+import { MencaImage } from "@/components/ui/MencaImage";
+import { RelatedPosts } from "@/components/post/RelatedPosts";
 
 export const dynamicParams = false;
 
