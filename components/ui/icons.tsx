@@ -4,7 +4,7 @@ import type { SVGProps } from "react";
 
 export function MoonIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden {...props}>
       <path d="M12.3 4.9c.4-.2.6-.7.5-1.1-.1-.5-.5-.8-1-.8C7 3.1 2.9 7.3 2.9 12.5s4.1 9.4 8.9 9.4c.5 0 .9-.3 1-.8.1-.4-.1-.9-.5-1.1-1.4-.8-2.3-2.3-2.3-3.9 0-2.5 2-4.5 4.5-4.5 1.6 0 3.1.9 3.9 2.3.2.4.7.6 1.1.5.5-.1.8-.5.8-1 0-4.8-4.1-8.9-8.9-8.9z" />
     </svg>
   );
@@ -12,7 +12,7 @@ export function MoonIcon(props: SVGProps<SVGSVGElement>) {
 
 export function SunIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden {...props}>
       <path d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zM2 13h2c.6 0 1-.4 1-1s-.4-1-1-1H2c-.6 0-1 .4-1 1s.4 1 1 1zm18 0h2c.6 0 1-.4 1-1s-.4-1-1-1h-2c-.6 0-1 .4-1 1s.4 1 1 1zM11 2v2c0 .6.4 1 1 1s1-.4 1-1V2c0-.6-.4-1-1-1s-1 .4-1 1zm0 18v2c0 .6.4 1 1 1s1-.4 1-1v-2c0-.6-.4-1-1-1s-1 .4-1 1zM5.6 5.6c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l1.4 1.4c.4.4 1 .4 1.4 0s.4-1 0-1.4L5.6 5.6zm12.8 12.8c-.4-.4-1-.4-1.4 0s-.4 1 0 1.4l1.4 1.4c.4.4 1 .4 1.4 0s.4-1 0-1.4l-1.4-1.4zM4.2 18.4c-.4.4-.4 1 0 1.4s1 .4 1.4 0l1.4-1.4c.4-.4.4-1 0-1.4s-1-.4-1.4 0l-1.4 1.4zM18.4 4.2c.4-.4.4-1 0-1.4s-1-.4-1.4 0l-1.4 1.4c-.4.4-.4 1 0 1.4s1 .4 1.4 0l1.4-1.4z" />
     </svg>
   );
