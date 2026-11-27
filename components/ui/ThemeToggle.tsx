@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { MoonIcon, SunIcon } from "./icons";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -31,10 +31,10 @@ export function ThemeToggle() {
       title={dark ? "Enable light mode" : "Enable dark mode"}
     >
       <span className="toggle-moon" aria-hidden="true">
-        <Moon />
+        <MoonIcon />
       </span>
       <span className="toggle-sun" aria-hidden="true">
-        <Sun />
+        <SunIcon />
       </span>
     </button>
   );
