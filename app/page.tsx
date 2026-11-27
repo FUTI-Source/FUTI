@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getPaginatedPosts, getAllTags, getPostsByTag } from "@/lib/content";
-import { Hero } from "@/components/Hero";
 import { PostList } from "@/components/PostList";
 import { Pagination } from "@/components/Pagination";
 import { MencaImage } from "@/components/MencaImage";
@@ -11,7 +10,6 @@ export default function HomePage() {
 
   return (
     <>
-      <Hero />
       <div className="container">
         <PostList posts={posts} />
       </div>

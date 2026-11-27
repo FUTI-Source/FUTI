@@ -24,12 +24,6 @@ export const site = {
     avatar: "/images/headshotvintage.png",
     email: "meredithcook@proton.me",
   },
-  hero: {
-    title: "Welcome! I'm Meredith Cook.",
-    description:
-      "I'm a stay-at-home mom moonlighting as a writer of grants and children's books.",
-    image: "/images/headshotvintage.png",
-  },
   perPage: 9,
   nav: [
     { label: "Home", href: "/" },

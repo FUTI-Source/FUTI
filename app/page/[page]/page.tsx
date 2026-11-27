@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts, getAllTags, getPaginatedPosts, getPostsByTag, PER_PAGE } from "@/lib/content";
 import { site } from "@/lib/site.config";
-import { Hero } from "@/components/Hero";
 import { PostList } from "@/components/PostList";
 import { Pagination } from "@/components/Pagination";
 import { MencaImage } from "@/components/MencaImage";
@@ -31,7 +30,6 @@ export default async function PaginatedPage({ params }: { params: Promise<{ page
 
   return (
     <>
-      <Hero />
       <div className="container">
         <PostList posts={posts} />
       </div>
