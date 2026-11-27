@@ -85,11 +85,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 ) : null}
                 <h1 className="post__title">{post.title}</h1>
                 <div className="post__meta">
-                  <Link href="/about" className="post__author-image">
+                  <div className="post__author-image">
                     <MencaImage src={site.author.avatar} alt={site.author.name} />
-                  </Link>
+                  </div>
                   <div className="post__meta-bottom">
-                    <Link className="post__author" href="/about">{site.author.name}</Link>
+                    <span className="post__author">{site.author.name}</span>
                     <time className="post__date" dateTime={toISO(post.date)}>
                       {formatDate(post.date)}
                     </time>

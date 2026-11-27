@@ -27,9 +27,7 @@ export const site = {
   perPage: 9,
   nav: [
     { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Elements", href: "/elements" },
-    { label: "Contact", href: "/contact" },
+    { label: "Tags", href: "/tags" },
   ],
   social: [
     { label: "Email", icon: Mail, href: "mailto:meredithcook@proton.me" },
