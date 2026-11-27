@@ -14,12 +14,12 @@ export interface GalleryImage {
 }
 
 export const site = {
-  title: "Meredith Cook",
+  title: "张文涛",
   description: "Personal website and blog.",
   // 迁移到根路径，不再使用 /mencaold 子路径
   url: "http://192.168.0.31:3000",
   author: {
-    name: "Meredith Cook",
+    name: "张文涛",
     bio: "Mom. Grant Writer. Author.",
     avatar: "/images/headshotvintage.png",
     email: "meredithcook@proton.me",

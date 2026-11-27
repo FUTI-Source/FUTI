@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 image: '/images/santaelenavintage.jpeg'
 ---
-Welcome! My name is Meredith Cook.
+Welcome! My name is 张文涛.
 
 I am married to [Keelan](https://keelancook.com/) and a [stay-at-home-working mom](https://meredithcook.net/2022/05/30/the-stay-at-home-full-time-working-mom/) of two tiny redheads. I serve as the Grant Coordinator for Southeastern Baptist Theological Seminary, where I earned a Master of Divinity in Missiology. I am the author of [*Go Tell Everyone: 9 Missionaries Who Shared the Good News*](https://amzn.to/45wlDh1), a children's board book about [the Great Commission and missionaries](https://meredithcook.net/2022/10/18/writing-a-children-book/). Published by [B&H Kids](https://www.bhpublishinggroup.com/product/go-tell-everyone/), *Go Tell Everyone* is scheduled to release in March 2024. 
 
