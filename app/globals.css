@@ -1,0 +1,77 @@
+html {
+  scroll-behavior: smooth;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.nav-button button,
+.nav__icon-close,
+.search__close,
+.toggle-theme,
+.top {
+  padding: 0;
+  border: 0;
+  color: inherit;
+}
+
+.nav-button button {
+  display: flex;
+  align-items: center;
+  background: transparent;
+}
+
+.nav-button svg,
+.nav__icon-close svg,
+.search__close svg {
+  width: 1em;
+  height: 1em;
+}
+
+.toggle-theme svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.social__link svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.pagination__item i,
+.share__link i {
+  display: inline-flex;
+}
+
+.pagination__item svg,
+.share__link svg {
+  width: 1em;
+  height: 1em;
+}
+
+.top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top svg {
+  width: 1em;
+  height: 1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate,
+  .circle.pulse {
+    animation: none;
+  }
+}
