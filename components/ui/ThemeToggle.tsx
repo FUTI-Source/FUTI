@@ -13,6 +13,10 @@ export function ThemeToggle() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark-mode", next);
+    // 同步浏览器地址栏/PWA 主题色
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((m) => m.setAttribute("content", next ? "#0c101a" : "#ffffff"));
     if (next) {
       document.documentElement.setAttribute("dark", "");
       localStorage.setItem("theme", "dark");

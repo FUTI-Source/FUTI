@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Jost } from "next/font/google";
 import "./fonts.css";
 import "./uno.css";
@@ -52,6 +52,27 @@ export const metadata: Metadata = {
     title: site.title,
     description: site.description,
   },
+  manifest: site.url ? `${site.url}/manifest.webmanifest` : "/manifest.webmanifest",
+  // 百度移动搜索适配声明
+  other: {
+    "applicable-device": "pc,mobile",
+  },
+  verification: {
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { bing: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : {}),
+  },
+};
+
+// 浏览器地址栏/PWA 主题色
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c101a" },
+  ],
 };
 
 const websiteJsonLd = {
@@ -68,6 +89,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth" className={jost.variable}>
       <body>
+        {/* 百度移动搜索：禁止转码 */}
+        <meta httpEquiv="Cache-Control" content="no-transform" />
+        <meta httpEquiv="Cache-Control" content="no-siteapp" />
         {site.url ? (
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         ) : null}

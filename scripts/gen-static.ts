@@ -47,13 +47,18 @@ const items = posts
   .map((p) => {
     const link = `${site.url}/${p.slug}`;
     const categories = p.tags.map((t) => `      <category>${esc(t)}</category>`).join("\n");
+    // 封面图作为附件，便于 RSS 阅读器展示
+    const ext = p.image?.split(".").pop()?.toLowerCase() ?? "jpg";
+    const enclosure = p.image
+      ? `      <enclosure url="${esc(`${site.url}${p.image}`)}" type="image/${esc(ext === "jpg" ? "jpeg" : ext)}" length="0"/>\n`
+      : "";
     return `    <item>
       <title>${esc(p.title)}</title>
       <description>${esc(p.description ?? plainText(p.content).slice(0, 280))}</description>
       <pubDate>${p.date.toUTCString()}</pubDate>
       <link>${esc(link)}</link>
       <guid isPermaLink="true">${esc(link)}</guid>
-${categories}
+${categories}${enclosure}
     </item>`;
   })
   .join("\n");

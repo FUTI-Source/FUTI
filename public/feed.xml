@@ -6,7 +6,7 @@
     <language>zh-CN</language>
     <link>https://www.zhang-wentao.tech/</link>
     <atom:link href="https://www.zhang-wentao.tech/feed.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 28 Nov 2026 07:22:17 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 28 Nov 2026 07:41:36 GMT</lastBuildDate>
     <item>
       <title>老街的清晨：一次城市漫步</title>
       <description>沿着城北的老街走了一遍，记录下清晨六点半的光线、早点摊和慢下来的节奏。</description>
@@ -14,7 +14,8 @@
       <link>https://www.zhang-wentao.tech/old-street-morning</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/old-street-morning</guid>
       <category>城市</category>
-      <category>随笔</category>
+      <category>随笔</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/city-street.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>手冲咖啡入门：从磨豆到注水</title>
@@ -23,7 +24,8 @@
       <link>https://www.zhang-wentao.tech/pour-over-coffee</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/pour-over-coffee</guid>
       <category>咖啡</category>
-      <category>生活</category>
+      <category>生活</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/coffee.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>周末露营：轻量化装备清单</title>
@@ -32,7 +34,8 @@
       <link>https://www.zhang-wentao.tech/weekend-camping</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/weekend-camping</guid>
       <category>户外</category>
-      <category>生活</category>
+      <category>生活</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/camping.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>读完《瓦尔登湖》：把生活过简单</title>
@@ -41,7 +44,8 @@
       <link>https://www.zhang-wentao.tech/walden-notes</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/walden-notes</guid>
       <category>阅读</category>
-      <category>随笔</category>
+      <category>随笔</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/library.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>三个构图练习，让黄昏照片更有层次</title>
@@ -50,7 +54,8 @@
       <link>https://www.zhang-wentao.tech/golden-hour-composition</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/golden-hour-composition</guid>
       <category>摄影</category>
-      <category>教程</category>
+      <category>教程</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/camera.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>深夜厨房：一碗番茄意面的做法</title>
@@ -59,7 +64,8 @@
       <link>https://www.zhang-wentao.tech/late-night-pasta</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/late-night-pasta</guid>
       <category>美食</category>
-      <category>生活</category>
+      <category>生活</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/pasta.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>慢跑一年：配速之外的变化</title>
@@ -68,7 +74,8 @@
       <link>https://www.zhang-wentao.tech/one-year-running</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/one-year-running</guid>
       <category>运动</category>
-      <category>生活</category>
+      <category>生活</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/running.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>通勤路上的播客清单</title>
@@ -77,7 +84,8 @@
       <link>https://www.zhang-wentao.tech/commute-podcasts</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/commute-podcasts</guid>
       <category>音乐</category>
-      <category>随笔</category>
+      <category>随笔</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/headphones.jpg" type="image/jpeg" length="0"/>
+
     </item>
     <item>
       <title>年度总结：今年做对的五件小事</title>
@@ -86,7 +94,8 @@
       <link>https://www.zhang-wentao.tech/year-in-review</link>
       <guid isPermaLink="true">https://www.zhang-wentao.tech/year-in-review</guid>
       <category>随笔</category>
-      <category>生活</category>
+      <category>生活</category>      <enclosure url="https://www.zhang-wentao.tech/assets/posts/mountains.jpg" type="image/jpeg" length="0"/>
+
     </item>
   </channel>
 </rss>

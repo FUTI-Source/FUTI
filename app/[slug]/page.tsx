@@ -29,6 +29,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       ...(url ? { url } : {}),
       type: "article",
       publishedTime: post.date.toISOString(),
+      authors: [site.title],
+      tags: post.tags,
+    },
+    // Slack / Telegram / Discord 的富字段（twitter:label/value）
+    other: {
+      "twitter:label1": "阅读时长",
+      "twitter:value1": `约 ${readingMinutes(post.content)} 分钟`,
+      "twitter:label2": "发布日期",
+      "twitter:value2": formatDate(post.date),
     },
     twitter: {
       card: "summary_large_image",
