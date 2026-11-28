@@ -5,6 +5,16 @@
    ====================================================================== */
 html {
   scroll-behavior: smooth;
+  /* 全局隐藏滚动条（保留滚动功能）：Firefox / 旧版 Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Chrome / Safari / Edge：隐藏所有滚动容器（页面、抽屉菜单、代码块、表格等）的滚动条 */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 button,
@@ -3094,10 +3104,35 @@ table td {
 :: 4-Layouts
 ======================= */
 /* >>>>>>>>>>>>>> :: 4.1-Post <<<<<<<<<<<<<<< */
-/* Post + Page */
+/* Post + Page（视频博客布局） */
+/* 全宽渐变幕布：播放器/封面卡片悬浮其上 */
+.post-hero {
+  padding: 36px 0 44px;
+  background: var(--background-alt-color);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-color) 10%, var(--background-color)) 0%,
+    color-mix(in srgb, var(--brand-color) 4%, var(--background-color)) 60%,
+    var(--background-color) 100%
+  );
+}
+.post-hero__inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+@media only screen and (max-width: 576px) {
+  .post-hero {
+    padding: 20px 0 28px;
+  }
+  .post-hero__inner {
+    padding: 0 16px;
+  }
+}
+
 .post-head,
 .page-head {
-  margin-bottom: 48px;
+  margin-bottom: 44px;
 }
 .post-head .row,
 .page-head .row {
@@ -3122,10 +3157,11 @@ table td {
   position: relative;
   transform: translate(0);
   padding-top: 56.25%;
-  margin-bottom: 24px;
-  border-radius: 8px;
+  margin-bottom: 0;
+  border-radius: 16px;
   overflow: hidden;
   background: var(--background-alt-color);
+  box-shadow: 0 24px 64px -28px rgba(12, 16, 26, 0.45), 0 0 0 1px rgba(12, 16, 26, 0.05);
 }
 .post-image img,
 .page-image img {
@@ -3145,11 +3181,12 @@ table td {
 
 .post-video,
 .page-video {
-  margin-bottom: 24px;
-  border-radius: 8px;
+  margin-bottom: 0;
+  border-radius: 16px;
   overflow: hidden;
   transform: translate(0);
   background-color: var(--background-alt-color);
+  box-shadow: 0 24px 64px -28px rgba(12, 16, 26, 0.45), 0 0 0 1px rgba(12, 16, 26, 0.05);
 }
 .post-video .post-video__wrap,
 .post-video .page-video__wrap,
@@ -3174,6 +3211,7 @@ table td {
 .post__info {
   max-width: 760px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .page__info {
@@ -3181,20 +3219,34 @@ table td {
   margin: 0 auto;
 }
 
+/* 视频 / 图文徽章 */
+.post__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  border-radius: 999px;
+  color: var(--brand-color);
+  background: var(--background-alt-color);
+  background: color-mix(in srgb, var(--brand-color) 12%, transparent);
+}
+.post__badge svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
 .post__tags {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 20px;
-}
-.post__info::before {
-  content: "";
-  display: block;
-  width: 40px;
-  height: 4px;
-  margin-bottom: 20px;
-  border-radius: 2px;
-  background: var(--brand-color);
 }
 
 .post__tags .post__tag {
@@ -3245,11 +3297,13 @@ table td {
 .post__meta {
   display: flex;
   align-items: center;
+  justify-content: center;
   line-height: 1;
 }
 .post__meta-bottom {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 .post__meta .post__date {
   font-size: 14px;

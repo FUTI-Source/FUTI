@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock } from "lucide-react";
+import { Clock, Image as ImageIcon, Play } from "lucide-react";
 import { getPostBySlug, getPostSlugs } from "@/lib/content";
 import { site } from "@/lib/site.config";
 import { formatDate, readingMinutes, toISO } from "@/lib/format";
@@ -69,8 +69,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           }),
         }}
       />
-      <div className="post-head animate">
-        <div className="container">
+      <div className="post-hero animate">
+        <div className="post-hero__inner">
           {post.videoEmbed ? (
             <div className="post-video">
               <div className="post-video__wrap">
@@ -89,7 +89,19 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               <MencaImage src={post.image} alt={post.title} eager />
             </div>
           ) : null}
+        </div>
+      </div>
+      <div className="post-head animate">
+        <div className="container">
           <div className="post__info">
+            <span className="post__badge">
+              {post.videoEmbed ? (
+                <Play aria-hidden="true" strokeWidth={2} />
+              ) : (
+                <ImageIcon aria-hidden="true" strokeWidth={1.75} />
+              )}
+              {post.videoEmbed ? "视频" : "图文"}
+            </span>
             {post.tags.length > 0 ? (
               <div className="post__tags">
                 {post.tags.map((tag) => (
@@ -106,7 +118,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   {formatDate(post.date)}
                 </time>
                 <span className="post__reading">
-                      <Clock aria-hidden="true" strokeWidth={1.75} />
+                  <Clock aria-hidden="true" strokeWidth={1.75} />
                   约 {readingMinutes(post.content)} 分钟读完
                 </span>
               </div>
