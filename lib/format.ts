@@ -1,10 +1,10 @@
 export function formatDate(input: Date | string): string {
   const d = typeof input === "string" ? new Date(input) : input;
   if (Number.isNaN(d.getTime())) return String(input);
-  return d.toLocaleDateString("en-GB", {
+  return d.toLocaleDateString("zh-CN", {
     year: "numeric",
-    month: "short",
-    day: "2-digit",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -13,8 +13,8 @@ export function toISO(input: Date | string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
-/** 从 Markdown 正文生成纯文本摘要，用于文章卡片。 */
-export function makeExcerpt(markdown: string, words = 28): string {
+/** 从 Markdown 正文生成纯文本摘要；中文无空格分词，按字符数截断。 */
+export function makeExcerpt(markdown: string, maxChars = 80): string {
   const text = markdown
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // 图片
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // 链接保留文字
@@ -24,6 +24,5 @@ export function makeExcerpt(markdown: string, words = 28): string {
     .replace(/\s+/g, " ")
     .trim();
   if (!text) return "";
-  const arr = text.split(" ");
-  return arr.length > words ? arr.slice(0, words).join(" ") + "…" : text;
+  return text.length > maxChars ? text.slice(0, maxChars).trimEnd() + "…" : text;
 }

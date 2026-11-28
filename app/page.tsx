@@ -15,7 +15,7 @@ export default function HomePage() {
         {posts.length === 0 ? (
           <EmptyState
             title="暂无文章"
-            subtitle="No posts yet — new content is on the way."
+            subtitle="还没有文章，新内容很快就会到来。"
           />
         ) : (
           <PostList posts={posts} />
@@ -28,8 +28,8 @@ export default function HomePage() {
             <div className="row">
               <div className="col col-12">
                 <div className="section__head">
-                  <h3 className="section__title">Tags</h3>
-                  <Link href="/tags" className="section__link">See all</Link>
+                  <h3 className="section__title">标签</h3>
+                  <Link href="/tags" className="section__link">查看全部</Link>
                 </div>
                 <div className="row">
                   {tags.map(({ tag }) => {

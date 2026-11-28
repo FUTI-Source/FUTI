@@ -26,7 +26,7 @@ export default function NotFound() {
                 <div className="col col-12">
                   <div className="error">
                     <h2 className="error__title">404</h2>
-                    <p className="error__text">The requested page could not be found.</p>
+                    <p className="error__text">抱歉，你访问的页面不存在。</p>
                   </div>
                 </div>
               </div>
@@ -39,8 +39,8 @@ export default function NotFound() {
           <div className="row">
             <div className="col col-12">
               <div className="section__head">
-                <h2 className="section__title">Recent Posts</h2>
-                <Link className="section__link" href="/">Back to homepage</Link>
+                <h2 className="section__title">最新文章</h2>
+                <Link className="section__link" href="/">返回首页</Link>
               </div>
             </div>
           </div>

@@ -14,10 +14,10 @@ export function RelatedPosts({ post }: { post: Post }) {
             <div className="container__inner">
               <div className="section__info">
                 <div className="section__head">
-                  <h2 className="section__title">You may also like</h2>
+                  <h2 className="section__title">推荐阅读</h2>
                   {post.tags[0] ? (
                     <Link href={`/tags#${encodeURIComponent(post.tags[0])}`} className="section__link related-tag">
-                      See all<span> {post.tags[0]}</span>
+                      查看全部<span> {post.tags[0]}</span>
                     </Link>
                   ) : null}
                 </div>

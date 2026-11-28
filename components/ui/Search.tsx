@@ -66,7 +66,7 @@ export function Search() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Search"
+        aria-label="搜索"
         className="nav__icon icon__search"
         aria-expanded={open}
       >
@@ -82,21 +82,22 @@ export function Search() {
                     type="button"
                     className="search__close"
                     onClick={() => setOpen(false)}
-                    aria-label="Close search"
+                    aria-label="关闭搜索"
                     tabIndex={open ? 0 : -1}
                   >
                     <X aria-hidden="true" />
                   </button>
                   <label htmlFor="js-search-input" className="screen-reader-text">
-                    Search for Blog
+                    搜索文章
                   </label>
                   <input
                     ref={inputRef}
                     type="text"
                     id="js-search-input"
+                    title="搜索文章"
                     className="search__text"
                     autoComplete="off"
-                    placeholder="Type to search..."
+                    placeholder="输入关键词搜索…"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     tabIndex={open ? 0 : -1}
@@ -108,7 +109,7 @@ export function Search() {
         </div>
         <div className="container">
           <div className="row search-results-list" id="js-results-container" aria-live="polite">
-            {term && hits.length === 0 ? <h3 className="no-results">No results found</h3> : null}
+            {term && hits.length === 0 ? <h3 className="no-results">没有找到相关内容</h3> : null}
             {hits.map((hit) => (
               <article className="article col col-4 col-d-6 col-t-12" key={hit.url}>
                 <div className="article__inner">

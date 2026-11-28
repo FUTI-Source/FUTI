@@ -16,8 +16,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ page: string }> }) {
   const { page } = await params;
   return {
-    title: `Page ${page}`,
-    description: `Older posts from ${site.title}.`,
+    title: `第 ${page} 页`,
+    description: `浏览${site.title}的早期文章。`,
   };
 }
 
@@ -39,8 +39,8 @@ export default async function PaginatedPage({ params }: { params: Promise<{ page
           <div className="row">
             <div className="col col-12">
               <div className="section__head">
-                <h3 className="section__title">Tags</h3>
-                <Link href="/tags" className="section__link">See all</Link>
+                <h3 className="section__title">标签</h3>
+                <Link href="/tags" className="section__link">查看全部</Link>
               </div>
               <div className="row">
                 {tags.map(({ tag }) => {

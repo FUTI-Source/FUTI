@@ -37,17 +37,17 @@ export function Header() {
               </Link>
             </div>
 
-            <nav className={`main-nav${menuOpen ? " is-open" : ""}`} aria-label="Main navigation">
+            <nav className={`main-nav${menuOpen ? " is-open" : ""}`} aria-label="主导航">
               <div className="main-nav__box">
                 <button
                   className="nav__icon-close"
                   onClick={() => setMenuOpen(false)}
-                  aria-label="Close menu"
+                  aria-label="关闭菜单"
                   tabIndex={menuOpen ? 0 : -1}
                 >
                   <X aria-hidden="true" />
                 </button>
-                <div className="nav__title">Menu</div>
+                <div className="nav__title">菜单</div>
                 <ul className="nav__list list-reset">
                   {site.nav.map((item) => (
                     <li className="nav__item" key={item.href}>
@@ -67,7 +67,7 @@ export function Header() {
               <button
                 className="nav__icon icon__menu"
                 onClick={() => setMenuOpen(true)}
-                aria-label="Open menu"
+                aria-label="打开菜单"
                 aria-expanded={menuOpen}
               >
                 <Menu aria-hidden="true" />

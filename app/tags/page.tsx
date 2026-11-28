@@ -6,8 +6,8 @@ import { ArticleCard } from "@/components/post/ArticleCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export const metadata: Metadata = {
-  title: "Tags",
-  description: `Browse all posts by tag on ${site.title}.`,
+  title: "标签",
+  description: `浏览${site.title}的全部标签与相关文章。`,
   alternates: { canonical: `${site.url}/tags` },
 };
 
@@ -19,7 +19,7 @@ export default function TagsPage() {
       <div className="container">
         <EmptyState
           title="暂无标签"
-          subtitle="No tags yet — they will appear here once posts are published."
+          subtitle="还没有标签，文章发布后会自动归类到这里。"
           icon={<TagsIcon className="h-12 w-12" strokeWidth={1.5} aria-hidden="true" />}
         />
       </div>
@@ -32,7 +32,7 @@ export default function TagsPage() {
         <div className="container">
           <div className="row">
             <div className="col col-12">
-              <h1 className="tag__title">Tags</h1>
+              <h1 className="tag__title">标签</h1>
               <ul className="tag__list list-reset">
                 {tags.map(({ tag }) => (
                   <li className="tag__item" key={tag}>
@@ -55,11 +55,11 @@ export default function TagsPage() {
                     <div className="tag__info-box">
                       <div className="tag__counter">
                         <span>{count}</span>
-                        <small>{count === 1 ? "Post" : "Posts"}</small>
+                        <small>篇文章</small>
                       </div>
                       <h2 className="tag__name" id={encodeURIComponent(tag)}>{tag}</h2>
                     </div>
-                    <a className="top__link" href="#top">Return to top</a>
+                    <a className="top__link" href="#top">回到顶部</a>
                   </div>
                 </div>
               </div>

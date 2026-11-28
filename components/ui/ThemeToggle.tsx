@@ -26,8 +26,8 @@ export function ThemeToggle() {
     <button
       className="toggle-theme"
       onClick={toggle}
-      aria-label={dark ? "Enable light mode" : "Enable dark mode"}
-      title={dark ? "Enable light mode" : "Enable dark mode"}
+      aria-label={dark ? "切换到浅色模式" : "切换到深色模式"}
+      title={dark ? "切换到浅色模式" : "切换到深色模式"}
     >
       <span className="toggle-moon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -2,10 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>张文涛</title>
-    <description>Personal website and blog.</description>
+    <description>个人网站与博客，记录与写作。</description>
+    <language>zh-CN</language>
     <link>http://192.168.0.31:3000/</link>
     <atom:link href="http://192.168.0.31:3000/feed.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 28 Nov 2026 02:30:08 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 28 Nov 2026 03:30:04 GMT</lastBuildDate>
 
   </channel>
 </rss>

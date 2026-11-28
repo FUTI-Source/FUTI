@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     title: site.title,
     description: site.description,
     url: site.url,
+    locale: "zh_CN",
   },
   twitter: {
     card: "summary_large_image",
@@ -37,11 +38,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={jost.variable}>
+    <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth" className={jost.variable}>
       <body>
         <ThemeScript />
         <Header />
-        <main className="content" aria-label="Content">
+        <main className="content" aria-label="正文">
           {children}
         </main>
         <Footer />

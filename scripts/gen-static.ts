@@ -63,6 +63,7 @@ const rss = `<?xml version="1.0" encoding="UTF-8"?>
   <channel>
     <title>${esc(site.title)}</title>
     <description>${esc(site.description)}</description>
+    <language>zh-CN</language>
     <link>${esc(site.url)}/</link>
     <atom:link href="${esc(site.url)}/feed.xml" rel="self" type="application/rss+xml"/>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -73,5 +74,5 @@ ${items}
 fs.writeFileSync(path.join(PUBLIC, "feed.xml"), rss);
 
 console.log(
-  `Generated public/search.json (${searchIndex.length} posts) and public/feed.xml`
+  `已生成 public/search.json（${searchIndex.length} 篇文章）与 public/feed.xml`
 );
