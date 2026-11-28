@@ -2332,22 +2332,61 @@ table td {
   }
 }
 
-/* Logo */
+/* Logo —— 印章名标：品牌蓝方章 + 加粗站名 */
 .logo__link {
-  padding: 4px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
   font-family: var(--font-jost), "Jost", Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 28px;
-  letter-spacing: -1px;
+  font-size: 24px;
+  letter-spacing: 1px;
   line-height: 1;
   font-weight: 700;
   transition: color 0.25s ease;
 }
+.logo__seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--white);
+  background: var(--brand-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 115, 236, 0.28);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  user-select: none;
+}
+.logo__name {
+  color: var(--heading-font-color);
+}
 .logo__link:hover {
   color: var(--brand-color);
+}
+.logo__link:hover .logo__seal {
+  transform: rotate(-6deg) scale(1.04);
+  box-shadow: 0 3px 9px rgba(0, 115, 236, 0.36);
 }
 
 .logo__image {
   max-height: 50px;
+}
+@media only screen and (max-width: 576px) {
+  .logo__link {
+    gap: 8px;
+    font-size: 21px;
+  }
+  .logo__seal {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    border-radius: 7px;
+  }
 }
 
 /* Nav */

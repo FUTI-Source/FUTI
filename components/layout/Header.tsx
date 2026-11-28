@@ -33,7 +33,11 @@ export function Header() {
           <div className="header__inner col col-12">
             <div className="logo">
               <Link className="logo__link" href="/">
-                {site.title}
+                {/* 印章名标：品牌蓝方章内取名字核心字“文”，白色衬线呈现印感 */}
+                <span className="logo__seal" aria-hidden="true">
+                  文
+                </span>
+                <span className="logo__name">{site.title}</span>
               </Link>
             </div>
 
