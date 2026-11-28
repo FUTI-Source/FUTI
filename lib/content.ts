@@ -4,7 +4,8 @@ import matter from "gray-matter";
 import { site } from "./site.config";
 
 const ROOT = process.cwd();
-const POSTS_DIR = path.join(ROOT, "content", "posts");
+// 文章直接位于 content/ 目录
+const POSTS_DIR = path.join(ROOT, "content");
 
 export const PER_PAGE = site.perPage;
 

@@ -17,7 +17,7 @@
 │   ├── layout/               # 页头页脚、主题切换、搜索、滚动/分享等布局组件
 │   ├── post/                 # 文章卡片、列表、分页、相关阅读
 │   └── ui/                   # 图片、Markdown、灯箱、空状态等通用组件
-├── content/posts/            # 文章（Markdown + front matter）
+├── content/                  # 文章（Markdown + front matter）
 ├── lib/                      # 内容读取、格式化、OG 字体加载等
 ├── public/
 │   ├── assets/posts/         # 文章配图
@@ -45,7 +45,7 @@ bun run build        # 构建前自动生成 search.json 与 feed.xml
 
 ## 写文章
 
-在 `content/posts/` 新建 `YYYY-MM-DD-slug.md`：
+在 `content/` 新建 `YYYY-MM-DD-slug.md`：
 
 ```markdown
 ---
