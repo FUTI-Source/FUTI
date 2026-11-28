@@ -114,7 +114,6 @@ textarea {
     3.7-Article
     3.8-Contact
     3.9-Sections
-    3.10-Section Tags
 :: 4-Layouts
     4.1-Home Page
     4.2-Post Page
@@ -3071,58 +3070,6 @@ table td {
 .section__title,
 .section__link {
   background: var(--background-color);
-}
-
-/* >>>>>>>>>>>>>> :: 3.10-Section Tags <<<<<<<<<<<<<<< */
-/* Section Tags */
-@media only screen and (max-width: 576px) {
-  .section-tags .row .col:last-child > .tag-image {
-    margin-bottom: 0;
-  }
-}
-
-.tag-image {
-  margin-bottom: 32px;
-  position: relative;
-  transform: translate(0);
-  display: block;
-  height: 0;
-  padding-bottom: 62%;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--background-alt-color);
-  transition: transform 0.2s;
-}
-.tag-image:hover {
-  transform: translateY(-3px);
-}
-.tag-image img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  user-select: none;
-}
-.tag-image .tag-name {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  max-width: 90%;
-  display: inline-block;
-  padding: 8px 12px;
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 700;
-  text-transform: capitalize;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-radius: 4px;
-  color: var(--heading-font-color);
-  background: var(--background-color);
-  pointer-events: none;
 }
 
 /* =======================
