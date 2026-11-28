@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Jost } from "next/font/google";
+import "./fonts.css";
 import "./uno.css";
 import { site } from "@/lib/site.config";
 import { Header } from "@/components/layout/Header";

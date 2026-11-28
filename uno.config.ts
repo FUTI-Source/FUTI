@@ -29,7 +29,7 @@ export default defineConfig({
       tr: "var(--tr-color)",
     },
     fontFamily: {
-      sans: ["var(--font-jost)", "Jost", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+      sans: ["Noto Serif SC", "var(--font-jost)", "Jost", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
     },
     // 与 Menca 原始断点对齐（移动端优先的 min-width，对应原始 max-width 体系）
     breakpoints: {
