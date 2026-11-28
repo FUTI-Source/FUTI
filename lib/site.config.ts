@@ -1,13 +1,30 @@
 /**
  * 全站配置（唯一入口）。
- * - 站点地址按部署环境自动识别：NEXT_PUBLIC_SITE_URL > VERCEL_URL > 本地开发地址
+ * - 站点域名不出现在项目任何位置，完全由部署环境自动识别（任何平台）：
+ *   NEXT_PUBLIC_SITE_URL（显式指定，可选）
+ *   > Vercel / Cloudflare Pages / Render / Netlify / Railway 的平台域名变量
+ *   > 都没有时回退到本地开发地址
  * - colors 与 app/uno.css 的 :root 设计令牌保持一致（CSS 无法读取 TS，改动时需人工同步）
  */
+function normalizeSiteUrl(value: string | undefined): string | null {
+  const v = value?.trim().replace(/\/+$/, "");
+  if (!v) return null;
+  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+}
+
 function detectSiteUrl(): string {
-  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
-  if (explicit) return explicit;
-  const vercel = process.env.VERCEL_URL?.trim().replace(/\/+$/, "");
-  if (vercel) return `https://${vercel}`;
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_URL, // Vercel（无协议，需补 https）
+    process.env.CF_PAGES_URL, // Cloudflare Pages
+    process.env.RENDER_EXTERNAL_URL, // Render
+    process.env.NETLIFY_URL, // Netlify
+    process.env.RAILWAY_PUBLIC_DOMAIN, // Railway（无协议，需补 https）
+  ];
+  for (const candidate of candidates) {
+    const normalized = normalizeSiteUrl(candidate);
+    if (normalized) return normalized;
+  }
   return "http://localhost:3000";
 }
 
