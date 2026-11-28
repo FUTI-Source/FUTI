@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { site } from "@/lib/site.config";
 
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -16,7 +17,7 @@ export function ThemeToggle() {
     // 同步浏览器地址栏/PWA 主题色
     document
       .querySelectorAll('meta[name="theme-color"]')
-      .forEach((m) => m.setAttribute("content", next ? "#0c101a" : "#ffffff"));
+      .forEach((m) => m.setAttribute("content", next ? site.colors.backgroundDark : site.colors.background));
     if (next) {
       document.documentElement.setAttribute("dark", "");
       localStorage.setItem("theme", "dark");

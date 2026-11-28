@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { site } from "./site.config";
 
 const ROOT = process.cwd();
 const POSTS_DIR = path.join(ROOT, "content", "posts");
 
-export const PER_PAGE = 9;
+export const PER_PAGE = site.perPage;
 
 export interface Post {
   slug: string;
@@ -131,7 +132,7 @@ export function getPostsByTag(tag: string): Post[] {
   return loadAllPosts().filter((p) => p.tags.includes(tag));
 }
 
-export function getRelatedPosts(post: Post, limit = 3): Post[] {
+export function getRelatedPosts(post: Post, limit: number = site.relatedPostsLimit): Post[] {
   const others = loadAllPosts().filter((p) => p.slug !== post.slug);
   const scored = others.map((p) => ({
     p,

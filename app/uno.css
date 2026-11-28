@@ -123,6 +123,7 @@ textarea {
     4.3-Tags Page
 <<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 /* Color Scheme */
+/* 品牌蓝等令牌与 lib/site.config.ts 的 colors 保持同步（CSS 侧为本源） */
 :root {
   --brand-color: #0073ec;
   --white: #fff;

@@ -33,14 +33,14 @@ export function Header() {
           <div className="header__inner col col-12">
             <div className="logo">
               <Link className="logo__link" href="/">
-                {/* 印章刊头：品牌蓝方章内取名字核心字“文”，白色衬线呈现印感 */}
+                {/* 印章刊头：品牌蓝方章内取名字核心字（site.sealChar），白色衬线呈现印感 */}
                 <span className="logo__seal" aria-hidden="true">
-                  文
+                  {site.sealChar}
                 </span>
                 <span className="logo__text">
                   <span className="logo__name">{site.title}</span>
                   <span className="logo__sub" aria-hidden="true">
-                    Zhang Wentao
+                    {site.alternateName}
                   </span>
                 </span>
               </Link>

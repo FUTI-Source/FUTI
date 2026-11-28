@@ -1,3 +1,5 @@
+import { site } from "./site.config";
+
 export function formatDate(input: Date | string): string {
   const d = typeof input === "string" ? new Date(input) : input;
   if (Number.isNaN(d.getTime())) return String(input);
@@ -13,8 +15,8 @@ export function toISO(input: Date | string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
-/** 按中文阅读速度（约 400 字/分钟）估算阅读时长（分钟）。 */
-export function readingMinutes(markdown: string, charsPerMinute = 400): number {
+/** 按中文阅读速度（site.readingCharsPerMinute，默认 400 字/分钟）估算阅读时长（分钟）。 */
+export function readingMinutes(markdown: string, charsPerMinute: number = site.readingCharsPerMinute): number {
   const text = markdown
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // 图片
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // 链接保留文字
@@ -26,7 +28,7 @@ export function readingMinutes(markdown: string, charsPerMinute = 400): number {
 }
 
 /** 从 Markdown 正文生成纯文本摘要；中文无空格分词，按字符数截断。 */
-export function makeExcerpt(markdown: string, maxChars = 80): string {
+export function makeExcerpt(markdown: string, maxChars: number = site.excerptChars): string {
   const text = markdown
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // 图片
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // 链接保留文字

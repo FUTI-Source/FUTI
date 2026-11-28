@@ -2,12 +2,13 @@
 
 import { useRef } from "react";
 import { useServerInsertedHTML } from "next/navigation";
+import { site } from "@/lib/site.config";
 
 // 与 Menca 原版一致：仅记住用户主动选择的深色模式，并在首屏前应用（避免闪烁）。
 // 同时同步浏览器地址栏/PWA 的 theme-color。
 // 通过 useServerInsertedHTML 注入到文档流，而非渲染进 React 组件树，
 // 从而规避 React 19 “Encountered a script tag while rendering React component” 告警。
-const themeInitScript = `if(localStorage.getItem("theme")==="dark"){document.documentElement.setAttribute("dark","");document.documentElement.classList.add("dark-mode");document.addEventListener("DOMContentLoaded",function(){for(const m of document.querySelectorAll('meta[name="theme-color"]')){m.setAttribute("content","#0c101a")}});}`;
+const themeInitScript = `if(localStorage.getItem("theme")==="dark"){document.documentElement.setAttribute("dark","");document.documentElement.classList.add("dark-mode");document.addEventListener("DOMContentLoaded",function(){for(const m of document.querySelectorAll('meta[name="theme-color"]')){m.setAttribute("content","${site.colors.backgroundDark}")}});}`;
 
 export function ThemeScript() {
   // useServerInsertedHTML 的回调会在 SSR 流的每个 flush 点被调用；

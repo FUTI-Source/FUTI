@@ -70,8 +70,8 @@ export const metadata: Metadata = {
 // 浏览器地址栏/PWA 主题色
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c101a" },
+    { media: "(prefers-color-scheme: light)", color: site.colors.background },
+    { media: "(prefers-color-scheme: dark)", color: site.colors.backgroundDark },
   ],
 };
 
@@ -79,7 +79,7 @@ const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: site.title,
-  alternateName: "Zhang Wentao",
+  alternateName: site.alternateName,
   ...(site.url ? { url: site.url } : {}),
   description: site.description,
   inLanguage: "zh-CN",

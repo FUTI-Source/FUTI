@@ -5,9 +5,10 @@ import { defineConfig, presetAttributify, presetUno } from "unocss";
 // 关键帧/排版/hljs/响应式/深色）保留在 app/uno.css 原始 CSS 中，经本管道统一处理。
 export default defineConfig({
   presets: [presetUno(), presetAttributify()],
-  theme: {
-    // 语义色指向 CSS 变量，浅/深色随 uno.css 中 :root / :root[dark] 自动切换
-    colors: {
+    theme: {
+      // 语义色指向 CSS 变量，浅/深色随 uno.css 中 :root / :root[dark] 自动切换
+      // （品牌色等基值与 lib/site.config.ts 的 colors 同步维护）
+      colors: {
       brand: "var(--brand-color)",
       "brand-hover": "#4f31c7",
       white: "#fff",

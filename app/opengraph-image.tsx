@@ -4,7 +4,7 @@ import { loadOgFonts } from "@/lib/og";
 
 export const runtime = "nodejs";
 export const alt = `${site.title} — ${site.description}`;
-export const size = { width: 1200, height: 630 };
+export const size = { width: site.og.width, height: site.og.height };
 export const contentType = "image/png";
 
 /** 站点级 Open Graph 分享卡：印章 + 站名 + 描述，自动生成。 */
@@ -19,7 +19,7 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          backgroundColor: "#ffffff",
+          backgroundColor: site.colors.background,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
@@ -30,29 +30,33 @@ export default async function OpengraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#0073ec",
+              backgroundColor: site.colors.brand,
               borderRadius: 22,
-              color: "#ffffff",
+              color: site.colors.background,
               fontSize: 58,
               fontWeight: 900,
             }}
           >
-            文
+            {site.sealChar}
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 46, fontWeight: 900, color: "#1e2740", letterSpacing: 3 }}>{site.title}</div>
-            <div style={{ fontSize: 20, color: "#716f8a", letterSpacing: 8, marginTop: 10 }}>ZHANG WENTAO</div>
+            <div style={{ fontSize: 46, fontWeight: 900, color: site.colors.heading, letterSpacing: 3 }}>
+              {site.title}
+            </div>
+            <div style={{ fontSize: 20, color: site.colors.muted, letterSpacing: 8, marginTop: 10 }}>
+              {site.alternateName.toUpperCase()}
+            </div>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ width: 8, height: 44, backgroundColor: "#0073ec", borderRadius: 4 }} />
-          <div style={{ fontSize: 34, color: "#1e2740", lineHeight: 1.4 }}>{site.description}</div>
+          <div style={{ width: 8, height: 44, backgroundColor: site.colors.brand, borderRadius: 4 }} />
+          <div style={{ fontSize: 34, color: site.colors.heading, lineHeight: 1.4 }}>{site.description}</div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div style={{ fontSize: 22, color: "#716f8a", letterSpacing: 2 }}>随笔 · 生活 · 影像</div>
-          <div style={{ fontSize: 24, color: "#0073ec", letterSpacing: 1 }}>www.zhang-wentao.tech</div>
+          <div style={{ fontSize: 22, color: site.colors.muted, letterSpacing: 2 }}>{site.tagline}</div>
+          <div style={{ fontSize: 24, color: site.colors.brand, letterSpacing: 1 }}>{site.domain}</div>
         </div>
       </div>
     ),

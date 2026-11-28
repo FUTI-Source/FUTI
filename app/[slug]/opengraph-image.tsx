@@ -1,11 +1,11 @@
 import { ImageResponse } from "next/og";
 import { getPostBySlug } from "@/lib/content";
 import { site } from "@/lib/site.config";
-import { formatDate, readingMinutes, toISO } from "@/lib/format";
+import { formatDate, readingMinutes } from "@/lib/format";
 import { loadOgFonts } from "@/lib/og";
 
 export const runtime = "nodejs";
-export const size = { width: 1200, height: 630 };
+export const size = { width: site.og.width, height: site.og.height };
 export const contentType = "image/png";
 
 export async function generateImageMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -43,7 +43,7 @@ export default async function OpengraphImage({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          backgroundColor: "#ffffff",
+          backgroundColor: site.colors.background,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
@@ -54,31 +54,35 @@ export default async function OpengraphImage({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#0073ec",
+              backgroundColor: site.colors.brand,
               borderRadius: 20,
-              color: "#ffffff",
+              color: site.colors.background,
               fontSize: 54,
               fontWeight: 900,
             }}
           >
-            文
+            {site.sealChar}
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 34, fontWeight: 900, color: "#1e2740", letterSpacing: 3 }}>{site.title}</div>
-            <div style={{ fontSize: 18, color: "#716f8a", letterSpacing: 8, marginTop: 8 }}>ZHANG WENTAO</div>
+            <div style={{ fontSize: 34, fontWeight: 900, color: site.colors.heading, letterSpacing: 3 }}>
+              {site.title}
+            </div>
+            <div style={{ fontSize: 18, color: site.colors.muted, letterSpacing: 8, marginTop: 8 }}>
+              {site.alternateName.toUpperCase()}
+            </div>
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ width: 120, height: 8, backgroundColor: "#0073ec", borderRadius: 4, marginBottom: 36 }} />
-          <div style={{ fontSize: titleSize, fontWeight: 900, color: "#1e2740", lineHeight: 1.25 }}>{title}</div>
+          <div style={{ width: 120, height: 8, backgroundColor: site.colors.brand, borderRadius: 4, marginBottom: 36 }} />
+          <div style={{ fontSize: titleSize, fontWeight: 900, color: site.colors.heading, lineHeight: 1.25 }}>{title}</div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <div style={{ display: "flex", gap: 18, fontSize: 24, color: "#716f8a" }}>
+          <div style={{ display: "flex", gap: 18, fontSize: 24, color: site.colors.muted }}>
             <span>{metaText}</span>
           </div>
-          <div style={{ fontSize: 22, color: "#0073ec", letterSpacing: 1 }}>www.zhang-wentao.tech</div>
+          <div style={{ fontSize: 22, color: site.colors.brand, letterSpacing: 1 }}>{site.domain}</div>
         </div>
       </div>
     ),
