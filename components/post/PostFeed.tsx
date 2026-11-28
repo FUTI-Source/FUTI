@@ -11,7 +11,8 @@ import { ArticleCard } from "./ArticleCard";
  */
 export function PostFeed({ posts }: { posts: Post[] }) {
   const batch = site.feedBatchSize;
-  const [visibleCount, setVisibleCount] = useState(batch);
+  // site 为 as const，feedBatchSize 是字面量类型 9，需显式放宽为 number
+  const [visibleCount, setVisibleCount] = useState<number>(batch);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const hasMore = visibleCount < posts.length;
 
