@@ -34,7 +34,7 @@ export default async function PaginatedPage({ params }: { params: Promise<{ page
         <PostList posts={posts} />
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} />
-      <section className="section section-tags">
+      <section className="section section-tags animate">
         <div className="container">
           <div className="row">
             <div className="col col-12">

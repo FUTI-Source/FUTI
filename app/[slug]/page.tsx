@@ -53,7 +53,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
-      <div className="post-head">
+      <div className="post-head animate">
         <div className="container">
           <div className="row">
             {post.videoEmbed ? (

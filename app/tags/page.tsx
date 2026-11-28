@@ -28,7 +28,7 @@ export default function TagsPage() {
 
   return (
     <section className="tags">
-      <div className="tag__head">
+      <div className="tag__head animate">
         <div className="container">
           <div className="row">
             <div className="col col-12">
@@ -47,7 +47,7 @@ export default function TagsPage() {
       {tags.map(({ tag, count }) => {
         const posts = getPostsByTag(tag);
         return (
-          <div className="tags__inner" key={tag}>
+          <div className="tags__inner animate" key={tag}>
             <div className="container">
               <div className="row">
                 <div className="col col-12">
@@ -57,7 +57,7 @@ export default function TagsPage() {
                         <span>{count}</span>
                         <small>篇文章</small>
                       </div>
-                      <h2 className="tag__name" id={encodeURIComponent(tag)}>{tag}</h2>
+                      <h2 className="tag__name" id={tag}>{tag}</h2>
                     </div>
                     <a className="top__link" href="#top">回到顶部</a>
                   </div>

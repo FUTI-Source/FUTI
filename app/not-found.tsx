@@ -7,7 +7,7 @@ export default function NotFound() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="page-head animate">
         <div className="container">
           <div className="row">
             <div className="col col-12">

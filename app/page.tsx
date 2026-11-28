@@ -23,7 +23,7 @@ export default function HomePage() {
       </div>
       <Pagination currentPage={1} totalPages={totalPages} />
       {tags.length > 0 ? (
-        <section className="section section-tags">
+        <section className="section section-tags animate">
           <div className="container">
             <div className="row">
               <div className="col col-12">

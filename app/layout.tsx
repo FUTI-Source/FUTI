@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { ThemeScript } from "@/components/layout/ThemeScript";
+import { HashScrollFix } from "@/components/layout/HashScrollFix";
+import { AnchorBounce } from "@/components/layout/AnchorBounce";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -41,6 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth" className={jost.variable}>
       <body>
         <ThemeScript />
+        <HashScrollFix />
+        <AnchorBounce />
         <Header />
         <main className="content" aria-label="正文">
           {children}
