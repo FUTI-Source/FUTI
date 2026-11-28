@@ -49,12 +49,10 @@ textarea {
   height: 1em;
 }
 
-.pagination__item i,
 .share__link i {
   display: inline-flex;
 }
 
-.pagination__item svg,
 .share__link svg {
   width: 1em;
   height: 1em;
@@ -109,7 +107,7 @@ textarea {
 :: 3-Modules
     3.1-Header
     3.2-Search
-    3.3-Pagination
+    3.3-Infinite Scroll
     3.4-Footer
     3.5-Gallery
     3.6-Hero
@@ -2729,123 +2727,18 @@ table td {
   font-size: 14px;
 }
 
-/* >>>>>>>>>>>>>> :: 3.3-Pagination <<<<<<<<<<<<<<< */
-/* Pagination */
-.pagination {
+/* >>>>>>>>>>>>>> :: 3.3-Infinite Scroll <<<<<<<<<<<<<<< */
+/* 首页信息流：滚动到底部自动加载，全部加载完的结尾标记 */
+.feed-end {
   margin-bottom: 80px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-alt-color);
 }
 @media only screen and (max-width: 576px) {
-  .pagination {
+  .feed-end {
     margin-bottom: 60px;
   }
-}
-
-.pagination__inner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.pagination__list {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text-color);
-}
-@media only screen and (max-width: 576px) {
-  .pagination__list {
-    align-items: stretch;
-    font-size: 16px;
-  }
-}
-
-.pagination__item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 24px 20px;
-  text-align: center;
-  border-radius: 8px;
-  background: var(--background-alt-color);
-}
-@media only screen and (max-width: 576px) {
-  .pagination__item {
-    align-items: center;
-    padding: 20px;
-    border-radius: 8px;
-  }
-}
-
-.pagination__count {
-  margin: 0 32px;
-  font-size: 16px;
-  color: var(--link-color);
-}
-@media only screen and (max-width: 768px) {
-  .pagination__count {
-    margin: 0 12px;
-  }
-}
-@media only screen and (max-width: 576px) {
-  .pagination__count {
-    margin: 0 8px;
-    font-size: 14px;
-    line-height: 1.2;
-  }
-}
-
-.pagination__next:hover,
-.pagination__prev:hover {
-  color: var(--heading-font-color);
-}
-.pagination__next:disabled,
-.pagination__prev:disabled {
-  opacity: 0.64;
-  cursor: not-allowed;
-}
-.pagination__next:disabled:hover i,
-.pagination__prev:disabled:hover i {
-  transform: none;
-}
-.pagination__next i,
-.pagination__prev i {
-  font-size: 15px;
-  transition: transform 0.15s ease;
-  will-change: transform;
-}
-.pagination__next.disabled,
-.pagination__prev.disabled {
-  opacity: 0.64;
-  cursor: not-allowed;
-  color: inherit;
-}
-.pagination__next.disabled:hover i,
-.pagination__prev.disabled:hover i {
-  transform: none;
-}
-
-.dark-mode .pagination__next.disabled,
-.dark-mode .pagination__prev.disabled {
-  opacity: 0.78;
-}
-
-.pagination__next:hover i {
-  transform: translateX(2px);
-}
-.pagination__next i {
-  margin-left: 5px;
-}
-
-.pagination__prev:hover i {
-  transform: translateX(-2px);
-}
-.pagination__prev i {
-  margin-right: 5px;
 }
 
 /* >>>>>>>>>>>>>> :: 3.4-Footer <<<<<<<<<<<<<<< */

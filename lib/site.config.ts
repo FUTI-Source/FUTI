@@ -64,7 +64,8 @@ export const site = {
   },
 
   /** 内容与阅读 */
-  perPage: 9,
+  /** 首页信息流每批渲染的文章数（滚动到底部自动加载下一批） */
+  feedBatchSize: 9,
   /** 阅读时长估算：每分钟字数 */
   readingCharsPerMinute: 400,
   /** 摘要截断长度（字符） */
