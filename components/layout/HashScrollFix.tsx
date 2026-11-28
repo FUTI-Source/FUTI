@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { findHashTarget } from "@/lib/bounce";
+import { findHashTarget, getLayoutTop } from "@/lib/bounce";
 
 /**
  * 路由切换带 hash 时（如首页标签图 → /tags#标签），
@@ -19,18 +19,6 @@ export function HashScrollFix() {
 
     let cancelled = false;
     let raf = 0;
-
-    // 入场回弹会给容器加 translateY 位移，getBoundingClientRect() 在动画期间
-    // 会带上这个偏移；改用 offsetTop 链累加得到不受 transform 影响的布局位置。
-    const getLayoutTop = (el: Element): number => {
-      let y = 0;
-      let node = el instanceof HTMLElement ? el : null;
-      while (node) {
-        y += node.offsetTop;
-        node = node.offsetParent as HTMLElement | null;
-      }
-      return y;
-    };
 
     const correct = () => {
       if (cancelled) return;

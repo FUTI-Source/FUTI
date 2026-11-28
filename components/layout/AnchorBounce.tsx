@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { findHashTarget, replayBounce, whenScrollSettled } from "@/lib/bounce";
+import { findHashTarget, getLayoutTop, replayBounce, whenScrollSettled } from "@/lib/bounce";
 
 /**
  * 各类导航点击的回弹重放（每次点击都触发，含二次点击）：
@@ -57,14 +57,20 @@ export function AnchorBounce() {
       if (anchor.classList.contains("tag__link") && href.startsWith("#")) {
         const target = findHashTarget(href);
         if (!target) return;
-        // 每次点击都回弹：目标已在视口顶部（无滚动发生，如重复点击当前标签）
-        // 时立即重放；否则等平滑滚动到位后重放。
-        if (Math.abs(target.getBoundingClientRect().top) <= 4) {
+        // 期望落点 = 目标布局位置，但受页面底部截断：最后一组可能滚不到顶，
+        // 浏览器停在最大滚动处，同样视为“到位”。
+        const expected = Math.min(
+          getLayoutTop(target),
+          document.documentElement.scrollHeight - window.innerHeight
+        );
+        // 每次点击都回弹：已在期望落点（无滚动发生，如重复点击当前标签）时
+        // 立即重放；否则等滚动到位后重放。
+        if (Math.abs(window.scrollY - expected) <= 4) {
           replayBounce();
           return;
         }
         whenScrollSettled(() => {
-          if (Math.abs(target.getBoundingClientRect().top) < 80) replayBounce();
+          if (Math.abs(window.scrollY - expected) <= 8) replayBounce();
         });
       }
     };

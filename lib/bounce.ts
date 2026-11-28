@@ -34,6 +34,21 @@ export function findHashTarget(hash: string): Element | null {
 }
 
 /**
+ * 计算元素相对于文档顶部的布局位置。
+ * 用 offsetTop 链累加而非 getBoundingClientRect()：入场回弹会给容器加
+ * translateY 位移，后者在动画期间会带上这个视觉偏移。
+ */
+export function getLayoutTop(el: Element): number {
+  let y = 0;
+  let node = el instanceof HTMLElement ? el : null;
+  while (node) {
+    y += node.offsetTop;
+    node = node.offsetParent as HTMLElement | null;
+  }
+  return y;
+}
+
+/**
  * 等待当前滚动结束后执行回调。
  * 优先使用 scrollend 事件，同时以“滚动位置持续不变”作为快速判定：
  * - 滚动结束后约 150ms 即触发（替代 scrollend）；
