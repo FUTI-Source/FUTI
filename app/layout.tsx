@@ -24,6 +24,19 @@ export const metadata: Metadata = {
     template: `%s | ${site.title}`,
   },
   description: site.description,
+  applicationName: site.title,
+  alternates: site.url ? { canonical: site.url } : undefined,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     type: "website",
     siteName: site.title,
@@ -39,10 +52,23 @@ export const metadata: Metadata = {
   },
 };
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: site.title,
+  alternateName: "Zhang Wentao",
+  ...(site.url ? { url: site.url } : {}),
+  description: site.description,
+  inLanguage: "zh-CN",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning data-scroll-behavior="smooth" className={jost.variable}>
       <body>
+        {site.url ? (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+        ) : null}
         <ThemeScript />
         <HashScrollFix />
         <AnchorBounce />

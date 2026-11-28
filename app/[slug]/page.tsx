@@ -19,13 +19,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getPostBySlug(slug);
   if (!post) return {};
   const url = site.url ? `${site.url}/${slug}` : undefined;
-  const ogImage = post.image
-    ? /^https?:\/\//i.test(post.image)
-      ? post.image
-      : site.url
-        ? `${site.url}${post.image}`
-        : undefined
-    : undefined;
   return {
     title: post.title,
     description: post.description ?? site.description,
@@ -36,13 +29,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       ...(url ? { url } : {}),
       type: "article",
       publishedTime: post.date.toISOString(),
-      images: ogImage ? [{ url: ogImage }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description ?? site.description,
-      images: ogImage ? [ogImage] : undefined,
     },
   };
 }
@@ -54,6 +45,22 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: post.title,
+            description: post.description ?? site.description,
+            datePublished: toISO(post.date),
+            inLanguage: "zh-CN",
+            author: { "@type": "Person", name: site.title, ...(site.url ? { url: site.url } : {}) },
+            ...(post.image ? { image: `${site.url}${post.image}` } : {}),
+            mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url}/${post.slug}` },
+          }),
+        }}
+      />
       <div className="post-head animate">
         <div className="container">
           {post.videoEmbed ? (
