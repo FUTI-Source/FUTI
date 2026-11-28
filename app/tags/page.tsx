@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 export const metadata: Metadata = {
   title: "标签",
   description: `浏览${site.title}的全部标签与相关文章。`,
-  alternates: { canonical: `${site.url}/tags` },
+  ...(site.url ? { alternates: { canonical: `${site.url}/tags` } } : {}),
 };
 
 export default function TagsPage() {

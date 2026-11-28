@@ -17,7 +17,6 @@ export interface Post {
   tags: string[];
   category?: string;
   videoEmbed?: string;
-  ga?: string;
   content: string;
 }
 
@@ -68,17 +67,31 @@ function readPostFile(file: string): Post {
     tags: toTags(data.tags ?? data.category),
     category: data.category ? String(data.category) : undefined,
     videoEmbed: data.video_embed ? String(data.video_embed) : undefined,
-    ga: data.GA ? String(data.GA) : undefined,
     content,
   };
 }
 
 let _posts: Post[] | null = null;
+let _postsSignature = "";
+
+// 模块级缓存：用文件名 + 修改时间 + 大小作为签名，文章增删改后自动重新读取
+function postsSignature(files: string[]): string {
+  return files
+    .map((f) => {
+      const stat = fs.statSync(path.join(POSTS_DIR, f));
+      return `${f}:${stat.mtimeMs}:${stat.size}`;
+    })
+    .sort()
+    .join("|");
+}
+
 function loadAllPosts(): Post[] {
-  if (_posts) return _posts;
   const files = fs.existsSync(POSTS_DIR)
     ? fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith(".md"))
     : [];
+  const signature = postsSignature(files);
+  if (_posts && signature === _postsSignature) return _posts;
+  _postsSignature = signature;
   _posts = files
     .map(readPostFile)
     .sort((a, b) => b.date.getTime() - a.date.getTime());

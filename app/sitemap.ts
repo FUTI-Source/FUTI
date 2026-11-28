@@ -5,6 +5,8 @@ import { site } from "@/lib/site.config";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // 未配置站点地址时无法生成绝对 URL，返回空集合避免构建报错
+  if (!site.url) return [];
   const posts = getAllPosts();
   const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
   const now = new Date();

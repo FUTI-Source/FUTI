@@ -17,16 +17,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
-  const url = `${site.url}/${slug}`;
-  const ogImage = post.image ? `${site.url}${post.image}` : undefined;
+  const url = site.url ? `${site.url}/${slug}` : undefined;
+  const ogImage = post.image
+    ? /^https?:\/\//i.test(post.image)
+      ? post.image
+      : site.url
+        ? `${site.url}${post.image}`
+        : undefined
+    : undefined;
   return {
     title: post.title,
     description: post.description ?? site.description,
-    alternates: { canonical: url },
+    ...(url ? { alternates: { canonical: url } } : {}),
     openGraph: {
       title: post.title,
       description: post.description ?? site.description,
-      url,
+      ...(url ? { url } : {}),
       type: "article",
       publishedTime: post.date.toISOString(),
       images: ogImage ? [{ url: ogImage }] : undefined,
@@ -85,11 +91,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                 ) : null}
                 <h1 className="post__title">{post.title}</h1>
                 <div className="post__meta">
-                  <div className="post__author-image">
-                    <MencaImage src={site.author.avatar} alt={site.author.name} />
-                  </div>
                   <div className="post__meta-bottom">
-                    <span className="post__author">{site.author.name}</span>
                     <time className="post__date" dateTime={toISO(post.date)}>
                       {formatDate(post.date)}
                     </time>

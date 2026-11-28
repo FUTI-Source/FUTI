@@ -31,9 +31,7 @@ Check the theme in action [Live Demo](https://menca.netlify.app/) |
 - Custom logo support
 - Supports video posts
 - Supports contact form (Formspree)
-- Supports MailChimp newsletter
 - Supports Disqus comments
-- Supports Google Analytics
 - Ionicons icons
 - Free Google Fonts
 - Free Updates & Support

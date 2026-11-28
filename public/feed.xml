@@ -4,9 +4,89 @@
     <title>张文涛</title>
     <description>个人网站与博客，记录与写作。</description>
     <language>zh-CN</language>
-    <link>http://192.168.0.31:3000/</link>
-    <atom:link href="http://192.168.0.31:3000/feed.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Sat, 28 Nov 2026 03:30:04 GMT</lastBuildDate>
-
+    <link>https://www.zhang-wentao.tech/</link>
+    <atom:link href="https://www.zhang-wentao.tech/feed.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Sat, 28 Nov 2026 03:49:20 GMT</lastBuildDate>
+    <item>
+      <title>老街的清晨：一次城市漫步</title>
+      <description>沿着城北的老街走了一遍，记录下清晨六点半的光线、早点摊和慢下来的节奏。</description>
+      <pubDate>Fri, 27 Nov 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/old-street-morning</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/old-street-morning</guid>
+      <category>城市</category>
+      <category>随笔</category>
+    </item>
+    <item>
+      <title>手冲咖啡入门：从磨豆到注水</title>
+      <description>一份写给新手的 V60 手冲笔记：水温、粉水比、注水节奏，以及我踩过的三个坑。</description>
+      <pubDate>Fri, 20 Nov 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/pour-over-coffee</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/pour-over-coffee</guid>
+      <category>咖啡</category>
+      <category>生活</category>
+    </item>
+    <item>
+      <title>周末露营：轻量化装备清单</title>
+      <description>从 18 公斤减到 9 公斤，我重新整理了一份两人周末露营的装备清单。</description>
+      <pubDate>Thu, 12 Nov 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/weekend-camping</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/weekend-camping</guid>
+      <category>户外</category>
+      <category>生活</category>
+    </item>
+    <item>
+      <title>读完《瓦尔登湖》：把生活过简单</title>
+      <description>重读梭罗，记下三个仍然打动我的段落，以及它们对当下生活的提醒。</description>
+      <pubDate>Tue, 03 Nov 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/walden-notes</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/walden-notes</guid>
+      <category>阅读</category>
+      <category>随笔</category>
+    </item>
+    <item>
+      <title>三个构图练习，让黄昏照片更有层次</title>
+      <description>不需要新设备，用三个每天都能做的练习，把黄昏拍出层次感。</description>
+      <pubDate>Sun, 25 Oct 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/golden-hour-composition</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/golden-hour-composition</guid>
+      <category>摄影</category>
+      <category>教程</category>
+    </item>
+    <item>
+      <title>深夜厨房：一碗番茄意面的做法</title>
+      <description>二十分钟、五样食材，一锅到底的深夜番茄意面。</description>
+      <pubDate>Fri, 16 Oct 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/late-night-pasta</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/late-night-pasta</guid>
+      <category>美食</category>
+      <category>生活</category>
+    </item>
+    <item>
+      <title>慢跑一年：配速之外的变化</title>
+      <description>一年跑了一千多公里，配速几乎没变，但有些东西悄悄变了。</description>
+      <pubDate>Mon, 05 Oct 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/one-year-running</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/one-year-running</guid>
+      <category>运动</category>
+      <category>生活</category>
+    </item>
+    <item>
+      <title>通勤路上的播客清单</title>
+      <description>每天四十分钟的通勤，我用三档不同类型的播客把它填满。</description>
+      <pubDate>Thu, 24 Sep 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/commute-podcasts</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/commute-podcasts</guid>
+      <category>音乐</category>
+      <category>随笔</category>
+    </item>
+    <item>
+      <title>年度总结：今年做对的五件小事</title>
+      <description>没有宏大的目标，只是五件坚持下来的小事，让这一年过得踏实了一些。</description>
+      <pubDate>Sat, 12 Sep 2026 00:00:00 GMT</pubDate>
+      <link>https://www.zhang-wentao.tech/year-in-review</link>
+      <guid isPermaLink="true">https://www.zhang-wentao.tech/year-in-review</guid>
+      <category>随笔</category>
+      <category>生活</category>
+    </item>
   </channel>
 </rss>

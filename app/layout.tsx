@@ -15,7 +15,7 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: site.url ? new URL(site.url) : undefined,
   title: {
     default: site.title,
     template: `%s | ${site.title}`,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: site.title,
     title: site.title,
     description: site.description,
-    url: site.url,
+    ...(site.url ? { url: site.url } : {}),
     locale: "zh_CN",
   },
   twitter: {
