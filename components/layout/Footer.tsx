@@ -11,9 +11,10 @@ export function Footer() {
             <div className="col col-12">
               <div className="footer__info-box">
                 <div className="copyright">
-                  {new Date().getFullYear()} &copy; <Link href="/">{site.title}</Link>.
-                  <br />
-                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+                  <span className="copyright__row">
+                    &copy; {new Date().getFullYear()} <Link href="/">{site.title}</Link>
+                  </span>
+                  <a className="copyright__icp" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
                     晋ICP备2026019630号
                   </a>
                 </div>
