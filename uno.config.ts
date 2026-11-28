@@ -1,25 +1,42 @@
 import { defineConfig, presetAttributify, presetUno } from "unocss";
 
-// 设计令牌迁移自 styles/menca/sass/0-settings/
-//   _color-scheme.scss 与 _variables.scss
-// 作为未来 UnoCSS 原子类开发的单一来源。
-// 现有语义化样式仍由 app/menca.css 提供，保证视觉零回归。
+// UnoCSS 提供工具类层（@unocss：preflights + default），
+// 供 EmptyState 等组件的原子类使用；Menca 主题的完整样式（令牌/网格/组件/
+// 关键帧/排版/hljs/响应式/深色）保留在 app/uno.css 原始 CSS 中，经本管道统一处理。
 export default defineConfig({
   presets: [presetUno(), presetAttributify()],
   theme: {
+    // 语义色指向 CSS 变量，浅/深色随 uno.css 中 :root / :root[dark] 自动切换
     colors: {
-      brand: "#0073ec",
+      brand: "var(--brand-color)",
       "brand-hover": "#4f31c7",
-      "light-gray": "#f0f0f0",
-      "light-blue": "#f3f7ff",
-      "blue-gray": "#716f8a",
-      gray: "#9e9e9e",
-      dark: "#0c101a",
-      "dark-alt": "#111016",
+      white: "#fff",
+      "light-gray": "var(--light-gray)",
+      "light-blue": "var(--light-blue)",
+      "blue-gray": "var(--blue-gray)",
+      gray: "var(--gray)",
+      dark: "var(--dark)",
       "dark-blue": "#1e2740",
+      bg: "var(--background-color)",
+      "bg-alt": "var(--background-alt-color)",
+      text: "var(--text-color)",
+      "text-alt": "var(--text-alt-color)",
+      heading: "var(--heading-font-color)",
+      link: "var(--link-color)",
+      "link-hover": "var(--link-color-hover)",
+      border: "var(--border-color)",
+      th: "var(--th-color)",
+      tr: "var(--tr-color)",
     },
     fontFamily: {
       sans: ["var(--font-jost)", "Jost", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+    },
+    // 与 Menca 原始断点对齐（移动端优先的 min-width，对应原始 max-width 体系）
+    breakpoints: {
+      sm: "576px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1140px",
     },
     spacing: {
       base: "16px",

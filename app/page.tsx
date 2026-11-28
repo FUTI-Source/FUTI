@@ -3,6 +3,7 @@ import { getPaginatedPosts, getAllTags, getPostsByTag } from "@/lib/content";
 import { PostList } from "@/components/post/PostList";
 import { Pagination } from "@/components/post/Pagination";
 import { MencaImage } from "@/components/ui/MencaImage";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function HomePage() {
   const { posts, totalPages } = getPaginatedPosts(1);
@@ -11,7 +12,14 @@ export default function HomePage() {
   return (
     <>
       <div className="container">
-        <PostList posts={posts} />
+        {posts.length === 0 ? (
+          <EmptyState
+            title="暂无文章"
+            subtitle="No posts yet — new content is on the way."
+          />
+        ) : (
+          <PostList posts={posts} />
+        )}
       </div>
       <Pagination currentPage={1} totalPages={totalPages} />
       {tags.length > 0 ? (

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getAllTags, getPostsByTag } from "@/lib/content";
 import { site } from "@/lib/site.config";
+import { Tags as TagsIcon } from "lucide-react";
 import { ArticleCard } from "@/components/post/ArticleCard";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const metadata: Metadata = {
   title: "Tags",
@@ -11,6 +13,18 @@ export const metadata: Metadata = {
 
 export default function TagsPage() {
   const tags = getAllTags();
+
+  if (tags.length === 0) {
+    return (
+      <div className="container">
+        <EmptyState
+          title="暂无标签"
+          subtitle="No tags yet — they will appear here once posts are published."
+          icon={<TagsIcon className="h-12 w-12" strokeWidth={1.5} aria-hidden="true" />}
+        />
+      </div>
+    );
+  }
 
   return (
     <section className="tags">
