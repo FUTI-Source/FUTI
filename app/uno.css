@@ -21,12 +21,13 @@ textarea {
   padding: 0;
   border: 0;
   color: inherit;
+  background: transparent;
+  appearance: none;
 }
 
 .nav-button button {
   display: flex;
   align-items: center;
-  background: transparent;
 }
 
 .nav-button svg,

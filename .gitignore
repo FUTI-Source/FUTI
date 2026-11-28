@@ -6,6 +6,7 @@ out/
 
 # 工作区/IDE 状态
 .trae/
+.screenshots/
 
 # 图片文件（通过其他方式上传）
 public/images/
