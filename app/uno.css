@@ -3187,12 +3187,13 @@ table td {
   }
 }
 
+/* 媒体置顶（视频海报式布局）：封面图 / 视频播放器统一 16:9，信息列居中 */
 .post-image,
 .page-image {
   position: relative;
   transform: translate(0);
-  padding-top: 90%;
-  min-height: 280px;
+  padding-top: 56.25%;
+  margin-bottom: 24px;
   border-radius: 8px;
   overflow: hidden;
   background: var(--background-alt-color);
@@ -3206,39 +3207,16 @@ table td {
   height: 100%;
   object-fit: cover;
   user-select: none;
+  transition: opacity 0.3s ease-in-out, transform 0.35s ease;
 }
-@media only screen and (max-width: 1024px) {
-  .post-image,
-  .page-image {
-    padding-top: 65%;
-    margin-bottom: 40px;
-  }
-}
-@media only screen and (max-width: 576px) {
-  .post-image,
-  .page-image {
-    margin-bottom: 32px;
-  }
-}
-
-.page-image {
-  padding-top: 56.25%;
-  margin-bottom: 48px;
-}
-@media only screen and (max-width: 1024px) {
-  .page-image {
-    margin-bottom: 40px;
-  }
-}
-@media only screen and (max-width: 576px) {
-  .page-image {
-    margin-bottom: 32px;
-  }
+.post-image:hover img,
+.page-image:hover img {
+  transform: scale(1.03);
 }
 
 .post-video,
 .page-video {
-  margin-bottom: 48px;
+  margin-bottom: 24px;
   border-radius: 8px;
   overflow: hidden;
   transform: translate(0);
@@ -3263,30 +3241,10 @@ table td {
   width: 100%;
   height: 100%;
 }
-@media only screen and (max-width: 1024px) {
-  .post-video,
-  .page-video {
-    margin-bottom: 40px;
-  }
-}
-@media only screen and (max-width: 576px) {
-  .post-video,
-  .page-video {
-    margin-bottom: 32px;
-  }
-}
 
 .post__info {
-  margin-left: 44px;
-}
-.post__info.post__info-video {
   max-width: 760px;
   margin: 0 auto;
-}
-@media only screen and (max-width: 1024px) {
-  .post__info {
-    margin-left: 0;
-  }
 }
 
 .page__info {
@@ -3300,6 +3258,16 @@ table td {
   flex-wrap: wrap;
   margin-bottom: 20px;
 }
+.post__info::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+  background: var(--brand-color);
+}
+
 .post__tags .post__tag {
   padding: 12px 16px;
   margin: 4px 8px 4px 0;
@@ -3310,8 +3278,12 @@ table td {
   border: none;
   border-radius: 8px;
   color: var(--heading-font-color);
-  transition: none;
+  transition: color 0.25s ease, background-color 0.25s ease;
   background-color: var(--background-alt-color);
+}
+.post__tags .post__tag:hover {
+  color: var(--white);
+  background-color: var(--brand-color);
 }
 .post__tags .post__tag:last-child {
   margin-right: 0;
@@ -3346,10 +3318,35 @@ table td {
   align-items: center;
   line-height: 1;
 }
+.post__meta-bottom {
+  display: flex;
+  align-items: center;
+}
 .post__meta .post__date {
   font-size: 14px;
   font-weight: 400;
   color: var(--text-alt-color);
+}
+.post__reading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-alt-color);
+}
+.post__reading svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+.post__reading::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: var(--gray);
 }
 
 .post,
@@ -3373,6 +3370,25 @@ table td {
 .page .js-reframe {
   border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 4px 14px rgba(12, 16, 26, 0.08);
+}
+
+/* 正文 h2：品牌蓝竖条装饰（与引用块同族） */
+.post__content h2,
+.page__content h2 {
+  position: relative;
+  padding-left: 14px;
+}
+.post__content h2::before,
+.page__content h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.16em;
+  width: 4px;
+  height: 0.7em;
+  border-radius: 2px;
+  background: var(--brand-color);
 }
 .post img.lightense-open, .post .js-reframe.lightense-open,
 .page img.lightense-open,

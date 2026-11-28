@@ -13,6 +13,18 @@ export function toISO(input: Date | string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
+/** 按中文阅读速度（约 400 字/分钟）估算阅读时长（分钟）。 */
+export function readingMinutes(markdown: string, charsPerMinute = 400): number {
+  const text = markdown
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ") // 图片
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // 链接保留文字
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#>*_`~-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return Math.max(1, Math.round(text.length / charsPerMinute));
+}
+
 /** 从 Markdown 正文生成纯文本摘要；中文无空格分词，按字符数截断。 */
 export function makeExcerpt(markdown: string, maxChars = 80): string {
   const text = markdown
