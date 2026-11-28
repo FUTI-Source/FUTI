@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import { site } from "./site.config";
 
 const ROOT = process.cwd();
 // 文章直接位于 content/ 目录
@@ -113,20 +112,4 @@ export function getAllTags(): { tag: string; count: number }[] {
 
 export function getPostsByTag(tag: string): Post[] {
   return loadAllPosts().filter((p) => p.tags.includes(tag));
-}
-
-export function getRelatedPosts(post: Post, limit: number = site.relatedPostsLimit): Post[] {
-  const others = loadAllPosts().filter((p) => p.slug !== post.slug);
-  const scored = others.map((p) => ({
-    p,
-    overlap: p.tags.filter((t) => post.tags.includes(t)).length,
-  }));
-  scored.sort(
-    (a, b) =>
-      b.overlap - a.overlap || b.p.date.getTime() - a.p.date.getTime()
-  );
-  return scored
-    .filter((s) => s.overlap > 0)
-    .slice(0, limit)
-    .map((s) => s.p);
 }

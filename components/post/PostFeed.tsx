@@ -50,9 +50,7 @@ export function PostFeed({ posts }: { posts: Post[] }) {
       ))}
       {hasMore ? (
         <div ref={sentinelRef} aria-hidden="true" />
-      ) : (
-        <p className="feed-end">共 {posts.length} 篇文章 · 已全部加载</p>
-      )}
+      ) : null}
     </div>
   );
 }

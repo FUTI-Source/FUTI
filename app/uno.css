@@ -107,7 +107,6 @@ textarea {
 :: 3-Modules
     3.1-Header
     3.2-Search
-    3.3-Infinite Scroll
     3.4-Footer
     3.5-Gallery
     3.6-Hero
@@ -2726,20 +2725,6 @@ table td {
   font-size: 14px;
 }
 
-/* >>>>>>>>>>>>>> :: 3.3-Infinite Scroll <<<<<<<<<<<<<<< */
-/* 首页信息流：滚动到底部自动加载，全部加载完的结尾标记 */
-.feed-end {
-  margin-bottom: 80px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--text-alt-color);
-}
-@media only screen and (max-width: 576px) {
-  .feed-end {
-    margin-bottom: 60px;
-  }
-}
-
 /* >>>>>>>>>>>>>> :: 3.4-Footer <<<<<<<<<<<<<<< */
 /* Footer */
 .footer {
@@ -2813,10 +2798,43 @@ table td {
   background-color: var(--background-color);
 }
 .footer__info .footer__info-box {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
+}
+.footer__info .footer__info-box .copyright {
+  justify-self: start;
+}
+.footer__info .footer__info-box .top {
+  justify-self: end;
+}
+/* 文章总数（版权与返回顶部之间，居中） */
+.footer__count {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text-alt-color);
+}
+@media only screen and (max-width: 576px) {
+  .footer__info .footer__info-box {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 10px;
+  }
+  .footer__info .footer__info-box .copyright {
+    justify-self: center;
+    text-align: center;
+  }
+  .footer__info .footer__info-box .top {
+    justify-self: center;
+    order: -1;
+  }
+  .footer__count {
+    font-size: 13px;
+  }
 }
 @media only screen and (max-width: 1024px) {
   .footer__info {
@@ -3007,7 +3025,7 @@ table td {
 }
 
 /* >>>>>>>>>>>>>> :: 3.9-Sections <<<<<<<<<<<<<<< */
-/* Sections */
+/* Sections（404 页最新文章等区块共用） */
 .section__head {
   position: relative;
   display: flex;
@@ -3359,26 +3377,6 @@ table td {
 }
 .post__share .share__link:hover i {
   transform: scale(1.1);
-}
-
-/* Related posts */
-.related-posts {
-  display: none;
-  margin-top: 80px;
-}
-.related-posts.is-related {
-  display: block;
-}
-.related-posts .related-tag {
-  text-transform: capitalize;
-}
-@media only screen and (max-width: 576px) {
-  .related-posts {
-    margin-top: 60px;
-  }
-  .related-posts .row .col:last-child {
-    margin-bottom: 0;
-  }
 }
 
 /* Disqus */

@@ -6,7 +6,6 @@ import { site } from "@/lib/site.config";
 import { formatDate, readingMinutes, toISO } from "@/lib/format";
 import { Markdown } from "@/components/ui/Markdown";
 import { MencaImage } from "@/components/ui/MencaImage";
-import { RelatedPosts } from "@/components/post/RelatedPosts";
 
 export const dynamicParams = false;
 
@@ -120,7 +119,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <Markdown>{post.content}</Markdown>
         </article>
       </div>
-      <RelatedPosts post={post} />
     </>
   );
 }

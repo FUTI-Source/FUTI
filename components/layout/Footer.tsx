@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { getAllPosts } from "@/lib/content";
 import { site } from "@/lib/site.config";
 import { BackToTop } from "./BackToTop";
 
 export function Footer() {
+  const postCount = getAllPosts().length;
+
   return (
     <footer className="footer">
       <div className="footer__info">
@@ -18,6 +21,7 @@ export function Footer() {
                     晋ICP备2026019630号
                   </a>
                 </div>
+                <p className="footer__count">共 {postCount} 篇文章 · 已全部加载</p>
                 <BackToTop />
               </div>
             </div>

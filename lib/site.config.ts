@@ -70,8 +70,6 @@ export const site = {
   readingCharsPerMinute: 400,
   /** 摘要截断长度（字符） */
   excerptChars: 80,
-  /** 相关文章数量 */
-  relatedPostsLimit: 3,
 
   /** Open Graph 分享卡尺寸 */
   og: { width: 1200, height: 630 },
