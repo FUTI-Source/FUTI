@@ -9,6 +9,8 @@ import { Lightbox } from "@/components/ui/Lightbox";
 import { ThemeScript } from "@/components/layout/ThemeScript";
 import { HashScrollFix } from "@/components/layout/HashScrollFix";
 import { AnchorBounce } from "@/components/layout/AnchorBounce";
+import { WeChatShare } from "@/components/layout/WeChatShare";
+import { QQMetas } from "@/components/layout/QQMetas";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -70,8 +72,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         ) : null}
         <ThemeScript />
+        <QQMetas />
         <HashScrollFix />
         <AnchorBounce />
+        <WeChatShare />
         <Header />
         <main className="content" aria-label="正文">
           {children}

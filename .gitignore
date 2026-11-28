@@ -11,3 +11,8 @@ out/
 
 # 图片文件（通过其他方式上传）
 public/images/
+
+# 环境变量与密钥（微信公众号等凭据）
+.env
+.env.*
+!.env.example
