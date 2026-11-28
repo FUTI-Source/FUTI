@@ -4,7 +4,6 @@ import matter from "gray-matter";
 
 const ROOT = process.cwd();
 const POSTS_DIR = path.join(ROOT, "content", "posts");
-const PAGES_DIR = path.join(ROOT, "content", "pages");
 
 export const PER_PAGE = 9;
 
@@ -17,14 +16,6 @@ export interface Post {
   tags: string[];
   category?: string;
   videoEmbed?: string;
-  content: string;
-}
-
-export interface Page {
-  slug: string;
-  title: string;
-  description?: string;
-  image?: string;
   content: string;
 }
 
@@ -154,17 +145,4 @@ export function getRelatedPosts(post: Post, limit = 3): Post[] {
     .filter((s) => s.overlap > 0)
     .slice(0, limit)
     .map((s) => s.p);
-}
-
-export function getPage(slug: string): Page | undefined {
-  const file = path.join(PAGES_DIR, `${slug}.md`);
-  if (!fs.existsSync(file)) return undefined;
-  const { data, content } = matter(fs.readFileSync(file, "utf8"));
-  return {
-    slug,
-    title: String(data.title ?? slug),
-    description: data.description ? String(data.description) : undefined,
-    image: normalizeImage(data.image ? String(data.image) : undefined),
-    content,
-  };
 }
