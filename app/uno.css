@@ -2803,6 +2803,15 @@ table td {
 .pagination__prev:hover {
   color: var(--heading-font-color);
 }
+.pagination__next:disabled,
+.pagination__prev:disabled {
+  opacity: 0.64;
+  cursor: not-allowed;
+}
+.pagination__next:disabled:hover i,
+.pagination__prev:disabled:hover i {
+  transform: none;
+}
 .pagination__next i,
 .pagination__prev i {
   font-size: 15px;

@@ -7,8 +7,6 @@ const ROOT = process.cwd();
 // 文章直接位于 content/ 目录
 const POSTS_DIR = path.join(ROOT, "content");
 
-export const PER_PAGE = site.perPage;
-
 export interface Post {
   slug: string;
   title: string;
@@ -101,22 +99,6 @@ export function getPostSlugs(): string[] {
 
 export function getPostBySlug(slug: string): Post | undefined {
   return loadAllPosts().find((p) => p.slug === slug);
-}
-
-export function getPaginatedPosts(page: number): {
-  posts: Post[];
-  currentPage: number;
-  totalPages: number;
-} {
-  const all = loadAllPosts();
-  const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
-  const currentPage = Math.min(Math.max(1, page), totalPages);
-  const start = (currentPage - 1) * PER_PAGE;
-  return {
-    posts: all.slice(start, start + PER_PAGE),
-    currentPage,
-    totalPages,
-  };
 }
 
 export function getAllTags(): { tag: string; count: number }[] {

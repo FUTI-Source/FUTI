@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts, PER_PAGE } from "@/lib/content";
+import { getAllPosts } from "@/lib/content";
 import { site } from "@/lib/site.config";
 
 export const dynamic = "force-static";
@@ -8,7 +8,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // 未配置站点地址时无法生成绝对 URL，返回空集合避免构建报错
   if (!site.url) return [];
   const posts = getAllPosts();
-  const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
   const now = new Date();
 
   const urls: MetadataRoute.Sitemap = [
@@ -16,9 +15,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${site.url}/tags`, lastModified: now, priority: 0.7 },
   ];
 
-  for (let p = 2; p <= totalPages; p++) {
-    urls.push({ url: `${site.url}/page/${p}`, lastModified: now, priority: 0.6 });
-  }
   for (const post of posts) {
     urls.push({
       url: `${site.url}/${post.slug}`,
