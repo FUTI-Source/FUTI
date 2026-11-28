@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ca8a04"/>
+      <stop offset="1" stop-color="#713f12"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.5" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  
+  <g fill="none" stroke="#ffffff">
+    <circle cx="950" cy="230" r="80"  stroke-opacity="0.30" stroke-width="10"/>
+    <circle cx="950" cy="230" r="150" stroke-opacity="0.20" stroke-width="10"/>
+    <circle cx="950" cy="230" r="220" stroke-opacity="0.13" stroke-width="10"/>
+    <circle cx="950" cy="230" r="290" stroke-opacity="0.08" stroke-width="10"/>
+  </g>
+  <circle cx="200" cy="540" r="14" fill="#ffffff" opacity="0.35"/>
+  <rect width="1200" height="675" fill="url(#shade)"/>
+  <g fill="#ffffff" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif">
+    <text x="80" y="548" font-size="28" letter-spacing="8" opacity="0.85">示例文章 · 咖啡</text>
+    <text x="80" y="616" font-size="56" font-weight="700">埃塞俄比亚咖啡豆</text>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9ca3af"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.5" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  
+  <circle cx="950" cy="180" r="90" fill="#ffffff" opacity="0.25"/>
+  <polygon points="0,675 0,480 220,330 420,500 620,380 840,540 1050,430 1200,520 1200,675" fill="#ffffff" opacity="0.18"/>
+  <polygon points="0,675 0,560 260,440 500,590 760,470 1000,610 1200,540 1200,675" fill="#ffffff" opacity="0.30"/>
+  <rect width="1200" height="675" fill="url(#shade)"/>
+  <g fill="#ffffff" font-family="'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif">
+    <text x="80" y="548" font-size="28" letter-spacing="8" opacity="0.85">示例文章 · 摄影</text>
+    <text x="80" y="616" font-size="56" font-weight="700">黑白摄影光影练习</text>
+  </g>
+</svg>
