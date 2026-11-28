@@ -11,18 +11,25 @@ function detectSiteUrl(): string {
   return "http://localhost:3000";
 }
 
+/** 展示用域名：由站点地址派生（去掉协议与尾部斜杠）。 */
+function toDisplayDomain(url: string): string {
+  return url.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+}
+
+const detectedUrl = detectSiteUrl();
+
 export const site = {
   /** 基础信息 */
   title: "张文涛",
   /** 拉丁署名（刊头小字 / 分享卡 / JSON-LD alternateName） */
   alternateName: "Zhang Wentao",
-  /** 展示用域名（分享卡页脚等纯文案场景） */
-  domain: "www.zhang-wentao.tech",
   description: "个人网站与博客，记录与写作。",
   /** 标语（分享卡页脚等场景） */
   tagline: "随笔 · 生活 · 影像",
   /** 由部署环境自动识别（见 detectSiteUrl） */
-  url: detectSiteUrl(),
+  url: detectedUrl,
+  /** 展示用域名（由 url 自动派生，分享卡页脚等纯文案场景） */
+  domain: toDisplayDomain(detectedUrl),
   /** 导航 */
   nav: [
     { label: "首页", href: "/" },
