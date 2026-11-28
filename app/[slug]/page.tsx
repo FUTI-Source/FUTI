@@ -91,7 +91,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   {formatDate(post.date)}
                 </time>
                 <span className="post__reading">
-                  <Clock aria-hidden="true" />
+                      <Clock aria-hidden="true" strokeWidth={1.75} />
                   约 {readingMinutes(post.content)} 分钟读完
                 </span>
               </div>

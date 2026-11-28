@@ -21,7 +21,7 @@ export function BackToTop() {
         });
       }}
     >
-      <ArrowUp aria-hidden="true" />
+      <ArrowUp aria-hidden="true" strokeWidth={1.75} />
     </button>
   );
 }

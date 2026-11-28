@@ -2079,8 +2079,8 @@ ul li, ol li {
 
 body {
   font-family: "Noto Serif SC", var(--font-jost), "Jost", Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 20px;
-  line-height: 1.5;
+  font-size: 18px;
+  line-height: 1.75;
   overflow-x: hidden;
   color: var(--text-color);
   background-color: var(--background-color);
@@ -2089,7 +2089,7 @@ body {
 }
 @media only screen and (max-width: 576px) {
   body {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
 
@@ -2106,29 +2106,29 @@ h5,
 h6 {
   font-family: "Noto Serif SC", var(--font-jost), "Jost", Helvetica Neue, Helvetica, Arial, sans-serif;
   font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -1px;
+  line-height: 1.35;
+  letter-spacing: 0;
   color: var(--heading-font-color);
 }
 
 h1 {
-  font-size: 36px;
+  font-size: 34px;
 }
 
 h2 {
-  font-size: 28px;
+  font-size: 26px;
 }
 
 h3 {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 h4 {
-  font-size: 20px;
+  font-size: 19px;
 }
 
 h5 {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 h6 {
@@ -2139,9 +2139,9 @@ blockquote {
   position: relative;
   margin: 40px 0;
   padding-left: 26px;
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1.7;
-  font-weight: 900;
+  font-weight: 700;
   border-left: 4px solid var(--brand-color);
   color: var(--heading-font-color);
 }
@@ -2332,17 +2332,13 @@ table td {
   }
 }
 
-/* Logo —— 印章名标：品牌蓝方章 + 加粗站名 */
+/* Logo —— 印章刊头：品牌蓝方章 + 站名 + 拉丁小字 */
 .logo__link {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 2px 0;
   font-family: "Noto Serif SC", var(--font-jost), "Jost", Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 24px;
-  letter-spacing: 1px;
-  line-height: 1;
-  font-weight: 700;
   transition: color 0.25s ease;
 }
 .logo__seal {
@@ -2362,10 +2358,34 @@ table td {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   user-select: none;
 }
+.logo__text {
+  display: flex;
+  flex-direction: column;
+}
 .logo__name {
+  display: block;
+  font-size: 23px;
+  line-height: 1.15;
+  letter-spacing: 1px;
+  font-weight: 700;
   color: var(--heading-font-color);
+  transition: color 0.25s ease;
+}
+.logo__sub {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-jost), "Jost", Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-alt-color);
 }
 .logo__link:hover {
+  color: var(--brand-color);
+}
+.logo__link:hover .logo__name {
   color: var(--brand-color);
 }
 .logo__link:hover .logo__seal {
@@ -2379,13 +2399,20 @@ table td {
 @media only screen and (max-width: 576px) {
   .logo__link {
     gap: 8px;
-    font-size: 21px;
   }
   .logo__seal {
     width: 32px;
     height: 32px;
     font-size: 18px;
     border-radius: 7px;
+  }
+  .logo__name {
+    font-size: 20px;
+  }
+  .logo__sub {
+    margin-top: 2px;
+    font-size: 8px;
+    letter-spacing: 0.2em;
   }
 }
 
@@ -2646,20 +2673,21 @@ table td {
 }
 .search__group .search__text {
   width: 100%;
-  padding: 28px;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 24px;
+  padding: 22px 24px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
   border: 2px solid transparent;
-  border-radius: 2px;
+  border-radius: 10px;
   color: var(--heading-font-color);
   background-color: var(--background-alt-color);
   outline: 0;
   transition: all 0.25s;
 }
 .search__group .search__text::placeholder {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--heading-font-color);
+  opacity: 0.55;
 }
 .search__group .search__text:focus {
   border-color: var(--brand-color);
@@ -2676,11 +2704,28 @@ table td {
   }
 }
 
-.search-results-list .no-results {
+.search__count {
+  margin: 0 0 20px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-alt-color);
+}
+.search__empty {
   width: 100%;
-  margin: 0;
+  padding: 30px 0 10px;
   text-align: center;
-  color: var(--heading-font-color);
+  color: var(--text-alt-color);
+}
+.search__empty svg {
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  opacity: 0.45;
+}
+.search__empty p {
+  margin: 14px 0 0;
+  font-size: 14px;
 }
 
 /* >>>>>>>>>>>>>> :: 3.3-Pagination <<<<<<<<<<<<<<< */
@@ -2954,14 +2999,15 @@ table td {
 .article__date {
   position: absolute;
   z-index: 1;
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   display: inline-block;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 6px 10px;
+  font-size: 11px;
   line-height: 1;
   font-weight: 500;
-  border-radius: 4px;
+  letter-spacing: 0.02em;
+  border-radius: 6px;
   color: var(--heading-font-color);
   background: var(--background-color);
   pointer-events: none;
@@ -3025,13 +3071,15 @@ table td {
 }
 
 .article__title {
-  margin-bottom: 12px;
-  font-size: 24px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  line-height: 1.5;
 }
 .article__title a {
   text-decoration: underline;
   text-decoration-color: transparent;
   text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 .article__title a:hover {
   color: var(--heading-font-color);
@@ -3039,8 +3087,21 @@ table td {
 
 .article__excerpt {
   margin-bottom: 0;
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 1.7;
   color: var(--text-alt-color);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* 信息流卡片：图片悬停微缩放 */
+.article__image img {
+  transition: opacity 0.3s ease-in-out, transform 0.35s ease;
+}
+.article:hover .article__image img {
+  transform: scale(1.04);
 }
 
 /* >>>>>>>>>>>>>> :: 3.9-Sections <<<<<<<<<<<<<<< */
@@ -3072,17 +3133,17 @@ table td {
 .section__title {
   padding-right: 20px;
   margin-bottom: 0;
-  font-size: 28px;
+  font-size: 24px;
 }
 @media only screen and (max-width: 576px) {
   .section__title {
-    font-size: 24px;
+    font-size: 21px;
   }
 }
 
 .section__link {
   padding-left: 20px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   text-decoration: underline;
   text-decoration-color: transparent;
@@ -3297,15 +3358,15 @@ table td {
 .post__title,
 .page__title {
   margin-bottom: 24px;
-  font-size: 46px;
-  line-height: 1.2;
+  font-size: 42px;
+  line-height: 1.25;
   font-weight: 900;
 }
 @media only screen and (max-width: 576px) {
   .post__title,
   .page__title {
     margin-bottom: 20px;
-    font-size: 32px;
+    font-size: 28px;
   }
 }
 
@@ -3353,6 +3414,7 @@ table td {
 .page {
   max-width: 760px;
   margin: 0 auto 60px;
+  line-height: 1.9;
   color: var(--text-color);
 }
 .post a,
@@ -3559,12 +3621,12 @@ table td {
 
 .tag__title {
   margin-bottom: 32px;
-  font-size: 46px;
+  font-size: 38px;
   font-weight: 900;
 }
 @media only screen and (max-width: 576px) {
   .tag__title {
-    font-size: 32px;
+    font-size: 28px;
   }
 }
 

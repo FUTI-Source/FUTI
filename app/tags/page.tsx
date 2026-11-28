@@ -20,7 +20,7 @@ export default function TagsPage() {
         <EmptyState
           title="暂无标签"
           subtitle="还没有标签，文章发布后会自动归类到这里。"
-          icon={<TagsIcon className="h-12 w-12" strokeWidth={1.5} aria-hidden="true" />}
+          icon={<TagsIcon className="h-12 w-12" strokeWidth={1.75} aria-hidden="true" />}
         />
       </div>
     );

@@ -19,7 +19,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center text-center py-20 sm:py-28 animate">
       <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-bg-alt text-brand ring-1 ring-border">
-        {icon ?? <FileText className="h-12 w-12" strokeWidth={1.5} aria-hidden="true" />}
+        {icon ?? <FileText className="h-12 w-12" strokeWidth={1.75} aria-hidden="true" />}
       </div>
       <h2 className="font-sans text-3xl font-bold tracking-[-1px] text-heading sm:text-4xl">
         {title}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search as SearchIcon, X } from "lucide-react";
+import { Search as SearchIcon, SearchX, X } from "lucide-react";
 import { formatDate, toISO } from "@/lib/format";
 import { MencaImage } from "./MencaImage";
 
@@ -70,7 +70,7 @@ export function Search() {
         className="nav__icon icon__search"
         aria-expanded={open}
       >
-        <SearchIcon aria-hidden="true" />
+        <SearchIcon aria-hidden="true" strokeWidth={1.75} />
       </button>
       <div className={`search${open ? " is-visible" : ""}`} aria-hidden={!open}>
         <div className="container">
@@ -85,7 +85,7 @@ export function Search() {
                     aria-label="关闭搜索"
                     tabIndex={open ? 0 : -1}
                   >
-                    <X aria-hidden="true" />
+                    <X aria-hidden="true" strokeWidth={1.75} />
                   </button>
                   <label htmlFor="js-search-input" className="screen-reader-text">
                     搜索文章
@@ -108,10 +108,16 @@ export function Search() {
           </div>
         </div>
         <div className="container">
+          {term ? <p className="search__count">共 {hits.length} 篇结果</p> : null}
           <div className="row search-results-list" id="js-results-container" aria-live="polite">
-            {term && hits.length === 0 ? <h3 className="no-results">没有找到相关内容</h3> : null}
+            {term && hits.length === 0 ? (
+              <div className="search__empty">
+                <SearchX aria-hidden="true" strokeWidth={1.75} />
+                <p>没有找到相关内容，换个关键词试试。</p>
+              </div>
+            ) : null}
             {hits.map((hit) => (
-              <article className="article col col-4 col-d-6 col-t-12" key={hit.url}>
+              <article className="article col col-4 col-d-6 col-t-6 col-m-12" key={hit.url}>
                 <div className="article__inner">
                   <div className="article__head">
                     <time className="article__date" dateTime={toISO(hit.date)}>

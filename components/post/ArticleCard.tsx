@@ -5,7 +5,7 @@ import { MencaImage } from "../ui/MencaImage";
 
 export function ArticleCard({ post }: { post: Post }) {
   return (
-    <article className="article col col-4 col-d-6 col-t-12">
+    <article className="article col col-4 col-d-6 col-t-6 col-m-12">
       <div className="article__inner">
         <div className="article__head">
           <time className="article__date" dateTime={toISO(post.date)}>

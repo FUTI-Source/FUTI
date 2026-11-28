@@ -33,11 +33,16 @@ export function Header() {
           <div className="header__inner col col-12">
             <div className="logo">
               <Link className="logo__link" href="/">
-                {/* 印章名标：品牌蓝方章内取名字核心字“文”，白色衬线呈现印感 */}
+                {/* 印章刊头：品牌蓝方章内取名字核心字“文”，白色衬线呈现印感 */}
                 <span className="logo__seal" aria-hidden="true">
                   文
                 </span>
-                <span className="logo__name">{site.title}</span>
+                <span className="logo__text">
+                  <span className="logo__name">{site.title}</span>
+                  <span className="logo__sub" aria-hidden="true">
+                    Zhang Wentao
+                  </span>
+                </span>
               </Link>
             </div>
 
@@ -49,7 +54,7 @@ export function Header() {
                   aria-label="关闭菜单"
                   tabIndex={menuOpen ? 0 : -1}
                 >
-                  <X aria-hidden="true" />
+                  <X aria-hidden="true" strokeWidth={1.75} />
                 </button>
                 <div className="nav__title">菜单</div>
                 <ul className="nav__list list-reset">
@@ -74,7 +79,7 @@ export function Header() {
                 aria-label="打开菜单"
                 aria-expanded={menuOpen}
               >
-                <Menu aria-hidden="true" />
+                <Menu aria-hidden="true" strokeWidth={1.75} />
               </button>
               <Search />
             </div>
